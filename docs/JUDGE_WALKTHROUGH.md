@@ -1,0 +1,30 @@
+# Judge walkthrough
+
+No wallet or account is needed for the public proof path. Open [AgentShield Lab](https://agentshield-lab.vercel.app/) in a clean browser.
+
+1. On **The Thesis**, read the contract-held vault summary and open **Instant Demo**. Run its five scenarios. The screen labels these as simulation; they are not five onchain transactions.
+2. Open **Evidence**. Wait for **“One payment. Independently verified.”** Open **VIEW LIVE JSON PROOF**. Expect `verification: PASS`, `settlement: SETTLED`, the deployed vault code hash, the restricted signer, transaction `3buDvB…53jm`, and transfer receipt `76hE3j…K2dS`. The initial `AUTHORIZED` decision alone is not the settlement claim.
+3. Continue down **Evidence** to the three rejection proofs. Expect `PER_PAYMENT_LIMIT`, `RECIPIENT_NOT_ALLOWED`, and `REPLAY`, each with a finalized Testnet transaction and zero vault transfer receipts. **Revocation** is marked unverified live.
+4. Open **Lab** to inspect public Testnet account and vault state. A wallet connection is optional; real owner sign-in has not yet been verified. Do not approve a transaction as part of this walkthrough.
+5. For independent reproduction, run the read-only verifier commands in [README](../README.md) or query `https://rpc.testnet.near.org` directly for the hashes in [the evidence table](ARCHITECTURE_AND_EVIDENCE.md). An explorer may block automated requests.
+
+## Expected limits
+
+- The **Mandate** form saves a browser-only draft. It does not set the deployed policy.
+- Owner controls are not a proven browser signing flow.
+- The local AI agent has strict output validation and mocked injection coverage, but genuine NEAR AI inference has not completed: the key check and first inference returned HTTP 402. Do not present the mock as a live model outcome.
+- The mandate version 1 expires **2026-11-09 09:21:45 UTC** unless the owner approves and signs a renewal. The historical payment and rejection evidence remain independently verifiable after expiry.
+
+## Demo video script (120 seconds; draft)
+
+| Time | Screen / spoken line |
+| --- | --- |
+| 0–12s | Thesis hero. “AI agents can act quickly. AgentShield gives them spending authority with a hard onchain boundary.” |
+| 12–28s | Architecture graphic. “The owner sets one agent, one recipient, per-payment, daily and total caps. A function-call key can only request payment from this vault.” |
+| 28–43s | Instant Demo. “Try the scenarios. This is a simulator for exploration, clearly separate from the live evidence.” |
+| 43–67s | Evidence payment proof and JSON. “Here is a real restricted-key Testnet request. The transfer receipt succeeded, the callback recorded SETTLED, and the contract accounting agrees.” |
+| 67–90s | Three rejection cards. “Overspend, an unlisted recipient, and replay were all signed and rejected by the contract. Each produced zero payout receipts.” |
+| 90–104s | Lab and policy. “The public vault is readable without a wallet. The owner wallet path and live AI model are still verification gates.” |
+| 104–120s | Evidence table / closing. “Every onchain claim has a transaction and a reproducible RPC check. The model can propose; the vault decides.” |
+
+Record the actual UI and genuine receipts. If AI inference or owner sign-in later becomes verified, revise the script to show the new evidence; do not splice mock output into a live claim.

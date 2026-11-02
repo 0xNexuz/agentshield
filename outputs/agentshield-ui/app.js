@@ -88,15 +88,19 @@ import { setupDemo } from "./demo-ui.mjs";
   const walletStatus = document.getElementById("wallet-status");
   const walletAccount = document.getElementById("wallet-account");
   const walletOpen = document.getElementById("wallet-open");
+  const deployedOwner = "agentshield-mag-1d2f78801994.testnet";
   let walletBridge;
   let walletLoading;
 
   function updateWallet(state) {
     const accountId = state.accountId && testnetAccountPattern.test(state.accountId) ? state.accountId : null;
-    if (accountId) ownerInput.value = accountId;
+    if (accountId === deployedOwner) ownerInput.value = accountId;
     walletAccount.textContent = accountId || "NOT CONNECTED";
     walletOpen.firstChild.textContent = accountId ? `${accountId} ` : "CONNECT WALLET ";
-    walletStatus.textContent = state.error || (accountId ? "Connected owner account. No transaction has been signed." : "Wallet connection identifies your public account. No transaction is sent.");
+    walletStatus.textContent = state.error || (accountId === deployedOwner
+      ? "Connected deployed vault owner. No transaction has been signed."
+      : accountId ? `Connected ${accountId}; this is not the deployed vault owner. No transaction has been signed.`
+        : "Wallet connection identifies your public account. No transaction is sent.");
     walletStatus.classList.toggle("is-error", !!state.error);
     if (walletDialog.open) renderWalletOptions(state);
   }
@@ -132,8 +136,10 @@ import { setupDemo } from "./demo-ui.mjs";
         choice.disabled = true;
         walletDialogStatus.textContent = `Opening ${module.name}…`;
         try {
-          await walletBridge.connect(module.id, testnetForm.elements.namedItem("vault").value.trim());
-          walletDialogStatus.textContent = "Owner wallet connected. No transaction was sent.";
+          const connected = await walletBridge.connect(module.id, testnetForm.elements.namedItem("vault").value.trim());
+          walletDialogStatus.textContent = connected.accountId === deployedOwner
+            ? "Deployed vault owner connected. No transaction was sent."
+            : "Wallet connected, but this account is not the deployed vault owner. No transaction was sent.";
         } catch (error) {
           walletDialogStatus.textContent = `Connection failed: ${error.message}`;
         } finally { choice.disabled = false; }
@@ -202,7 +208,8 @@ import { setupDemo } from "./demo-ui.mjs";
       for (const [label, value] of [
         ["TRANSACTION", proof.transactionHash], ["TRANSFER RECEIPT", proof.recipientReceiptId],
         ["REQUEST ID", proof.requestId], ["VAULT CODE HASH", proof.codeHash],
-        ["PENDING AMOUNT", `${proof.pendingTotalYocto} yoctoNEAR`],
+        ["PAYMENT MANDATE VERSION", proof.mandateVersion],
+        ["CURRENT VAULT PENDING", `${proof.pendingTotalYocto} yoctoNEAR`],
       ]) {
         const dt = document.createElement("dt"); dt.textContent = label;
         const dd = document.createElement("dd"); dd.textContent = value;

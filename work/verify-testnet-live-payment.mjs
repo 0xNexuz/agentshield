@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertHistoricalPaymentState } from './live-payment-invariants.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const proposal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-live-demo-proposal.json'), 'utf8'));
@@ -95,13 +96,10 @@ export async function verifyLivePayment() {
     rpc('query', { request_type: 'view_access_key_list', finality: 'final', account_id: proposal.agentAccountId }),
   ]);
   check(vault.code_hash === proposal.expectedCodeHash, 'Vault code hash changed');
-  check(record?.status === 'SETTLED' && record.recipient === proposal.recipientAccountId &&
-    record.amount_yocto === proposal.firstPayment.amount_yocto && record.nonce === proposal.firstPayment.nonce,
-    'Payment record does not match settled request');
-  check(BigInt(status.confirmed_total_yocto) >= BigInt(record.amount_yocto) &&
-    BigInt(status.pending_total_yocto) === 0n, 'Vault accounting does not show completed settlement');
-  check(BigInt(recipient.amount) >= BigInt(evidence.details.recipientBalanceBeforeYocto) + BigInt(record.amount_yocto),
-    'Recipient balance does not corroborate transfer');
+  assertHistoricalPaymentState(record, status, {
+    recipient: proposal.recipientAccountId, amountYocto: proposal.firstPayment.amount_yocto,
+    nonce: proposal.firstPayment.nonce, mandateVersion: 1,
+  });
   const key = keyList.keys.find(item => item.public_key === proposal.restrictedKey.publicKey);
   const permission = key?.access_key?.permission?.FunctionCall;
   const currentKeyStillScoped = permission?.receiver_id === proposal.vaultAccountId &&
@@ -114,13 +112,14 @@ export async function verifyLivePayment() {
     vaultAccountId: proposal.vaultAccountId, codeHash: vault.code_hash, agent: proposal.agentAccountId,
     restrictedPublicKey: proposal.restrictedKey.publicKey,
     currentKeyStillScoped: Boolean(currentKeyStillScoped), observedKeyAllowanceYocto: permission?.allowance ?? null,
-    mandateVersion: status.mandate?.version, mandateRevoked: status.mandate?.revoked,
+    mandateVersion: record.mandate_version, currentMandateVersion: status.mandate?.version,
+    mandateRevoked: status.mandate?.revoked,
     mandatePerPaymentYocto: status.mandate?.per_payment_yocto,
     mandateDailyYocto: status.mandate?.daily_yocto,
     mandateTotalYocto: status.mandate?.total_yocto,
     mandateExpiryNs: status.mandate?.expires_at_ns,
     confirmedTotalYocto: status.confirmed_total_yocto, pendingTotalYocto: status.pending_total_yocto,
-    recipientBalanceYocto: recipient.amount,
+    currentRecipientBalanceYocto: recipient.amount,
     explorerUrl: `https://testnet.nearblocks.io/txns/${evidence.transactionHash}`,
     checkedAt: new Date().toISOString(),
   };
