@@ -79,7 +79,7 @@
             <div class="cinema-title">
               <p class="cinema-kicker">Judge mode · six scenes · about 70 seconds · no wallet</p>
               <h1 id="judge-title">One agent. One guardian. One boundary that cannot be crossed.</h1>
-              <p class="cinema-title-copy">Meet the owner, the agent and the guardian. Then watch a real Testnet payment settle and a real attack stop at the contract. Every fact on screen says where it comes from.</p>
+              <p class="cinema-title-copy">Meet the owner, the agent and the guardian. Then watch replays of a real Testnet payment that settled and real attacks the contract refused. Every fact on screen says where it comes from.</p>
               <div class="cinema-title-actions">
                 <button type="button" class="button button-light" data-film="start">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button>
                 <button type="button" class="button button-outline" data-film="explore">EXPLORE MANUALLY <span aria-hidden="true">↓</span></button>
@@ -89,6 +89,7 @@
               <p class="cinema-end-line">One agent. One guardian. <span>One boundary that cannot be crossed.</span></p>
               <div class="cinema-title-actions">
                 <button type="button" class="button button-light" data-film="restart">WATCH AGAIN <span aria-hidden="true">↺</span></button>
+                <button type="button" class="button button-outline" data-film="proof">INSPECT THE PROOF <span aria-hidden="true">↑</span></button>
                 <button type="button" class="button button-outline" data-open-view="attack">ATTACK THE VAULT <span aria-hidden="true">↗</span></button>
                 <button type="button" class="button button-outline" data-open-view="activity">OPEN EVIDENCE <span aria-hidden="true">↗</span></button>
               </div>
@@ -105,20 +106,20 @@
             <button type="button" data-film="play" class="is-primary"><b data-icon aria-hidden="true">▶</b> <span>Start</span></button>
             <button type="button" data-film="next" aria-label="Next scene"><span>Next</span> <b aria-hidden="true">›</b></button>
             <button type="button" data-film="replay" aria-label="Replay this scene"><b aria-hidden="true">↺</b> <span>Replay</span></button>
-            <button type="button" data-film="skip" aria-label="Skip this scene's animation"><b aria-hidden="true">»</b> <span>Skip animation</span></button>
+            <button type="button" data-film="skip" aria-label="Skip animation"><b aria-hidden="true">»</b> <span>Skip animation</span></button>
           </div>
           <ol class="cinema-chapters" aria-label="Scenes"></ol>
           <button type="button" data-film="explore" class="transport-explore">Explore manually</button>
         </div>
         <p id="judge-live" class="visually-hidden" aria-live="polite"></p>
-        <div class="truth-legend" aria-label="How to read the labels">
+        <section class="truth-legend" aria-labelledby="legend-title"><h2 id="legend-title" class="legend-title">How to read the labels</h2>
           <p><span class="truth" data-truth="simulation"><i aria-hidden="true"></i>SIMULATION</span> Local model in your browser. No chain.</p>
           <p><span class="truth" data-truth="historical"><i aria-hidden="true"></i>HISTORICAL ONCHAIN REPLAY</span> A finalized Testnet transaction, replayed. Nothing is executing now.</p>
-          <p><span class="truth" data-truth="live"><i aria-hidden="true"></i>LIVE RPC VERIFIED</span> Rechecked just now against public Testnet RPC.</p>
+          <p><span class="truth" data-truth="live"><i aria-hidden="true"></i>LIVE RPC VERIFIED</span> Appears only after a live recheck against public Testnet RPC passes during your visit.</p>
           <p><span class="truth" data-truth="unverified"><i aria-hidden="true"></i>NOT YET VERIFIED</span> No genuine onchain evidence yet.</p>
-        </div>
+        </section>
         <section class="cinema-explore" aria-labelledby="explore-title" hidden>
-          <div class="explore-head"><h2 id="explore-title">Explore at your own pace.</h2><p>Open any scene in its finished state. The film stays paused until you press play. Keyboard: space plays or pauses, the arrow keys change scenes.</p></div>
+          <div class="explore-head"><h2 id="explore-title" tabindex="-1">Explore at your own pace.</h2><p>Open any scene in its finished state. The film stays paused until you press play. Keyboard: space plays or pauses, the arrow keys change scenes.</p></div>
           <div class="explore-grid"></div>
         </section>
       </section>
@@ -137,11 +138,12 @@
           <div class="theatre-head">
             <div><h2 class="theatre-title" id="theatre-title">Attack</h2><div class="theatre-truth"></div></div>
             <div class="theatre-actions">
-              <button type="button" class="button button-outline" data-theatre="run">RUN AGAIN <span aria-hidden="true">↺</span></button>
+              <button type="button" class="button button-outline" data-theatre="run">REPLAY AGAIN <span aria-hidden="true">↺</span></button>
               <button type="button" class="button button-text" data-theatre="skip">SKIP TO RESULT <span aria-hidden="true">»</span></button>
             </div>
           </div>
-          <div class="theatre-body"><div class="theatre-art"></div><ol class="theatre-steps" aria-live="polite"></ol></div>
+          <div class="theatre-body"><div class="theatre-art"></div><ol class="theatre-steps"></ol></div>
+          <p id="theatre-live" class="visually-hidden" aria-live="polite"></p>
         </section>
         <section class="custom-attack" aria-labelledby="custom-title">
           <div class="custom-copy">

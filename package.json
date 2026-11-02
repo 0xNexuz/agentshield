@@ -6,7 +6,8 @@
     "build:wallet": "node work/build-wallet.mjs",
     "test:sim": "node --test tests/simulator.test.mjs",
     "test:key-scope": "node --test tests/agent-key-scope.test.mjs",
-    "test:ai": "node --test tests/near-ai-agent.test.mjs"
+    "test:ai": "node --test tests/near-ai-agent.test.mjs",
+    "test:cinematic": "node --test tests/cinematic-evidence.test.mjs"
   },
   "dependencies": {
     "@near-wallet-selector/core": "10.1.4",

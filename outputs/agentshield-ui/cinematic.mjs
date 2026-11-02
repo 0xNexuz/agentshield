@@ -66,7 +66,7 @@ const SCENES = [
       const limits = [
         ["Agent", MANDATE.agent], ["Allowed recipient", MANDATE.recipients[0]],
         ["Per payment", `${MANDATE.perPaymentNear} NEAR`], ["Per UTC day", `${MANDATE.dailyNear} NEAR`],
-        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Expires", MANDATE.expiresAtUtc],
+        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Expires", `${MANDATE.expiresAtUtc}${mandateExpired() ? " (now expired)" : ""}`],
       ];
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "The mandate" }), truth("historical")), 400),
@@ -81,7 +81,7 @@ const SCENES = [
     id: "agent", chapter: "The agent", truth: "historical", duration: 10500,
     frames: [{ plate: "agent-request", at: 0 }], focus: [0.66, 0.42],
     kicker: "Scene 2 of 6 · The agent", line: "The agent can request a payment. It cannot rewrite the rules.",
-    sub: "Its only key is a function-call key scoped to one vault method.",
+    sub: "It runs with a function-call key scoped to one vault method. The account's full-access lifecycle key stays outside the agent's runtime.",
     panel() {
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "The request it prepared" }), truth("historical")), 400),
@@ -89,7 +89,7 @@ const SCENES = [
         beat(row("Recipient", PAYMENT.recipient), 1700),
         beat(row("Amount", `${PAYMENT.amountNear} NEAR`), 2200),
         beat(row("Nonce", PAYMENT.nonce), 2700),
-        beat(row("Signed with", shortHash(RESTRICTED_KEY.publicKey)), 3200),
+        beat(row("Signed with", `ed25519:${shortHash(RESTRICTED_KEY.publicKey.replace("ed25519:", ""))}`), 3200),
         beat(h("ul", { class: "etch-cannot", "aria-label": "What the agent's key cannot do" },
           ["Change the limits", "Add a recipient", "Move vault funds itself", "Use the owner's key"]
             .map((text, i) => beat(h("li", { text }), 4800 + i * 550))), 4700),
@@ -103,7 +103,7 @@ const SCENES = [
     id: "guardian", chapter: "The guardian", truth: "historical", duration: 12500,
     frames: [{ plate: "guardian-boundary", at: 0 }], focus: [0.68, 0.38],
     kicker: "Scene 3 of 6 · The guardian", line: "The contract decides.",
-    sub: "The vault runs every check itself, in this order, before any money can move.",
+    sub: "The vault runs these checks itself, in this order, before any money can move. A few more guard its own state, such as a pending withdrawal or low balance.",
     panel() {
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "Checks on the settled request" }), truth("historical")), 300),
@@ -156,6 +156,7 @@ const SCENES = [
       const swapped = beat(h("code", { class: "now", text: REJECTIONS.unauthorizedRecipient.recipient }), 2600);
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "The request, rewritten" }), truth("historical")), 300),
+        beat(h("p", { class: "etch-note is-quiet", text: "The struck-through line is the owner's intended recipient, shown for the story. The onchain request carried the redirected one." }), 900),
         beat(row("Recipient", "", { node: h("span", { class: "rewrite" }, recipient, swapped) }), 1200),
         beat(row("Amount", `${REJECTIONS.unauthorizedRecipient.amountNear} NEAR`), 1700),
         beat(h("p", { class: "etch-note", text: "Redirected to the owner's own account, which is not on the allowlist." }), 3200),
@@ -163,7 +164,7 @@ const SCENES = [
         beat(row("Vault transfer receipts", "0"), 7000),
         beat(h("p", { class: "etch-foot" }, "Transaction ", txLink(REJECTIONS.unauthorizedRecipient.transactionHash), "."), 7500),
         beat(h("div", { class: "etch-also" }, h("span", { text: "The same boundary also held for" }),
-          txLink(REJECTIONS.overspend.transactionHash, `${REJECTIONS.overspend.amountNear} NEAR over the cap · ${REJECTIONS.overspend.reason}`),
+          txLink(REJECTIONS.overspend.transactionHash, `${REJECTIONS.overspend.amountNear} NEAR, above the ${MANDATE.perPaymentNear} cap · ${REJECTIONS.overspend.reason}`),
           txLink(REJECTIONS.replay.transactionHash, `A reused nonce · ${REJECTIONS.replay.reason}`)), 8600));
     },
     anchors(svg, stem) {
@@ -195,19 +196,21 @@ function proofPanel(ctx) {
     return { item, node, state };
   });
   const panel = h("div", { class: "etch etch-proof" },
-    beat(h("div", { class: "etch-head" }, h("strong", { text: "The authorized payment" }), badgeSlot), 300),
-    beat(row("Transaction", "", { node: values.hash }), 900),
-    beat(row("Contract decision", "", { node: values.decision }), 1300),
-    beat(row("Settlement", "", { node: values.settlement }), 1700),
-    beat(row("Recipient", "", { node: values.recipient }), 2100),
-    beat(row("Amount", "", { node: values.amount }), 2500),
-    beat(row("Transfer receipt", "", { node: values.receipt }), 2900),
-    beat(h("p", { class: "etch-foot" }, txLink(PAYMENT.transactionHash, "Open on the NEAR explorer"), " · ",
-      h("a", { href: "/api/testnet/proof", target: "_blank", rel: "noopener noreferrer", class: "tx-link", text: "Live JSON proof ↗" })), 3300),
-    beat(status, 3500),
-    beat(h("div", { class: "etch-subhead" }, h("strong", { text: "Rejected onchain" }), h("small", { text: "no vault transfer receipt for any of them" })), 5000),
-    beat(h("ul", { class: "etch-rejections" }, rejections.map(r => r.node),
-      h("li", {}, h("code", { text: "REVOKED" }), h("span", { class: "muted", text: "no live proof yet" }), h("span", { class: "etch-badge" }, truth("unverified")))), 5400));
+    h("div", { class: "proof-col" },
+      beat(h("div", { class: "etch-head" }, h("strong", { text: "The authorized payment" }), badgeSlot), 300),
+      beat(row("Transaction", "", { node: values.hash }), 900),
+      beat(row("Contract decision", "", { node: values.decision }), 1300),
+      beat(row("Settlement", "", { node: values.settlement }), 1700),
+      beat(row("Recipient", "", { node: values.recipient }), 2100),
+      beat(row("Amount", "", { node: values.amount }), 2500),
+      beat(row("Transfer receipt", "", { node: values.receipt }), 2900),
+      beat(h("p", { class: "etch-foot" }, txLink(PAYMENT.transactionHash, "Open on the NEAR explorer"), " · ",
+        h("a", { href: "/api/testnet/proof", target: "_blank", rel: "noopener noreferrer", class: "tx-link", text: "Live JSON proof ↗" })), 3300)),
+    h("div", { class: "proof-col" },
+      beat(h("div", { class: "etch-subhead" }, h("strong", { text: "Rejected onchain" }), h("small", { text: "no vault transfer receipt for any of them" })), 4400),
+      beat(h("ul", { class: "etch-rejections" }, rejections.map(r => r.node),
+        h("li", {}, h("code", { text: "REVOKED" }), h("span", { class: "muted", text: "no live proof yet" }), h("span", { class: "etch-badge" }, truth("unverified")))), 4800),
+      beat(status, 3500)));
 
   fetchLiveProof().then(proof => {
     if (!panel.isConnected && ctx?.detached) return;
@@ -251,15 +254,14 @@ function setupJudge(root) {
     frames.set(stem, { frame, img, svg });
     framesHost.append(frame);
   }
-  // The title card sits over the guardian plate.
-  loadDeferred(frames.get("guardian-boundary").img);
+  // The title card sits over the guardian plate; it loads when Judge Mode first opens.
   frames.get("guardian-boundary").frame.classList.add("is-current");
   cinema.style.setProperty("--fx", 0.68); cinema.style.setProperty("--fy", 0.4);
 
   const chapters = SCENES.map((scene, i) => {
     const button = h("button", { type: "button", class: "chapter", "aria-label": `Scene ${i + 1}: ${scene.chapter}` },
       h("span", { class: "chapter-fill", "aria-hidden": "true" }), h("span", { class: "chapter-name", text: scene.chapter }));
-    button.addEventListener("click", () => goTo(i, { autoplay: state.mode === "film" && state.playing, final: state.mode === "explore" }));
+    button.addEventListener("click", () => goTo(i, { autoplay: state.playing, final: !state.playing }));
     chapterList.append(h("li", {}, button));
     return button;
   });
@@ -289,7 +291,7 @@ function setupJudge(root) {
       const camera = item.frame.animate([
         { transform: "scale(1.02) translate3d(0,0,0)" },
         { transform: "scale(1.085) translate3d(-1.2%,-0.6%,0)" },
-      ], { duration: remaining, easing: "linear", fill: "forwards" });
+      ], { id: "camera", duration: remaining, easing: "linear", fill: "forwards" });
       if (!state.playing) camera.pause();
     }
   }
@@ -313,31 +315,55 @@ function setupJudge(root) {
     if (state.mode === "idle" || state.mode === "ended") state.mode = final ? "explore" : "film";
     cinema.dataset.state = state.mode;
     state.index = index; state.stem = null;
-    state.elapsed = final ? scene.duration - (scene.hold ?? HOLD) : 0;
+    state.elapsed = 0;
     for (const item of frames.values()) item.svg.replaceChildren();
     overlay.replaceChildren(scene.panel({}));
+    if (final) state.elapsed = finalTime(scene);
     cinema.style.setProperty("--fx", scene.focus[0]); cinema.style.setProperty("--fy", scene.focus[1]);
     cinema.dataset.scene = scene.id;
     counter.textContent = `${index + 1} / ${SCENES.length}`;
     kicker.textContent = scene.kicker; line.textContent = scene.line; sub.textContent = scene.sub;
     caption.classList.remove("is-in"); void caption.offsetWidth; caption.classList.add("is-in");
-    chapters.forEach((button, i) => button.toggleAttribute("aria-current", i === index));
+    chapters.forEach((button, i) => { if (i === index) button.setAttribute("aria-current", "step"); else button.removeAttribute("aria-current"); });
     live.textContent = `Scene ${index + 1} of ${SCENES.length}: ${scene.chapter}. ${scene.line} ${TRUTH[scene.truth].label}.`;
     preload(index + 1);
     if (final) finishVisuals();
     apply();
-    if (autoplay) play(); else { pauseAnimations(); updateButtons(); }
+    if (autoplay) play();
+    else {
+      if (state.playing) { state.playing = false; cancelAnimationFrame(state.raf); }
+      pauseAnimations();
+      updateButtons();
+    }
+  }
+  // The finished state of a scene: every beat revealed, with a reading hold before auto-advance.
+  function finalTime(scene) {
+    let last = 0;
+    for (const f of scene.frames) last = Math.max(last, f.at);
+    for (const node of cinema.querySelectorAll(".cinema-copy [data-at]")) last = Math.max(last, Number(node.dataset.at));
+    for (const f of scene.frames) {
+      const probe = s("svg"); scene.anchors?.(probe, f.plate);
+      for (const node of probe.querySelectorAll("[data-at]")) last = Math.max(last, Number(node.dataset.at));
+    }
+    return Math.min(scene.duration - 1200, Math.max(last, scene.duration - (scene.hold ?? HOLD)));
   }
   function finishVisuals() {
     for (const node of cinema.querySelectorAll(".beat")) node.classList.add("is-on", "is-instant");
     requestAnimationFrame(() => cinema.querySelectorAll(".is-instant").forEach(node => node.classList.remove("is-instant")));
   }
-  function pauseAnimations() { cinema.getAnimations({ subtree: true }).forEach(a => { if (a.playState === "running") a.pause(); }); }
+  // Pausing holds the camera and looping light where they are, and lets one-shot fades finish,
+  // so a paused or explored scene is never caught half-faded.
+  function pauseAnimations() {
+    for (const a of cinema.getAnimations({ subtree: true })) {
+      if (a.playState !== "running") continue;
+      if (a.id === "camera" || a.effect?.getComputedTiming().iterations === Infinity) a.pause(); else a.finish();
+    }
+  }
   function resumeAnimations() { cinema.getAnimations({ subtree: true }).forEach(a => { if (a.playState === "paused") a.play(); }); }
 
   function tick(now) {
     if (!state.playing) return;
-    const delta = Math.min(120, now - state.last);
+    const delta = Math.max(0, Math.min(120, now - state.last));
     state.last = now;
     state.elapsed += delta;
     apply();
@@ -378,7 +404,7 @@ function setupJudge(root) {
   function skip() {
     const scene = SCENES[state.index];
     if (!scene) { play(); return; }
-    state.elapsed = Math.max(state.elapsed, scene.duration - (scene.hold ?? HOLD));
+    state.elapsed = Math.max(state.elapsed, finalTime(scene));
     finishVisuals();
     for (const item of frames.values()) item.frame.getAnimations().forEach(a => a.finish());
     apply();
@@ -389,6 +415,7 @@ function setupJudge(root) {
     explorePanel.hidden = false;
     goTo(state.index < 0 ? 0 : state.index, { final: true });
     explorePanel.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+    explorePanel.querySelector("#explore-title")?.focus({ preventScroll: true });
   }
   function updateButtons() {
     const label = state.playing ? "Pause" : state.mode === "ended" ? "Replay film" : state.index < 0 ? "Start" : "Resume";
@@ -403,13 +430,14 @@ function setupJudge(root) {
   }
 
   const actions = {
-    start: () => { explorePanel.hidden = true; state.mode = "film"; goTo(0, { autoplay: true }); },
+    start: () => { explorePanel.hidden = true; state.mode = "film"; goTo(0, { autoplay: true }); playButton.focus({ preventScroll: true }); },
     play: () => (state.playing ? pause() : state.mode === "ended" ? actions.start() : play()),
-    prev: () => goTo(state.index - 1, { autoplay: state.playing, final: state.mode === "explore" }),
-    next: () => goTo(state.index + 1, { autoplay: state.playing, final: state.mode === "explore" }),
+    prev: () => goTo(state.index - 1, { autoplay: state.playing, final: !state.playing }),
+    next: () => goTo(state.index + 1, { autoplay: state.playing, final: !state.playing }),
     replay: () => { if (state.mode === "explore") state.mode = "film"; goTo(Math.max(0, state.index), { autoplay: true }); },
     skip, explore,
     restart: () => actions.start(),
+    proof: () => { goTo(SCENES.length - 1, { final: true }); playButton.focus({ preventScroll: true }); },
   };
   root.querySelectorAll("[data-film]").forEach(button => button.addEventListener("click", () => actions[button.dataset.film]()));
   cinema.addEventListener("click", event => {
@@ -419,11 +447,14 @@ function setupJudge(root) {
   document.addEventListener("keydown", event => {
     if (root.hidden || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.target.closest?.("input,textarea,select,dialog")) return;
-    if ((event.key === " " || event.key === "k") && !event.target.closest?.("button,a")) { event.preventDefault(); actions.play(); }
-    else if (event.key === "ArrowRight" && state.index >= 0) { event.preventDefault(); actions.next(); }
+    if ((event.key === " " || event.key === "k") && !event.target.closest?.("button,a")) { event.preventDefault(); if (!event.repeat) actions.play(); }
+    else if (event.key === "ArrowRight" && state.index >= 0 && state.index < SCENES.length - 1) { event.preventDefault(); actions.next(); }
     else if (event.key === "ArrowLeft" && state.index > 0) { event.preventDefault(); actions.prev(); }
   });
-  document.addEventListener("agentshield:view", event => { if (event.detail.name !== "judge" && state.playing) pause(); });
+  document.addEventListener("agentshield:view", event => {
+    if (event.detail.name === "judge") { loadDeferred(frames.get("guardian-boundary").img); preload(0); }
+    else if (state.playing) pause();
+  });
   document.addEventListener("visibilitychange", () => { if (document.hidden && state.playing) pause(); });
   motionQuery.addEventListener?.("change", () => { if (reduced()) for (const item of frames.values()) item.frame.getAnimations().forEach(a => a.finish()); });
 
@@ -461,15 +492,15 @@ const ATTACKS = [
     request: { recipient: PAYMENT.recipient, amountNear: PAYMENT.amountNear, nonce: PAYMENT.nonce },
     reason: null, decision: "AUTHORIZED, then SETTLED", record: PAYMENT },
   { id: "overspend", title: "Overspending", plate: "attack-manipulation", focus: "52% 55%", truth: "historical",
-    attempt: "The attacker inflates the amount to 0.011 NEAR, one thousandth of a NEAR over the 0.01 cap.",
+    attempt: "The attacker inflated the amount to 0.011 NEAR, above the 0.01 cap.",
     request: { recipient: REJECTIONS.overspend.recipient, amountNear: REJECTIONS.overspend.amountNear, nonce: REJECTIONS.overspend.nonce },
     reason: REJECTIONS.overspend.reason, decision: `REJECTED · ${REJECTIONS.overspend.reason}`, record: REJECTIONS.overspend },
   { id: "unauthorizedRecipient", title: "Unauthorized recipient", plate: "attack-manipulation", focus: "70% 35%", truth: "historical",
-    attempt: "The attacker redirects 0.005 NEAR to the owner's own account, which is not on the allowlist.",
+    attempt: "The attacker redirected 0.005 NEAR to the owner's own account, which is not on the allowlist.",
     request: { recipient: REJECTIONS.unauthorizedRecipient.recipient, amountNear: REJECTIONS.unauthorizedRecipient.amountNear, nonce: REJECTIONS.unauthorizedRecipient.nonce },
     reason: REJECTIONS.unauthorizedRecipient.reason, decision: `REJECTED · ${REJECTIONS.unauthorizedRecipient.reason}`, record: REJECTIONS.unauthorizedRecipient },
   { id: "replay", title: "Replay attack", plate: "barrier-activation", focus: "55% 45%", truth: "historical",
-    attempt: "The attacker resubmits the exact nonce of the payment that already settled, hoping to be paid twice.",
+    attempt: "The attacker resubmitted the exact nonce of the payment that had already settled, hoping to be paid twice.",
     request: { recipient: REJECTIONS.replay.recipient, amountNear: REJECTIONS.replay.amountNear, nonce: REJECTIONS.replay.nonce },
     reason: REJECTIONS.replay.reason, decision: `REJECTED · ${REJECTIONS.replay.reason}`, record: REJECTIONS.replay },
   { id: "revoke", title: "Revocation", plate: "owner-mandate", focus: "75% 40%", truth: "unverified",
@@ -479,12 +510,24 @@ const ATTACKS = [
 ];
 const STEPS = ["Opening scene", "Attempted attack", "Agent request", "Security check", "Guardian response", "Decision", "Evidence"];
 
+const PAYMENT_TIME = Date.parse("2026-11-02T10:25:40Z"); // outputs/testnet-live-payment-intent.json createdAt
+function mandateExpired(now = Date.now()) { return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(MANDATE.expiresAtNs); }
 function seededSimulator() {
-  // Mirrors the live mandate and replays its one settled payment, so replay and budgets behave like the vault.
-  const engine = createSimulator(LIVE_POLICY);
+  // Mirrors the live mandate and replays its one settled payment on its real UTC day,
+  // so replay and budgets behave like the vault.
+  const engine = createSimulator(LIVE_POLICY, PAYMENT_TIME);
   const first = engine.request({ amount: PAYMENT.amountNear, nonce: PAYMENT.nonce });
   engine.settle(first.requestId);
+  engine.setTime(Date.now());
   return engine;
+}
+// The simulator has no mandate expiry; the vault checks it right after identity, revocation and version.
+function simulateRequest(engine, request) {
+  const agent = request.agent ?? engine.policy.agent;
+  if (agent === engine.policy.agent && !engine.state.revoked && !engine.state.paused && mandateExpired()) {
+    return { decision: "REJECTED", reason: "EXPIRED", chain: false };
+  }
+  return engine.request(request);
 }
 
 function checksList(reason) {
@@ -509,8 +552,15 @@ function setupAttack(root) {
   const badgeSlot = theatre.querySelector(".theatre-truth");
   const skipButton = theatre.querySelector("[data-theatre='skip']");
   const runButton = theatre.querySelector("[data-theatre='run']");
+  const theatreLive = root.querySelector("#theatre-live");
+  const CUSTOM = { id: "custom" };
   let timers = [];
   let current = null;
+  let announcement = "";
+  if (mandateExpired()) {
+    picker.before(h("p", { class: "mandate-expired" }, h("strong", { text: "The live mandate has expired." }),
+      ` It ran until ${MANDATE.expiresAtUtc}; new requests to this vault are now rejected as EXPIRED. The four onchain records below were made on 2 Nov 2026, while it was active.`));
+  }
 
   const cards = ATTACKS.map(attack => {
     const card = h("button", { type: "button", class: "attack-card", "aria-pressed": "false", "data-attack": attack.id },
@@ -519,12 +569,16 @@ function setupAttack(root) {
       h("strong", { text: attack.title }),
       h("small", { text: attack.attempt }));
     card.querySelector("img").style.objectPosition = attack.focus;
-    card.addEventListener("click", () => run(attack));
+    card.addEventListener("click", () => { run(attack, { announce: true }); revealTheatre(); });
     picker.append(card);
     return card;
   });
 
   function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function revealTheatre() {
+    if (window.matchMedia("(max-width: 1100px)").matches) theatre.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+  }
+  function announce() { if (announcement) theatreLive.textContent = announcement; announcement = ""; }
   function stage(attack, { plateStem, focus, outcome }) {
     const img = plate(plateStem, { lazy: false, sizes: "(max-width: 900px) 100vw, 58vw" });
     img.style.objectPosition = focus;
@@ -534,8 +588,10 @@ function setupAttack(root) {
   function stepItem(index, title, ...body) {
     return h("li", { class: "theatre-step", "data-step": index }, h("span", { class: "step-title", text: title }), h("div", { class: "step-body" }, ...body));
   }
-  function reveal(sequence) {
+  function reveal(sequence, { announce: say = false, message = "" } = {}) {
     clearTimers();
+    announcement = say ? message : "";
+    runButton.firstChild.textContent = sequence === CUSTOM || sequence?.id === "revoke" ? "RUN AGAIN " : "REPLAY AGAIN ";
     const items = [...steps.children];
     items.forEach(item => item.classList.remove("is-on"));
     art.classList.remove("is-responding");
@@ -544,7 +600,7 @@ function setupAttack(root) {
     items.forEach((item, i) => timers.push(setTimeout(() => {
       item.classList.add("is-on");
       if (Number(item.dataset.step) === 4) art.classList.add("is-responding");
-      if (i === items.length - 1) skipButton.hidden = true;
+      if (i === items.length - 1) { skipButton.hidden = true; announce(); }
     }, i * gap)));
     current = sequence;
   }
@@ -553,6 +609,7 @@ function setupAttack(root) {
     steps.querySelectorAll(".theatre-step").forEach(item => item.classList.add("is-on"));
     art.classList.add("is-responding");
     skipButton.hidden = true;
+    announce();
   }
 
   function evidenceBody(attack) {
@@ -566,11 +623,11 @@ function setupAttack(root) {
       recheck.disabled = true; status.textContent = "Rechecking public NEAR Testnet RPC…";
       try {
         if (attack.id === "authorized") {
-          const proof = await fetchLiveProof();
+          const proof = await fetchLiveProof({ force: true });
           badge.replaceChildren(truth("live", `checked ${utc(proof.checkedAt)}`));
           status.textContent = `Passed: ${proof.decision} and ${proof.settlement}; the recipient's transfer receipt is present.`;
         } else {
-          const gallery = await fetchLiveGallery();
+          const gallery = await fetchLiveGallery({ force: true });
           const proof = gallery[attack.record.scenario];
           badge.replaceChildren(truth("live", `checked ${utc(proof.checkedAt)}`));
           status.textContent = `Passed: ${proof.decision} · ${proof.reason}; vault transfer receipts: ${proof.vaultTransferReceiptCount}.`;
@@ -585,7 +642,7 @@ function setupAttack(root) {
     return [badge, ...rows, h("p", { class: "evidence-links" }, txLink(attack.record.transactionHash, "Open the transaction"), " ", recheck), status];
   }
 
-  function run(attack) {
+  function run(attack, { announce: say = false } = {}) {
     cards.forEach(card => card.setAttribute("aria-pressed", String(card.dataset.attack === attack.id)));
     heading.textContent = attack.title;
     const simulated = attack.id === "revoke";
@@ -593,25 +650,25 @@ function setupAttack(root) {
     if (simulated) {
       const engine = seededSimulator();
       engine.revoke();
-      const result = engine.request({ amount: attack.request.amountNear, nonce: attack.request.nonce });
+      const result = simulateRequest(engine, { amount: attack.request.amountNear, nonce: attack.request.nonce });
       decision = `${result.decision} · ${result.reason}`;
     }
-    badgeSlot.replaceChildren(truth(simulated ? "simulation" : "historical"), simulated ? truth("unverified", "onchain") : null);
+    badgeSlot.replaceChildren(...[truth(simulated ? "simulation" : "historical"), simulated && truth("unverified", "onchain")].filter(Boolean));
     const outcome = attack.reason ? "rejected" : "authorized";
     stage(attack, { plateStem: attack.reason ? (attack.id === "revoke" ? "owner-mandate" : "barrier-activation") : "settlement-verified",
       focus: attack.reason ? (attack.id === "revoke" ? "75% 40%" : "55% 45%") : "58% 50%", outcome });
     const openingImg = plate(attack.plate, { sizes: "120px" }); openingImg.style.objectPosition = attack.focus;
     steps.replaceChildren(
-      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: simulated ? "The owner holds the seal. In this scenario she breaks it." : "The agent holds a sealed request. The vault waits." })),
+      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: simulated ? "The owner holds the seal. In this simulation she breaks it." : "A replay of a recorded request: the agent held it sealed while the vault waited." })),
       stepItem(1, STEPS[1], h("p", { text: attack.attempt })),
       stepItem(2, STEPS[2], h("code", { class: "step-code", text: `request_payment(recipient: ${attack.request.recipient}, amount: ${attack.request.amountNear} NEAR, nonce: ${attack.request.nonce}, expected_version: ${MANDATE.version})` })),
       stepItem(3, STEPS[3], checksList(attack.reason)),
-      stepItem(4, STEPS[4], h("p", { text: attack.reason ? "The guardian raises the wall. The request stops at the contract and no transfer is constructed." : "The gate opens a slit. The vault itself sends the transfer and records settlement after the callback." })),
+      stepItem(4, STEPS[4], h("p", { text: simulated ? "The simulated guardian refuses: a revoked mandate stops every new request." : attack.reason ? "The guardian raised the wall. The request stopped at the contract and no transfer was constructed." : "The gate opened a slit. The vault itself sent the transfer and recorded settlement after the callback." })),
       stepItem(5, STEPS[5], h("p", { class: "step-decision", "data-outcome": outcome, text: decision }), simulated ? h("small", { text: "Result from the local simulator, seeded with the live mandate's limits." }) : null),
       stepItem(6, STEPS[6], ...evidenceBody(attack)),
     );
     theatre.hidden = false;
-    reveal(attack);
+    reveal(attack, { announce: say, message: `${attack.title}: ${decision}. ${simulated ? "Simulation; not yet verified onchain" : "Historical onchain replay"}.` });
   }
 
   /* custom attack: local simulator, clearly labelled */
@@ -626,7 +683,7 @@ function setupAttack(root) {
     const agent = data.get("impostor") ? "impostor-agent.testnet" : ACCOUNTS.agent;
     const engine = seededSimulator();
     if (data.get("revoke")) engine.revoke();
-    const result = engine.request({ agent, recipient, amount, nonce });
+    const result = simulateRequest(engine, { agent, recipient, amount, nonce });
     const authorized = result.decision === "AUTHORIZED";
     if (authorized) engine.settle(result.requestId);
     const snapshot = engine.snapshot();
@@ -647,12 +704,15 @@ function setupAttack(root) {
     );
     theatre.hidden = false;
     formNote.textContent = `Simulation complete: ${authorized ? "authorized" : `rejected (${result.reason})`}. No chain call was made.`;
-    reveal(null);
-    theatre.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "nearest" });
+    reveal(CUSTOM, { announce: true, message: `Custom attack: ${authorized ? "authorized" : `rejected, ${result.reason}`}. Simulation.` });
+    theatre.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
   });
 
   skipButton.addEventListener("click", skipAll);
-  runButton.addEventListener("click", () => { const attack = ATTACKS.find(a => a.id === current?.id) || ATTACKS[0]; run(attack); });
+  runButton.addEventListener("click", () => {
+    if (current === CUSTOM) { form.requestSubmit(); return; }
+    run(ATTACKS.find(a => a.id === current?.id) || ATTACKS[0], { announce: true });
+  });
   document.addEventListener("agentshield:view", event => { if (event.detail.name === "attack" && !current) run(ATTACKS[2]); });
 }
 
@@ -679,15 +739,15 @@ function recordedVaultStatus(now = new Date()) {
   };
 }
 function contractOutcome(proposal) {
-  // The vault's own order: allowlist first, then amount, then budgets (modelled by the local simulator).
+  // The vault's own order (expiry, allowlist, amount, budgets), modelled by the local simulator.
+  // `exact` is true only when an onchain record has this same recipient and amount and the same outcome.
   const engine = seededSimulator();
-  const result = engine.request({ recipient: proposal.recipient, amount: proposal.amountNear, nonce: "injection-check-1" });
-  if (result.decision === "AUTHORIZED") {
-    return { decision: "AUTHORIZED", reason: null, record: proposal.amountNear === PAYMENT.amountNear ? PAYMENT : null };
-  }
-  const record = result.reason === "RECIPIENT_NOT_ALLOWED" ? REJECTIONS.unauthorizedRecipient
+  const result = simulateRequest(engine, { recipient: proposal.recipient, amount: proposal.amountNear, nonce: "injection-check-1" });
+  const record = result.decision === "AUTHORIZED" ? PAYMENT
+    : result.reason === "RECIPIENT_NOT_ALLOWED" ? REJECTIONS.unauthorizedRecipient
     : result.reason === "PER_PAYMENT_LIMIT" ? REJECTIONS.overspend : null;
-  return { decision: "REJECTED", reason: result.reason, record };
+  const exact = !!record && record.recipient === proposal.recipient && record.amountNear === proposal.amountNear;
+  return { decision: result.decision, reason: result.decision === "AUTHORIZED" ? null : result.reason, record, exact };
 }
 
 function setupInjection(root) {
@@ -708,9 +768,11 @@ function setupInjection(root) {
       : pre.decision === "BLOCK" ? "Blocked offchain. The contract would also have checked it."
       : pre.decision === "WARN" ? "Held for a human. A person must approve this exact proposal."
       : contract.decision === "AUTHORIZED" ? "Allowed. The proposal matches the owner's mandate." : "The contract would refuse it.";
-    const contractEvidence = contract.record
-      ? h("p", {}, contract.decision === "AUTHORIZED" ? "The same rule set authorized this exact recipient and amount on Testnet: " : `This exact rule refused a real request on Testnet: `, txLink(contract.record.transactionHash), ".")
-      : h("p", { text: "This outcome comes from the local simulator; there is no specific onchain proof for it." });
+    const contractEvidence = contract.exact
+      ? h("p", {}, contract.decision === "AUTHORIZED" ? "This exact recipient and amount were authorized and settled on Testnet: " : "This exact request was refused on Testnet: ", txLink(contract.record.transactionHash), ".")
+      : contract.record
+        ? h("div", { class: "inj-related" }, h("p", {}, "Simulated with the vault's rules. A related onchain record shows the same rule at work: ", txLink(contract.record.transactionHash), "."), truth("historical", "related record"))
+        : h("p", { text: contract.reason === "EXPIRED" ? `The live mandate expired on ${MANDATE.expiresAtUtc}, so the vault would refuse any new request. There is no onchain proof of this rejection.` : "This outcome comes from the local simulator; there is no onchain proof for it." });
     output.replaceChildren(
       h("article", { class: "inj-card" }, h("span", { class: "inj-step", text: "3 · Model proposal" }), truth("simulation", "not NEAR AI"),
         h("code", { class: "step-code", text: JSON.stringify(proposal) }),
@@ -720,7 +782,7 @@ function setupInjection(root) {
         h("p", { class: "step-decision", "data-outcome": pre.decision === "ALLOW" ? "authorized" : "rejected", text: `${pre.decision} · ${pre.reason}` }),
         h("small", { text: "The project's preflight code, checked against the recorded mandate. Time comes from your browser clock, not a finalized block; the vault balance is not rechecked here." })),
       h("article", { class: "inj-card", "data-outcome": contract.decision === "AUTHORIZED" ? "allow" : "block" }, h("span", { class: "inj-step", text: "5 · Smart-contract restriction" }),
-        contract.record ? truth("historical") : truth("simulation"),
+        contract.exact ? truth("historical") : truth("simulation"),
         h("p", { class: "step-decision", "data-outcome": contract.decision === "AUTHORIZED" ? "authorized" : "rejected", text: contract.reason ? `${contract.decision} · ${contract.reason}` : contract.decision }),
         contractEvidence,
         h("small", { text: "Independent of the preflight: even a request signed after a fooled model, with the preflight bypassed, meets this check inside the vault." })),

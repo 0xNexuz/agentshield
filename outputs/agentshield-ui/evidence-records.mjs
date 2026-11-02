@@ -6,7 +6,7 @@
 export const TRUTH = Object.freeze({
   simulation: { label: "SIMULATION", detail: "Local model in your browser. No chain, no keys, no transfer." },
   historical: { label: "HISTORICAL ONCHAIN REPLAY", detail: "A replay of a transaction that already finalized on NEAR Testnet. Nothing is executing now." },
-  live: { label: "LIVE RPC VERIFIED", detail: "Rechecked just now against public NEAR Testnet RPC by the read-only proof API." },
+  live: { label: "LIVE RPC VERIFIED", detail: "Rechecked against public NEAR Testnet RPC by the read-only proof API during this visit." },
   unverified: { label: "NOT YET VERIFIED", detail: "No genuine onchain evidence exists for this yet." },
 });
 
@@ -63,7 +63,7 @@ export const PAYMENT = Object.freeze({
   nonce: "demo4e84dc53cee7c4d226acb4fa",
   signer: ACCOUNTS.agent,
   checkedAt: "2026-11-02T11:09:44.002Z",
-  source: "outputs/testnet-live-payment-independent-proof.json",
+  sources: Object.freeze(["outputs/testnet-live-payment-independent-proof.json", "outputs/testnet-live-payment-evidence.json", "deployment/testnet-live-demo-proposal.json"]),
 });
 
 export const REJECTIONS = Object.freeze({
@@ -99,10 +99,10 @@ export const CONTRACT_CHECKS = Object.freeze([
   { code: "WRONG_AGENT", label: "Caller is the mandated agent" },
   { code: "REVOKED", label: "Mandate not revoked or paused" },
   { code: "STALE_VERSION", label: "Policy version matches" },
-  { code: "EXPIRED", label: "Request and mandate unexpired" },
+  { code: "EXPIRED", label: "Request unexpired, nonce well-formed" },
   { code: "RECIPIENT_NOT_ALLOWED", label: "Recipient on the allowlist" },
   { code: "PER_PAYMENT_LIMIT", label: "Within the per-payment cap" },
-  { code: "REPLAY", label: "Nonce valid and never used" },
+  { code: "REPLAY", label: "Nonce never used before" },
   { code: "BUDGETS", label: "UTC-day and total budgets hold" },
 ]);
 // The contract also refuses NO_MANDATE, WITHDRAWAL_PENDING, CAPACITY_REACHED and VAULT_UNDERFUNDED;
@@ -115,7 +115,7 @@ export function shortHash(hash) { return hash.length > 14 ? `${hash.slice(0, 6)}
 export function checkIndexFor(reason) {
   if (reason === "PAUSED") return 1;
   if (reason === "DAILY_LIMIT" || reason === "TOTAL_LIMIT") return 7;
-  if (reason === "INVALID_NONCE") return 6;
+  if (reason === "INVALID_NONCE") return 3;
   if (reason === "INVALID_AMOUNT") return 5;
   if (reason === "INVALID_EXPIRY") return 3;
   const index = CONTRACT_CHECKS.findIndex(check => check.code === reason);
@@ -125,7 +125,9 @@ export function checkIndexFor(reason) {
 // One shared, cached live recheck per page load. Each call site decides how to label failure.
 let liveProof;
 let liveGallery;
-export function fetchLiveProof() {
+// `force` re-runs the check (a user pressing "Recheck live"); otherwise one passing result is reused.
+export function fetchLiveProof({ force = false } = {}) {
+  if (force) liveProof = undefined;
   liveProof ??= fetch("/api/testnet/proof", { cache: "no-store", signal: AbortSignal.timeout(60000) })
     .then(async response => {
       const proof = await response.json();
@@ -136,7 +138,8 @@ export function fetchLiveProof() {
     .catch(error => { liveProof = undefined; throw error; });
   return liveProof;
 }
-export function fetchLiveGallery() {
+export function fetchLiveGallery({ force = false } = {}) {
+  if (force) liveGallery = undefined;
   liveGallery ??= fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) })
     .then(async response => {
       const proofs = await response.json();

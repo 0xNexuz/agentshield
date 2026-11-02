@@ -8,6 +8,22 @@ The frontend includes a five-scenario Instant Demo and a walletless Evidence vie
 
 [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) serves the existing frontend and read-only Testnet proof functions. Its Evidence view rechecks the public RPC on each visit. It has no signing endpoint; wallet sign-in has not been verified end to end. The deployment is separate from the onchain vault and does not change its mandate.
 
+## Judge Mode and Attack the Vault
+
+Two walletless views sit on top of the same evidence, and neither signs or sends anything:
+
+- **Judge Mode** (`#judge`) is a six-scene illustrated film, about 70 seconds long: the owner, the agent, the guardian, the authorized payment, an attack attempt, and proof. Its controls are start, pause/resume, previous, next, replay, skip animation, and explore manually. Space and the arrow keys work too, and it respects reduced-motion settings.
+- **Attack the Vault** (`#attack`) covers the five Security Lab scenarios, a custom attack run in the local simulator, and a prompt-injection challenge.
+
+Every on-screen fact carries one of four labels:
+
+- `SIMULATION`: the local model.
+- `HISTORICAL ONCHAIN REPLAY`: a finalized transaction from the committed evidence records.
+- `LIVE RPC VERIFIED`: shown only after `/api/testnet/proof` or `/api/testnet/gallery` passes on that visit.
+- `NOT YET VERIFIED`: used for revocation.
+
+The prompt-injection model step is simulated; no NEAR AI completion has been received. `npm run test:cinematic` checks that every hash and value shown matches the committed evidence, and that the browser preflight behaves identically to the server preflight. The art direction, character bible, asset inventory, and prompts are in [outputs/AgentShield-Cinematic-Art-Direction.md](outputs/AgentShield-Cinematic-Art-Direction.md).
+
 ## Verified Testnet deployment
 
 - Vault: [`vault.agentshield-mag-1d2f78801994.testnet`](https://testnet.nearblocks.io/address/vault.agentshield-mag-1d2f78801994.testnet)
@@ -40,13 +56,14 @@ Keep TLS certificate verification enabled; if your shell sets `NODE_TLS_REJECT_U
 ```sh
 npm run test:sim
 npm run test:key-scope
+npm run test:cinematic
 node --test tests/vercel-routes.test.mjs
 node --use-system-ca work/verify-testnet-vault-deployment.mjs
 node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 ```
 
-For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). The latest recorded local results are 11/11 Rust unit tests, 8/8 Sandbox tests, and 7/7 simulator tests. The independent live payment verifier passed, as did all three negative-scenario verifiers. Run the scripts again to check current RPC state.
+For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). The latest recorded local results are 11/11 Rust unit tests, 8/8 Sandbox tests, 7/7 simulator tests, and 11/11 cinematic evidence tests. The independent live payment verifier passed, as did all three negative-scenario verifiers. Run the scripts again to check current RPC state.
 
 ## Security boundaries and limitations
 

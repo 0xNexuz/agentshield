@@ -26,3 +26,7 @@ The current interface has a local-only mandate draft and a read-only NEAR testne
 ## Assets and permissions
 
 The supplied source images live in `assets/crowned-guardian.png`, `assets/winged-statue.png`, and `assets/robotic-hand.png`. The active generated composite is `assets/agentshield-near-composite-v2.png`; its central mark was refined against the NEAR organization's logo. These are user-provided references and a derived design study. Confirm usage rights before public release or submission.
+
+## Cinematic layer (2026-11-02)
+
+Judge Mode, Attack the Vault, and the prompt-injection challenge use eight original plates in `assets/cinematic/`. They were generated from text prompts only, with no third-party image given to the model. The character bible, prompts, provenance, and asset inventory are in `../AgentShield-Cinematic-Art-Direction.md`. The usage-rights caution above still applies to the three supplied reference images and the composite hero.
