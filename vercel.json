@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build:wallet",
+  "outputDirectory": "outputs/agentshield-ui",
+  "functions": {
+    "api/testnet/proof.js": {
+      "maxDuration": 60,
+      "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/testnet-live-payment-evidence.json,outputs/testnet-live-key-evidence.json,outputs/testnet-live-mandate-evidence.json}"
+    },
+    "api/testnet/gallery.js": {
+      "maxDuration": 60,
+      "includeFiles": "{deployment/testnet-negative-scenarios-proposal.json,outputs/testnet-negative-*-evidence.json}"
+    }
+  }
+}

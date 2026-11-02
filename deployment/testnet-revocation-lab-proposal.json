@@ -1,0 +1,37 @@
+{
+  "network": "testnet",
+  "status": "PROPOSED_NOT_SIGNED",
+  "owner": "agentshield-mag-1d2f78801994.testnet",
+  "agent": "agentshield-agent-0359da1630bb.testnet",
+  "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+  "isolatedVault": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "wasmSha256Hex": "138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09",
+  "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "fundingYocto": "4000000000000000000000000",
+  "domain": "agentshield:testnet:v1",
+  "restrictedPublicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+  "restrictedReceiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "restrictedMethods": ["request_payment"],
+  "gasAllowanceYocto": "20000000000000000000000",
+  "mandate": {
+    "per_payment_yocto": "10000000000000000000000",
+    "daily_yocto": "20000000000000000000000",
+    "total_yocto": "20000000000000000000000",
+    "expires_at_ns": "1794216105339870776"
+  },
+  "rejectedRequest": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "revocationprobe5cbb311d1a",
+    "expires_at_ns": "1794216105339870776",
+    "expected_version": 1,
+    "expectedReason": "REVOKED"
+  },
+  "actions": [
+    "owner: CreateAccount + Transfer 4 test NEAR + DeployContract + initialize (atomic)",
+    "agent lifecycle key: AddKey scoped to isolatedVault.request_payment, 0.02 test NEAR gas allowance",
+    "owner: set_mandate with one recipient and 0.01/0.02/0.02 test NEAR limits",
+    "owner: revoke isolated mandate",
+    "restricted agent key: request_payment 0.005 test NEAR, expected REVOKED and zero payout"
+  ]
+}

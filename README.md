@@ -2,7 +2,11 @@
 
 AgentShield is a NEAR Testnet vault for bounded agent payments. An owner sets an onchain mandate with an authorized agent, recipient allowlist, per-payment cap, daily budget, total budget, and expiry. The agent holds a function-call key limited to the vault's `request_payment` method. The vault, rather than the agent wallet, transfers funds and records settlement after the callback.
 
-The frontend includes a local five-scenario Instant Demo and a walletless Evidence view. The live proof API independently rechecks finalized Testnet transactions and contract state before displaying a settled payment or contract rejection.
+The frontend includes a five-scenario Instant Demo and a walletless Evidence view. The live proof API independently rechecks finalized Testnet transactions and contract state before displaying a settled payment or contract rejection. The Instant Demo is a simulation.
+
+## Live site
+
+[agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) serves the existing frontend and read-only Testnet proof functions. Its Evidence view rechecks the public RPC on each visit. It has no signing endpoint; wallet sign-in has not been verified end to end. The deployment is separate from the onchain vault and does not change its mandate.
 
 ## Verified Testnet deployment
 
@@ -36,6 +40,7 @@ Keep TLS certificate verification enabled; if your shell sets `NODE_TLS_REJECT_U
 ```sh
 npm run test:sim
 npm run test:key-scope
+node --test tests/vercel-routes.test.mjs
 node --use-system-ca work/verify-testnet-vault-deployment.mjs
 node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
@@ -49,6 +54,19 @@ For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox
 - The frontend never receives owner or agent private keys. Testnet lifecycle keys and the restricted signing key were kept in a separate local folder outside this repository. Do not copy those files into a checkout or a frontend bundle.
 - The current vault has zero direct access keys and no upgrade method was found in its interface. This is **not** a formal immutability or security-audit claim.
 - Four of five live Security Lab scenarios are proven. Revocation would permanently stop this vault's new requests and needs an isolated or end-of-demo plan. NEAR AI integration, real owner-wallet signing, full responsive/accessibility QA, and a formal independent audit are not complete.
+- An isolated revocation-vault deployment was attempted but finalized **FAILED** because the initializer was given an unsupported custom domain. Its account was not created and its proposed 4 test NEAR funding did not transfer; only gas was charged. The user stopped that lab after the failure. No revocation proof is claimed; see `outputs/testnet-revocation-deploy-failure.json`.
 - Testnet tokens have no mainnet value. No mainnet deployment or payment is claimed.
+
+## NEAR AI proposal path
+
+`work/near-ai-payment-agent.mjs` uses the official NEAR AI Cloud chat-completions endpoint from a server-side process. It accepts strict JSON with an exact recipient and NEAR amount, then checks the finalized vault's allowlist, budgets, balance, expiry, and recipient account. Results are `ALLOW`, `WARN` (human approval required), or `BLOCK` (refuse to sign), each with a reason. The runtime never imports owner credentials or a signing key. The prompt-injection test is a **mocked offchain test**; the real unauthorized-recipient contract rejection above is separate onchain evidence.
+
+```powershell
+npm run test:ai
+$env:NODE_TLS_REJECT_UNAUTHORIZED='1'
+node --use-system-ca work/prepare-near-ai-payment.mjs --check-policy
+```
+
+Those checks passed locally (5/5 tests and a read-only live ALLOW/WARN/BLOCK policy check). An actual NEAR AI inference has **not** run: it needs a user-provided API key and credits. Save the key as `C:\Users\USER\Documents\Codex\AgentShield-Secrets\near-ai-api-key.txt`, outside this repository, then set `NEAR_AI_KEY_FILE` to that exact path for the local CLI. Do not put the key in the frontend, Git, or a Vercel public environment variable. The deployed site has no NEAR AI inference route and does not need the key. Do not call the proposed agent payment settled without its own authorized transaction and receipt verification. [NEAR AI's quickstart](https://docs.near.ai/cloud/quickstart) documents the API and key setup.
 
 Detailed implementation and current gates are in [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md) and [outputs/AgentShield-Project-Context.md](outputs/AgentShield-Project-Context.md).

@@ -13,3 +13,6 @@ AgentShield-Secrets/
 **/*private-key*.json
 **/*request-payment.json
 *.log
+
+.vercel
+.env*

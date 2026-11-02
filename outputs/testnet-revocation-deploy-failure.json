@@ -1,0 +1,14 @@
+{
+  "network": "testnet",
+  "transactionHash": "EvLkrsDS7XuYGpZ9knasYVGRMQEnK4sc2jrPi7hzqNdi",
+  "finality": "FINAL",
+  "status": "FAILED",
+  "failureActionIndex": 3,
+  "failedAction": "FunctionCall:initialize",
+  "cause": "The transaction passed agentshield:testnet:revocation-lab:v1, but the compiled initialize method requires agentshield:testnet:v1.",
+  "isolatedVaultAccountAfterFailure": "ABSENT",
+  "fundingTransferred": false,
+  "ownerBalanceAfterFailureYocto": "4984240084898340900000000",
+  "nextAction": "A corrected deployment requires a new signed transaction; no automatic retry was sent.",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/EvLkrsDS7XuYGpZ9knasYVGRMQEnK4sc2jrPi7hzqNdi"
+}
