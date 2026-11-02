@@ -63,6 +63,7 @@ export async function inferPaymentInstruction(instruction, { apiKey = process.en
     ] }),
     signal: AbortSignal.timeout(30000),
   });
+  if (response.status === 402) throw new Error('NEAR AI returned HTTP 402; add credits in NEAR AI Cloud before retrying.');
   if (!response.ok) throw new Error(`NEAR AI returned HTTP ${response.status}.`);
   const payload = await response.json();
   const content = payload?.choices?.[0]?.message?.content;
