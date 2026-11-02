@@ -10,6 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./cinematic.css" />
+  <link rel="preload" as="image" href="./assets/agentshield-near-composite-v2-1672.webp" imagesrcset="./assets/agentshield-near-composite-v2-1024.webp 1024w, ./assets/agentshield-near-composite-v2-1672.webp 1672w" imagesizes="100vw" fetchpriority="high" />
   <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -18,12 +20,14 @@
     <header class="topbar">
       <a class="brand" href="#main" aria-label="AgentShield home" data-open-view="overview"><span class="brand-sigil" aria-hidden="true">✣</span><span>AGENT<span>SHIELD</span></span></a>
       <nav class="nav-list" aria-label="Main navigation">
+        <button type="button" class="nav-item nav-judge" data-view="judge">Judge mode <span>00</span></button>
         <button type="button" class="nav-item active" data-view="overview" aria-current="page">The thesis <span>01</span></button>
         <button type="button" class="nav-item" data-view="policy">Mandate <span>02</span></button>
         <button type="button" class="nav-item" data-view="activity">Evidence <span>03</span></button>
         <button type="button" class="nav-item" data-view="controls">Control <span>04</span></button>
         <button type="button" class="nav-item" data-view="demo">Instant demo <span>05</span></button>
         <button type="button" class="nav-item" data-view="testnet">Lab <span>06</span></button>
+        <button type="button" class="nav-item" data-view="attack">Attack the vault <span>07</span></button>
       </nav>
       <div class="topbar-right"><span class="top-status"><span></span> LOCAL BUILD / TESTNET</span><button class="wallet-button" type="button" id="wallet-open">CONNECT WALLET <span aria-hidden="true">↗</span></button></div>
     </header>
@@ -31,37 +35,175 @@
     <main id="main" tabindex="-1">
       <section id="view-overview" class="view" aria-labelledby="overview-title">
         <div class="hero-stage">
-          <div class="hero-art"><img src="./assets/agentshield-near-composite-v2.png" alt="A crowned guardian and winged figure beside a robotic hand reaching toward a radiant NEAR Protocol mark" /><div class="art-vignette"></div><div class="scene-mark scene-mark-a">A / OWNER</div><div class="scene-mark scene-mark-b">B / AGENT</div><div class="scene-coordinates">51° / THE BOUNDARY / 2026</div></div>
+          <div class="hero-art"><img src="./assets/agentshield-near-composite-v2-1672.webp" srcset="./assets/agentshield-near-composite-v2-1024.webp 1024w, ./assets/agentshield-near-composite-v2-1672.webp 1672w" sizes="100vw" width="1672" height="941" fetchpriority="high" alt="A crowned guardian and winged figure beside a robotic hand reaching toward a radiant NEAR Protocol mark" /><div class="art-vignette"></div><div class="scene-mark scene-mark-a">A / OWNER</div><div class="scene-mark scene-mark-b">B / AGENT</div><div class="scene-coordinates">51° / THE BOUNDARY / 2026</div></div>
           <div class="hero-copy">
             <div class="meta-row"><span>AGENTSHIELD / AN ONCHAIN MANDATE</span><span>NEAR / DESIGN STUDY 001</span></div>
-            <div class="hero-title-wrap"><div class="overline"><span class="overline-rule"></span> CAN YOUR AI AGENT SPEND MONEY YOU DIDN'T AUTHORIZE?</div><h1 id="overview-title">Power to act.<br /><em>Authority to stop.</em></h1><p class="hero-description">AgentShield is a contract-held vault design for bounded AI agent payments. Set a mandate, challenge its limits in the local simulation, and inspect exactly what must be proven onchain.</p><div class="hero-actions"><button type="button" class="button button-light" data-open-view="demo">PUT AGENTSHIELD TO THE TEST <span aria-hidden="true">↗</span></button><a href="#mechanism" class="under-link">HOW THE BOUNDARY WORKS <span aria-hidden="true">↓</span></a></div></div>
+            <div class="hero-title-wrap"><div class="overline"><span class="overline-rule"></span> CAN YOUR AI AGENT SPEND MONEY YOU DIDN'T AUTHORIZE?</div><h1 id="overview-title">Power to act.<br /><em>Authority to stop.</em></h1><p class="hero-description">AgentShield is a contract-held vault design for bounded AI agent payments. Set a mandate, challenge its limits in the local simulation, and inspect exactly what must be proven onchain.</p><div class="hero-actions"><button type="button" class="button button-light" data-open-view="judge">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button><button type="button" class="button button-outline hero-attack" data-open-view="attack">ATTACK THE VAULT <span aria-hidden="true">↗</span></button><a href="#mechanism" class="under-link">HOW THE BOUNDARY WORKS <span aria-hidden="true">↓</span></a></div></div>
             <div class="hero-foot"><span>THE OWNER DEFINES IT.</span><span>THE CONTRACT ENFORCES IT.</span><span>THE AGENT REQUESTS IT.</span></div>
           </div>
         </div>
 
         <div class="statement-band"><span>THE PRINCIPLE / 001</span><p>The machine can request. <em>Only the mandate can release.</em></p><span>LOCAL BUILD / DEPLOYED / TESTNET</span></div>
 
+        <section class="cast-band" aria-labelledby="cast-title">
+          <div class="cast-head">
+            <h2 id="cast-title">Four characters. <em>One rule.</em></h2>
+            <p>The owner writes the limits, the agent asks, the guardian enforces, and the attacker tries to talk its way past. Judge mode tells the whole story in six short scenes, using real Testnet records.</p>
+            <button type="button" class="button button-light" data-open-view="judge">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button>
+          </div>
+          <ul class="cast-grid">
+            <li><figure data-cast-plate="owner-mandate" data-cast-focus="80% 28%"><figcaption><strong>The owner</strong><span>Writes the mandate and can revoke it.</span></figcaption></figure></li>
+            <li><figure data-cast-plate="agent-request" data-cast-focus="70% 22%"><figcaption><strong>The agent</strong><span>Asks for payments. Never holds the money.</span></figcaption></figure></li>
+            <li><figure data-cast-plate="guardian-boundary" data-cast-focus="66% 26%"><figcaption><strong>The guardian</strong><span>The vault contract. It checks every request itself.</span></figcaption></figure></li>
+            <li><figure data-cast-plate="attack-manipulation" data-cast-focus="50% 18%"><figcaption><strong>The attacker</strong><span>Tries to talk the agent past the line.</span></figcaption></figure></li>
+          </ul>
+        </section>
+
         <section id="mechanism" class="mechanism-section" aria-labelledby="mechanism-title">
           <div class="section-head"><div><span class="eyebrow">THE BUILD / THE RULE</span><h2 id="mechanism-title">Security is a <em>structure.</em></h2></div><p>AgentShield is designed around a contract-controlled vault. Each boundary has a distinct role, a precise action, and an auditable outcome.</p></div>
           <div class="mechanism-grid"><article class="mechanism-card"><span class="card-count">I.</span><div class="card-symbol" aria-hidden="true">♛</div><h3>The owner</h3><p>Sets the agent identity, recipient allowlist, limits, expiry, and revocation authority.</p><span class="card-tail">RULES BEFORE REQUESTS <span aria-hidden="true">↗</span></span></article><article class="mechanism-card"><span class="card-count">II.</span><div class="card-symbol gothic" aria-hidden="true">M</div><h3>The mandate</h3><p>The deployed NEAR contract checks exact amounts and nonces before constructing a payment.</p><span class="card-tail">CONTRACT AS BOUNDARY <span aria-hidden="true">↗</span></span></article><article class="mechanism-card"><span class="card-count">III.</span><div class="card-symbol" aria-hidden="true">✣</div><h3>The agent</h3><p>Proposes an action. It cannot reach the owner's unrestricted wallet or bypass the vault.</p><span class="card-tail">REQUEST, NEVER CUSTODY <span aria-hidden="true">↗</span></span></article></div>
         </section>
 
-        <section class="proof-section" aria-labelledby="proof-title"><div class="proof-visual"><img src="./assets/winged-statue.png" alt="Winged statue with radiating typographic forms" /><div class="proof-image-label">THE MANDATE / VISUAL STUDY</div></div><div class="proof-copy"><span class="eyebrow">THE PRODUCT PROMISE</span><h2 id="proof-title">Power held<br />behind a <em>line.</em></h2><p>Spending rules belong at the execution boundary. The first native NEAR Testnet payment passed through the contract-held vault; authorization, transfer, and settlement are recorded separately.</p><button class="button button-outline" type="button" data-open-view="activity">VIEW LIVE EVIDENCE <span aria-hidden="true">↗</span></button><div class="proof-note">The vault is deployed on NEAR Testnet. One restricted-agent payment has settled and can be checked in the Evidence view.</div></div></section>
+        <section class="proof-section" aria-labelledby="proof-title"><div class="proof-visual"><img src="./assets/winged-statue-736.webp" width="736" height="984" loading="lazy" decoding="async" alt="Winged statue with radiating typographic forms" /><div class="proof-image-label">THE MANDATE / VISUAL STUDY</div></div><div class="proof-copy"><span class="eyebrow">THE PRODUCT PROMISE</span><h2 id="proof-title">Power held<br />behind a <em>line.</em></h2><p>Spending rules belong at the execution boundary. The first native NEAR Testnet payment passed through the contract-held vault; authorization, transfer, and settlement are recorded separately.</p><button class="button button-outline" type="button" data-open-view="activity">VIEW LIVE EVIDENCE <span aria-hidden="true">↗</span></button><div class="proof-note">The vault is deployed on NEAR Testnet. One restricted-agent payment has settled and can be checked in the Evidence view.</div></div></section>
         <section class="status-section" aria-labelledby="status-title"><div class="section-head"><div><span class="eyebrow">CURRENT STATE / HONEST BY DESIGN</span><h2 id="status-title">A bounded <em>mandate.</em></h2></div><p>A real Testnet mandate limits one agent, one recipient, and a total budget. The Evidence view rechecks the first payment against public RPC.</p></div><div class="status-grid"><div><span>01 / AGENT</span><strong>RESTRICTED KEY</strong><p>A function-call key is scoped to the vault payment method.</p></div><div><span>02 / MANDATE</span><strong>ACTIVE / TESTNET</strong><p>The onchain mandate allows up to 0.01 NEAR per payment.</p></div><div><span>03 / EVIDENCE</span><strong>ONE SETTLED</strong><p>A 0.005 test NEAR transfer has a finalized receipt.</p></div></div></section>
       </section>
 
-      <section id="view-policy" class="view inner-view" aria-labelledby="policy-title" hidden>
-        <div class="inner-hero"><div><span class="eyebrow">02 / THE MANDATE</span><h1 id="policy-title">Write the <em>boundary.</em></h1><p>Specify the intended control surface. Saving here keeps a local design draft; it creates no NEAR mandate.</p></div><div class="inner-hero-art"><img src="./assets/crowned-guardian.png" alt="Crowned guardian, a visual metaphor for the owner" /><span>OWNER / HOLDS AUTHORITY</span></div></div>
-        <div class="editorial-note"><span>LOCAL CONTRACT BUILD</span><p>These fields draft a mandate locally. This draft remains local; it does not edit the live Testnet mandate.</p><span>NO TRANSACTION SIGNED</span></div>
-        <div class="policy-layout"><form id="policy-form" class="policy-form" novalidate><div class="form-section"><div class="form-heading"><span>01 / IDENTITY</span><h2>Who holds<br /><em>the keys?</em></h2><p>The owner and agent must have separate identities.</p></div><div class="form-fields"><label>OWNER NEAR ACCOUNT<input id="owner" name="owner" type="text" placeholder="owner.testnet" spellcheck="false" autocomplete="off" /><small>Human account that sets and revokes the mandate.</small></label><label>AGENT NEAR ACCOUNT<input id="agent" name="agent" type="text" value="agentshield-agent-0359da1630bb.testnet" placeholder="agent.testnet" spellcheck="false" autocomplete="off" /><small>Requester account; never the owner key.</small></label></div></div><div class="form-section"><div class="form-heading"><span>02 / ALLOWANCE</span><h2>What may<br /><em>it spend?</em></h2><p>Native NEAR on testnet is the proposed first path.</p></div><div class="form-fields"><label>ALLOWED RECIPIENT<input id="recipient" name="recipient" type="text" value="agentshield-recipient-7bb4a0df1077.testnet" placeholder="merchant.testnet" spellcheck="false" autocomplete="off" /><small>One exact account for this local draft.</small></label><label>MAXIMUM PER PAYMENT<span class="input-unit"><input id="perPayment" name="perPayment" type="text" inputmode="decimal" placeholder="0.10" autocomplete="off" /><span>NEAR</span></span><small>Exact units, up to 24 decimal places.</small></label><label>UTC-DAY BUDGET<span class="input-unit"><input id="daily" name="daily" type="text" inputmode="decimal" placeholder="0.50" autocomplete="off" /><span>NEAR</span></span><small>Calendar day in UTC; includes pending amounts.</small></label><label>TOTAL MANDATE BUDGET<span class="input-unit"><input id="total" name="total" type="text" inputmode="decimal" placeholder="2.00" autocomplete="off" /><span>NEAR</span></span><small>Cumulative cap for this mandate.</small></label><label>EXPIRATION DATE<input id="expiry" name="expiry" type="date" /><small>New requests stop after expiry.</small></label></div></div><div class="form-ending"><div id="form-message" class="form-message" role="status" aria-live="polite"></div><div class="form-actions"><button class="button button-light" type="submit">SAVE LOCAL DRAFT <span aria-hidden="true">↗</span></button><button class="button button-text" type="button" id="clear-draft">CLEAR DRAFT</button></div></div></form><aside class="policy-aside"><div class="aside-image"><img src="./assets/robotic-hand.png" alt="Robotic hand, representing an agent's request" /><span>THE AGENT MAY ASK.</span></div><div class="aside-copy"><span class="eyebrow">EXECUTION STATUS</span><h3>Nothing here <em>signs.</em></h3><p>This draft is saved only in this browser. The vault source is compiled, but this draft does not call it or send payments.</p><div><span>NETWORK</span><strong>NEAR TESTNET / READINESS</strong></div><div><span>VAULT</span><strong>DEPLOYED / TESTNET</strong></div><div><span>WALLET</span><strong>NOT CONNECTED</strong></div></div></aside></div>
+      <section id="view-judge" class="view judge-view" aria-labelledby="judge-title" hidden>
+        <div class="cinema" id="cinema" data-state="idle">
+          <div class="cinema-stage">
+            <div class="cinema-frames" aria-hidden="true"></div>
+            <div class="cinema-grade" aria-hidden="true"></div>
+            <canvas class="cinema-dust" aria-hidden="true"></canvas>
+            <div class="cinema-top"><span class="cinema-counter" aria-hidden="true"></span></div>
+            <p class="cinema-paused" aria-hidden="true">Paused</p>
+            <div class="cinema-title">
+              <p class="cinema-kicker">Judge mode · six scenes · about 70 seconds · no wallet</p>
+              <h1 id="judge-title">One agent. One guardian. One boundary that cannot be crossed.</h1>
+              <p class="cinema-title-copy">Meet the owner, the agent and the guardian. Then watch a real Testnet payment settle and a real attack stop at the contract. Every fact on screen says where it comes from.</p>
+              <div class="cinema-title-actions">
+                <button type="button" class="button button-light" data-film="start">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button>
+                <button type="button" class="button button-outline" data-film="explore">EXPLORE MANUALLY <span aria-hidden="true">↓</span></button>
+              </div>
+            </div>
+            <div class="cinema-end">
+              <p class="cinema-end-line">One agent. One guardian. <span>One boundary that cannot be crossed.</span></p>
+              <div class="cinema-title-actions">
+                <button type="button" class="button button-light" data-film="restart">WATCH AGAIN <span aria-hidden="true">↺</span></button>
+                <button type="button" class="button button-outline" data-open-view="attack">ATTACK THE VAULT <span aria-hidden="true">↗</span></button>
+                <button type="button" class="button button-outline" data-open-view="activity">OPEN EVIDENCE <span aria-hidden="true">↗</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="cinema-copy">
+            <div class="cinema-caption" aria-hidden="true"><p class="cinema-kicker"></p><p class="cinema-line"></p><p class="cinema-sub"></p></div>
+            <div class="cinema-overlay"></div>
+          </div>
+        </div>
+        <div class="cinema-transport" role="group" aria-label="Film controls">
+          <div class="transport-buttons">
+            <button type="button" data-film="prev" aria-label="Previous scene"><b aria-hidden="true">‹</b> <span>Previous</span></button>
+            <button type="button" data-film="play" class="is-primary"><b data-icon aria-hidden="true">▶</b> <span>Start</span></button>
+            <button type="button" data-film="next" aria-label="Next scene"><span>Next</span> <b aria-hidden="true">›</b></button>
+            <button type="button" data-film="replay" aria-label="Replay this scene"><b aria-hidden="true">↺</b> <span>Replay</span></button>
+            <button type="button" data-film="skip" aria-label="Skip this scene's animation"><b aria-hidden="true">»</b> <span>Skip animation</span></button>
+          </div>
+          <ol class="cinema-chapters" aria-label="Scenes"></ol>
+          <button type="button" data-film="explore" class="transport-explore">Explore manually</button>
+        </div>
+        <p id="judge-live" class="visually-hidden" aria-live="polite"></p>
+        <div class="truth-legend" aria-label="How to read the labels">
+          <p><span class="truth" data-truth="simulation"><i aria-hidden="true"></i>SIMULATION</span> Local model in your browser. No chain.</p>
+          <p><span class="truth" data-truth="historical"><i aria-hidden="true"></i>HISTORICAL ONCHAIN REPLAY</span> A finalized Testnet transaction, replayed. Nothing is executing now.</p>
+          <p><span class="truth" data-truth="live"><i aria-hidden="true"></i>LIVE RPC VERIFIED</span> Rechecked just now against public Testnet RPC.</p>
+          <p><span class="truth" data-truth="unverified"><i aria-hidden="true"></i>NOT YET VERIFIED</span> No genuine onchain evidence yet.</p>
+        </div>
+        <section class="cinema-explore" aria-labelledby="explore-title" hidden>
+          <div class="explore-head"><h2 id="explore-title">Explore at your own pace.</h2><p>Open any scene in its finished state. The film stays paused until you press play. Keyboard: space plays or pauses, the arrow keys change scenes.</p></div>
+          <div class="explore-grid"></div>
+        </section>
       </section>
 
-      <section id="view-activity" class="view inner-view" aria-labelledby="activity-title" hidden><div class="inner-hero"><div><span class="eyebrow">03 / THE RECORD</span><h1 id="activity-title">Proof, <em>not a promise.</em></h1><p>The first restricted-agent payment is settled. This view rechecks its transaction, transfer receipt, and contract accounting.</p></div><div class="inner-hero-art"><img src="./assets/winged-statue.png" alt="Winged statue and layered typographic forms" /><span>DECISION / EVIDENCE</span></div></div><div class="editorial-note"><span>FINALIZED TESTNET PROOF</span><p>The first payment is checked against public Testnet RPC each time you open this view.</p><span>LIVE VERIFICATION</span></div><div class="evidence-grid"><article><span>01 / AUTHORIZED</span><h2>Permission <em>given.</em></h2><p>The exact request passed policy checks. Funds may still be in transit.</p></article><article><span>02 / CONFIRMED</span><h2>Payment <em>proven.</em></h2><p>Chain result and recipient balance are checked before the interface claims settlement.</p></article><article><span>03 / REJECTED</span><h2>Boundary <em>held.</em></h2><p>A rejected request must have its own genuine contract result and show that no payout was initiated. Three live rejection proofs are listed below. Revocation is pending.</p></article></div><div class="empty-evidence" id="live-proof" aria-live="polite"><div class="empty-mark" aria-hidden="true">✣</div><div><span class="eyebrow">VERIFYING LIVE PROOF</span><h2>Checking the chain.</h2><p>The public Testnet transaction and contract state are checked before settlement is displayed.</p><button type="button" class="button button-outline" data-open-view="overview">RETURN TO THE THESIS <span aria-hidden="true">↗</span></button></div></div></section>
+      <section id="view-attack" class="view attack-view" aria-labelledby="attack-title" hidden>
+        <div class="attack-hero">
+          <img src="./assets/cinematic/treasury-vault-1280.webp" srcset="./assets/cinematic/treasury-vault-768.webp 768w, ./assets/cinematic/treasury-vault-1280.webp 1280w, ./assets/cinematic/treasury-vault-1920.webp 1920w" sizes="100vw" width="1920" height="1080" alt="The protected treasury: a sphere of gold-white light in a silver armillary cage inside a black-stone vault" loading="lazy" decoding="async" />
+          <div class="attack-hero-copy">
+            <p class="cinema-kicker">07 / Attack the vault · no wallet needed</p>
+            <h1 id="attack-title">Attack the vault.</h1>
+            <p>Pick an attack and watch the boundary answer. Four of these were really sent to the deployed vault on NEAR Testnet, and you can recheck each one live. Revocation has no onchain proof yet, so it runs in the simulator and says so.</p>
+          </div>
+        </div>
+        <div class="attack-picker" role="group" aria-label="Choose an attack"></div>
+        <section class="attack-theatre" aria-labelledby="theatre-title" hidden>
+          <div class="theatre-head">
+            <div><h2 class="theatre-title" id="theatre-title">Attack</h2><div class="theatre-truth"></div></div>
+            <div class="theatre-actions">
+              <button type="button" class="button button-outline" data-theatre="run">RUN AGAIN <span aria-hidden="true">↺</span></button>
+              <button type="button" class="button button-text" data-theatre="skip">SKIP TO RESULT <span aria-hidden="true">»</span></button>
+            </div>
+          </div>
+          <div class="theatre-body"><div class="theatre-art"></div><ol class="theatre-steps" aria-live="polite"></ol></div>
+        </section>
+        <section class="custom-attack" aria-labelledby="custom-title">
+          <div class="custom-copy">
+            <h2 id="custom-title">Write your own <em>attack.</em></h2>
+            <p>This runs in the local simulator, seeded with the live mandate: one agent, one allowed recipient, 0.01 NEAR per payment, 0.02 per UTC day, 0.05 in total, plus the one 0.005 payment that already settled. Every result here is labelled SIMULATION.</p>
+            <span class="truth" data-truth="simulation"><i aria-hidden="true"></i>SIMULATION</span>
+          </div>
+          <form id="custom-attack" class="custom-form" novalidate>
+            <label>RECIPIENT<input name="recipient" type="text" value="agentshield-mag-1d2f78801994.testnet" spellcheck="false" autocomplete="off" /></label>
+            <label>AMOUNT <span class="input-unit"><input name="amount" type="text" inputmode="decimal" value="0.005" autocomplete="off" /><span>NEAR</span></span></label>
+            <label>NONCE<input name="nonce" type="text" value="custom-attack-1" spellcheck="false" autocomplete="off" /></label>
+            <fieldset><legend>TWISTS</legend>
+              <label class="check"><input type="checkbox" name="replay" /> Reuse the settled payment's nonce</label>
+              <label class="check"><input type="checkbox" name="revoke" /> Owner revokes the mandate first</label>
+              <label class="check"><input type="checkbox" name="impostor" /> Sign as a different agent</label>
+            </fieldset>
+            <button type="submit" class="button button-light">RUN SIMULATED ATTACK <span aria-hidden="true">↗</span></button>
+            <p id="custom-attack-note" class="custom-note" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+        <section id="injection" class="injection" aria-labelledby="injection-title">
+          <div class="injection-hero">
+            <img src="./assets/cinematic/injection-confrontation-1280.webp" srcset="./assets/cinematic/injection-confrontation-768.webp 768w, ./assets/cinematic/injection-confrontation-1280.webp 1280w, ./assets/cinematic/injection-confrontation-1920.webp 1920w" sizes="100vw" width="1920" height="1080" alt="The attacker leans across a black-stone table toward the agent, pushing a knotted amber instruction into a sheet of light" loading="lazy" decoding="async" />
+            <div class="injection-copy">
+              <p class="cinema-kicker">Challenge · prompt injection</p>
+              <h2 id="injection-title">Words can bend a model. <em>Not a contract.</em></h2>
+              <p>A supplier note hides an instruction to send the money elsewhere. See what the agent's offchain preflight does with the proposal, and what the vault contract does on its own. The model step is simulated: no NEAR AI completion has been received for this project.</p>
+            </div>
+          </div>
+          <div class="injection-flow">
+            <ol class="injection-inputs">
+              <li><span class="inj-step">1 · Legitimate instruction</span><p class="inj-instruction"></p></li>
+              <li><span class="inj-step">2 · Injected instruction</span><p class="inj-injection"></p><small>Hidden inside a supplier note the agent was asked to read.</small></li>
+            </ol>
+            <div class="injection-controls">
+              <div class="inj-modes" role="group" aria-label="Simulated model behaviour">
+                <button type="button" class="button button-outline" data-proposal="fooled" aria-pressed="false">MODEL IS FOOLED</button>
+                <button type="button" class="button button-outline" data-proposal="resisted" aria-pressed="false">MODEL RESISTS</button>
+              </div>
+              <form id="injection-form" class="inj-form" novalidate>
+                <label>PROPOSED RECIPIENT<input id="inj-recipient" type="text" spellcheck="false" autocomplete="off" /></label>
+                <label>PROPOSED AMOUNT <span class="input-unit"><input id="inj-amount" type="text" inputmode="decimal" autocomplete="off" /><span>NEAR</span></span></label>
+                <button type="submit" class="button button-light">CHECK THIS PROPOSAL <span aria-hidden="true">↗</span></button>
+              </form>
+            </div>
+            <div class="injection-result" aria-live="polite"></div>
+          </div>
+        </section>
+      </section>
 
-      <section id="view-controls" class="view inner-view" aria-labelledby="controls-title" hidden><div class="inner-hero"><div><span class="eyebrow">04 / OWNER AUTHORITY</span><h1 id="controls-title">The final word<br />is <em>human.</em></h1><p>The owner must be able to stop future requests. Pending transfers remain a separate, visible state.</p></div><div class="inner-hero-art"><img src="./assets/crowned-guardian.png" alt="Crowned guardian, representing final owner authority" /><span>OWNER / REVOCATION</span></div></div><div class="editorial-note"><span>LIVE MANDATE EXISTS</span><p>An active Testnet mandate exists. Owner controls require a verified wallet signing flow.</p><span>CONTROLS UNAVAILABLE</span></div><div class="control-grid"><article><span>01 / TEMPORARY STOP</span><div class="control-glyph" aria-hidden="true">Ⅱ</div><h2>Pause <em>requests.</em></h2><p>A pause would block new authorizations after the chain records it. Already submitted transfers may still settle.</p><button class="button button-disabled" type="button" disabled title="Requires a connected owner wallet and deployed vault">PAUSE UNAVAILABLE</button></article><article><span>02 / REVOKE THE MANDATE</span><div class="control-glyph" aria-hidden="true">×</div><h2>Revoke <em>authority.</em></h2><p>Revocation blocks new requests. It cannot retroactively cancel a transfer already submitted.</p><button class="button button-disabled" type="button" disabled title="Requires a connected owner wallet and deployed vault">REVOKE UNAVAILABLE</button></article></div></section>
+      <section id="view-policy" class="view inner-view" aria-labelledby="policy-title" hidden>
+        <div class="inner-hero"><div><span class="eyebrow">02 / THE MANDATE</span><h1 id="policy-title">Write the <em>boundary.</em></h1><p>Specify the intended control surface. Saving here keeps a local design draft; it creates no NEAR mandate.</p></div><div class="inner-hero-art"><img src="./assets/crowned-guardian-736.webp" width="736" height="920" loading="lazy" decoding="async" alt="Crowned guardian, a visual metaphor for the owner" /><span>OWNER / HOLDS AUTHORITY</span></div></div>
+        <div class="editorial-note"><span>LOCAL CONTRACT BUILD</span><p>These fields draft a mandate locally. This draft remains local; it does not edit the live Testnet mandate.</p><span>NO TRANSACTION SIGNED</span></div>
+        <div class="policy-layout"><form id="policy-form" class="policy-form" novalidate><div class="form-section"><div class="form-heading"><span>01 / IDENTITY</span><h2>Who holds<br /><em>the keys?</em></h2><p>The owner and agent must have separate identities.</p></div><div class="form-fields"><label>OWNER NEAR ACCOUNT<input id="owner" name="owner" type="text" placeholder="owner.testnet" spellcheck="false" autocomplete="off" /><small>Human account that sets and revokes the mandate.</small></label><label>AGENT NEAR ACCOUNT<input id="agent" name="agent" type="text" value="agentshield-agent-0359da1630bb.testnet" placeholder="agent.testnet" spellcheck="false" autocomplete="off" /><small>Requester account; never the owner key.</small></label></div></div><div class="form-section"><div class="form-heading"><span>02 / ALLOWANCE</span><h2>What may<br /><em>it spend?</em></h2><p>Native NEAR on testnet is the proposed first path.</p></div><div class="form-fields"><label>ALLOWED RECIPIENT<input id="recipient" name="recipient" type="text" value="agentshield-recipient-7bb4a0df1077.testnet" placeholder="merchant.testnet" spellcheck="false" autocomplete="off" /><small>One exact account for this local draft.</small></label><label>MAXIMUM PER PAYMENT<span class="input-unit"><input id="perPayment" name="perPayment" type="text" inputmode="decimal" placeholder="0.10" autocomplete="off" /><span>NEAR</span></span><small>Exact units, up to 24 decimal places.</small></label><label>UTC-DAY BUDGET<span class="input-unit"><input id="daily" name="daily" type="text" inputmode="decimal" placeholder="0.50" autocomplete="off" /><span>NEAR</span></span><small>Calendar day in UTC; includes pending amounts.</small></label><label>TOTAL MANDATE BUDGET<span class="input-unit"><input id="total" name="total" type="text" inputmode="decimal" placeholder="2.00" autocomplete="off" /><span>NEAR</span></span><small>Cumulative cap for this mandate.</small></label><label>EXPIRATION DATE<input id="expiry" name="expiry" type="date" /><small>New requests stop after expiry.</small></label></div></div><div class="form-ending"><div id="form-message" class="form-message" role="status" aria-live="polite"></div><div class="form-actions"><button class="button button-light" type="submit">SAVE LOCAL DRAFT <span aria-hidden="true">↗</span></button><button class="button button-text" type="button" id="clear-draft">CLEAR DRAFT</button></div></div></form><aside class="policy-aside"><div class="aside-image"><img src="./assets/robotic-hand-900.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Robotic hand, representing an agent's request" /><span>THE AGENT MAY ASK.</span></div><div class="aside-copy"><span class="eyebrow">EXECUTION STATUS</span><h3>Nothing here <em>signs.</em></h3><p>This draft is saved only in this browser. The vault source is compiled, but this draft does not call it or send payments.</p><div><span>NETWORK</span><strong>NEAR TESTNET / READINESS</strong></div><div><span>VAULT</span><strong>DEPLOYED / TESTNET</strong></div><div><span>WALLET</span><strong>NOT CONNECTED</strong></div></div></aside></div>
+      </section>
+
+      <section id="view-activity" class="view inner-view" aria-labelledby="activity-title" hidden><div class="inner-hero"><div><span class="eyebrow">03 / THE RECORD</span><h1 id="activity-title">Proof, <em>not a promise.</em></h1><p>The first restricted-agent payment is settled. This view rechecks its transaction, transfer receipt, and contract accounting.</p></div><div class="inner-hero-art"><img src="./assets/winged-statue-736.webp" width="736" height="984" loading="lazy" decoding="async" alt="Winged statue and layered typographic forms" /><span>DECISION / EVIDENCE</span></div></div><div class="editorial-note"><span>FINALIZED TESTNET PROOF</span><p>The first payment is checked against public Testnet RPC each time you open this view.</p><span>LIVE VERIFICATION</span></div><div class="evidence-grid"><article><span>01 / AUTHORIZED</span><h2>Permission <em>given.</em></h2><p>The exact request passed policy checks. Funds may still be in transit.</p></article><article><span>02 / CONFIRMED</span><h2>Payment <em>proven.</em></h2><p>Chain result and recipient balance are checked before the interface claims settlement.</p></article><article><span>03 / REJECTED</span><h2>Boundary <em>held.</em></h2><p>A rejected request must have its own genuine contract result and show that no payout was initiated. Three live rejection proofs are listed below. Revocation is pending.</p></article></div><div class="empty-evidence" id="live-proof" aria-live="polite"><div class="empty-mark" aria-hidden="true">✣</div><div><span class="eyebrow">VERIFYING LIVE PROOF</span><h2>Checking the chain.</h2><p>The public Testnet transaction and contract state are checked before settlement is displayed.</p><button type="button" class="button button-outline" data-open-view="overview">RETURN TO THE THESIS <span aria-hidden="true">↗</span></button></div></div></section>
+
+      <section id="view-controls" class="view inner-view" aria-labelledby="controls-title" hidden><div class="inner-hero"><div><span class="eyebrow">04 / OWNER AUTHORITY</span><h1 id="controls-title">The final word<br />is <em>human.</em></h1><p>The owner must be able to stop future requests. Pending transfers remain a separate, visible state.</p></div><div class="inner-hero-art"><img src="./assets/crowned-guardian-736.webp" width="736" height="920" loading="lazy" decoding="async" alt="Crowned guardian, representing final owner authority" /><span>OWNER / REVOCATION</span></div></div><div class="editorial-note"><span>LIVE MANDATE EXISTS</span><p>An active Testnet mandate exists. Owner controls require a verified wallet signing flow.</p><span>CONTROLS UNAVAILABLE</span></div><div class="control-grid"><article><span>01 / TEMPORARY STOP</span><div class="control-glyph" aria-hidden="true">Ⅱ</div><h2>Pause <em>requests.</em></h2><p>A pause would block new authorizations after the chain records it. Already submitted transfers may still settle.</p><button class="button button-disabled" type="button" disabled title="Requires a connected owner wallet and deployed vault">PAUSE UNAVAILABLE</button></article><article><span>02 / REVOKE THE MANDATE</span><div class="control-glyph" aria-hidden="true">×</div><h2>Revoke <em>authority.</em></h2><p>Revocation blocks new requests. It cannot retroactively cancel a transfer already submitted.</p><button class="button button-disabled" type="button" disabled title="Requires a connected owner wallet and deployed vault">REVOKE UNAVAILABLE</button></article></div></section>
 
       <section id="view-demo" class="view inner-view" aria-labelledby="demo-title" hidden>
-        <div class="inner-hero"><div><span class="eyebrow">05 / INSTANT DEMO</span><h1 id="demo-title">Challenge the <em>mandate.</em></h1><p>Try a real set of policy rules in a local simulation. Every result here is simulated; no wallet, vault, or blockchain transaction is involved.</p></div><div class="inner-hero-art"><img src="./assets/agentshield-near-composite-v2.png" alt="Guardian and robotic hand meeting at a bright boundary" /><span>SIMULATION / NO CHAIN</span></div></div>
+        <div class="inner-hero"><div><span class="eyebrow">05 / INSTANT DEMO</span><h1 id="demo-title">Challenge the <em>mandate.</em></h1><p>Try a real set of policy rules in a local simulation. Every result here is simulated; no wallet, vault, or blockchain transaction is involved.</p></div><div class="inner-hero-art"><img src="./assets/agentshield-near-composite-v2-1024.webp" width="1024" height="576" loading="lazy" decoding="async" alt="Guardian and robotic hand meeting at a bright boundary" /><span>SIMULATION / NO CHAIN</span></div></div>
         <div class="editorial-note demo-disclosure"><span>SIMULATION — NO ONCHAIN TRANSACTIONS</span><p>These decisions explain the intended rules. They do not prove that a deployed contract enforces them.</p><span>LOCAL / RESETTABLE</span></div>
         <div class="demo-layout">
           <div class="demo-intro"><span class="eyebrow">THE POLICY PLAYGROUND</span><h2>Set the rules.<br /><em>Then attack them.</em></h2><p>Use example testnet identities. Changing a field resets the next scenario to a fresh local state, so each result can be read on its own.</p><div class="demo-mode-note"><strong>MODE A / INSTANT DEMO</strong><span>Local deterministic model. No keys, wallet approvals, transfers, RPC receipts, or explorer links.</span></div></div>
@@ -89,7 +231,7 @@
       </section>
 
       <section id="view-testnet" class="view inner-view" aria-labelledby="testnet-title" hidden>
-        <div class="inner-hero"><div><span class="eyebrow">06 / LIVE TEST ENVIRONMENT</span><h1 id="testnet-title">The test <em>lab.</em></h1><p>Connect a NEAR testnet wallet to identify the owner, then check public chain state for the accounts needed for a vault test. Connecting alone does not sign a transaction.</p></div><div class="inner-hero-art"><img src="./assets/robotic-hand.png" alt="Robotic hand reaching toward a luminous mark" /><span>TESTNET / READINESS</span></div></div>
+        <div class="inner-hero"><div><span class="eyebrow">06 / LIVE TEST ENVIRONMENT</span><h1 id="testnet-title">The test <em>lab.</em></h1><p>Connect a NEAR testnet wallet to identify the owner, then check public chain state for the accounts needed for a vault test. Connecting alone does not sign a transaction.</p></div><div class="inner-hero-art"><img src="./assets/robotic-hand-900.webp" width="900" height="1125" loading="lazy" decoding="async" alt="Robotic hand reaching toward a luminous mark" /><span>TESTNET / READINESS</span></div></div>
         <div class="editorial-note"><span>LIVE RPC / TESTNET</span><p>Account results come from finalized NEAR Testnet state. Open Evidence to inspect the independently verified payment.</p><span>ONE SETTLED PAYMENT</span></div>
         <div class="testnet-layout">
           <div class="testnet-heading"><span class="eyebrow">PUBLIC DEMO ACCOUNTS</span><h2>Check the <em>four roles.</em></h2><p>The demo account IDs are public and prefilled. Checking them is read-only. Wallet connection is optional for this proof.</p><div class="wallet-readiness"><span>OWNER WALLET / TESTNET</span><strong id="wallet-account">NOT CONNECTED</strong><button type="button" class="button button-outline" id="lab-wallet-open">CONNECT OWNER WALLET <span aria-hidden="true">↗</span></button><small id="wallet-status" role="status" aria-live="polite">Wallet connection identifies your public account. No transaction is sent.</small></div><div class="testnet-setup"><h3>Where do the IDs come from?</h3><ol><li><strong>Owner</strong> — connect a testnet wallet; its public account ID fills the owner field.</li><li><strong>Agent</strong> — create a second account for the agent. It must differ from the owner.</li><li><strong>Recipient</strong> — use another testnet account you control, so a later payment can be checked.</li><li><strong>Vault</strong> — the deployed vault account is prefilled below.</li></ol><div class="testnet-setup-links"><a href="https://wallet.testnet.near.org/" target="_blank" rel="noopener noreferrer">OPEN TESTNET WALLET <span aria-hidden="true">↗</span></a><a href="https://docs.near.org/tools/cli" target="_blank" rel="noopener noreferrer">ACCOUNT SETUP GUIDE <span aria-hidden="true">↗</span></a></div><p>Only paste public account IDs here. Keep recovery phrases and private keys in your wallet.</p></div><div class="testnet-network" id="testnet-network" role="status" aria-live="polite">NETWORK / NOT CHECKED</div></div>

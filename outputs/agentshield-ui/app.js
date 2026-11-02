@@ -1,8 +1,9 @@
 import { setupDemo } from "./demo-ui.mjs";
+import { setupCinematic } from "./cinematic.mjs";
 
 (() => {
-  const views = ["overview", "policy", "activity", "controls", "demo", "testnet"];
-  const labels = { overview: "01 / THE THESIS", policy: "02 / MANDATE DRAFT", activity: "03 / EVIDENCE", controls: "04 / CONTROL", demo: "05 / INSTANT DEMO", testnet: "06 / TEST LAB" };
+  const views = ["judge", "overview", "policy", "activity", "controls", "demo", "testnet", "attack"];
+  const labels = { judge: "00 / JUDGE MODE", attack: "07 / ATTACK THE VAULT", overview: "01 / THE THESIS", policy: "02 / MANDATE DRAFT", activity: "03 / EVIDENCE", controls: "04 / CONTROL", demo: "05 / INSTANT DEMO", testnet: "06 / TEST LAB" };
   const nav = [...document.querySelectorAll("[data-view]")];
   const forms = document.getElementById("policy-form");
   const message = document.getElementById("form-message");
@@ -29,6 +30,7 @@ import { setupDemo } from "./demo-ui.mjs";
     if (heading) heading.setAttribute("tabindex", "-1");
     heading?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
+    document.dispatchEvent(new CustomEvent("agentshield:view", { detail: { name } }));
   }
 
   nav.forEach(item => item.addEventListener("click", () => showView(item.dataset.view)));
@@ -75,6 +77,9 @@ import { setupDemo } from "./demo-ui.mjs";
   });
 
   setupDemo();
+  setupCinematic();
+  const linkedView = location.hash.slice(1);
+  if (linkedView === "judge" || linkedView === "attack") showView(linkedView);
 
   const testnetForm = document.getElementById("testnet-form");
   const testnetNetwork = document.getElementById("testnet-network");
