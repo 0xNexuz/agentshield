@@ -1,0 +1,28 @@
+# AgentShield frontend direction
+
+**Status:** pre-event visual and interaction study, 2026-10-26. This is not hackathon implementation evidence.
+
+## Visual idea
+
+AgentShield presents autonomous payment authority as something powerful that must be held within a human-defined boundary. The user supplied three reference images: a crowned guardian, a winged statue with blackletter energy, and a stippled robotic hand. A new composite image merges those exact motifs into one scene. The guardian represents the owner, the statue the mandate, and the hand the agent's request. A radiant NEAR Protocol mark now replaces the original globe at the point of decision.
+
+This artwork is the hero image, rather than a row of separate reference panels. Inner views use the original images as chapter-specific details. The interface uses obsidian black, cold ivory, restrained gray-green, etched texture, thin rules, Cormorant Garamond display type, selective UnifrakturCook blackletter, and IBM Plex Mono labels. The brand mark is a simple cross-like asterisk. The visual language is Gothic and archival, with technical precision in the controls.
+
+## Copy and product truth
+
+The lead line is **“Power to act. Authority to stop.”** The owner specifies identity, recipient, amount, daily and total budget, and expiry. The agent requests payment under that mandate. The intended NEAR contract vault would enforce it. This is a proposed architecture, not a verified security claim.
+
+The current interface has a local-only mandate draft and a read-only NEAR testnet account check. It has no wallet, deployed AgentShield vault, transaction path, or execution. AgentShield evidence is empty, and pause/revoke controls are disabled. Keep authorization, chain submission, and independent settlement confirmation distinct when real integration is built. Never fill empty product screens with invented balances or receipts.
+
+## Interaction rules
+
+- Navigation uses a thin moving underline and immediate view switching.
+- Artwork can brighten and scale slightly on hover; cards shift within their ruled rows.
+- Buttons lift and invert subtly. Inputs use a clear border and focus state.
+- A soft page entrance and slow artwork reveal support the image without blocking interaction.
+- `prefers-reduced-motion` disables animation and smooth scrolling.
+- The local draft form remains keyboard accessible and validates NEAR testnet account IDs and exact decimal amounts before local storage.
+
+## Assets and permissions
+
+The supplied source images live in `assets/crowned-guardian.png`, `assets/winged-statue.png`, and `assets/robotic-hand.png`. The active generated composite is `assets/agentshield-near-composite-v2.png`; its central mark was refined against the NEAR organization's logo. These are user-provided references and a derived design study. Confirm usage rights before public release or submission.

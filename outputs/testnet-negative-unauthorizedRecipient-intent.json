@@ -1,0 +1,17 @@
+{
+  "network": "testnet",
+  "scenario": "unauthorizedRecipient",
+  "hash": "GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "args": {
+    "recipient": "agentshield-mag-1d2f78801994.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "recipientprobe029de7f88a64",
+    "expires_at_ns": "1794216105339870776",
+    "expected_version": 1
+  },
+  "recipientBalanceBeforeYocto": "4988878684087334100000000",
+  "confirmedBeforeYocto": "5000000000000000000000",
+  "createdAt": "2026-11-02T11:33:52.222Z"
+}

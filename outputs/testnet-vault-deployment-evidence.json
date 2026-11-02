@@ -1,0 +1,33 @@
+{
+  "network": "testnet",
+  "finality": "FINAL",
+  "transactionHash": "7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "initialVaultBalanceYocto": "5000000000000000000000000",
+  "expectedCodeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "observedCodeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "vaultBalanceYocto": "5000000000000000000000000",
+  "vaultStorageUsageBytes": 324984,
+  "vaultBlockHeight": 275872998,
+  "owner": "agentshield-mag-1d2f78801994.testnet",
+  "domain": "agentshield:testnet:v1",
+  "mandatePresent": false,
+  "receiptOutcomes": [
+    {
+      "id": "4QeLnsHZUFyQoHxGarsKEdMjMQDp9QU2HMThf6U9mGMj",
+      "executorId": "vault.agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": ""
+      }
+    },
+    {
+      "id": "8wjdDKhbLVEVUrRjZ4n2FFtGKVL21xwHyzKiviHmtF9f",
+      "executorId": "agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": ""
+      }
+    }
+  ],
+  "explorerUrl": "https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ"
+}

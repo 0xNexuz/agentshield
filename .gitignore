@@ -1,0 +1,15 @@
+.cargo-home/
+.npm-cache/
+contracts/vault/target/
+node_modules/
+.tools/
+.env
+.env.*
+!.env.example
+deployment/testnet.local.json
+AgentShield-Secrets/
+**/*.pem
+**/*.key
+**/*private-key*.json
+**/*request-payment.json
+*.log

@@ -1,0 +1,84 @@
+{
+  "network": "testnet",
+  "stage": "payment",
+  "transactionHash": "3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "receiptOutcomes": [
+    {
+      "id": "7H2s5Ryr43ScY9EEjjssu9PZHBavx2dstNBZhXE5jsXa",
+      "executorId": "vault.agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": "eyJkZWNpc2lvbiI6IkFVVEhPUklaRUQiLCJyZXF1ZXN0X2lkIjoiZjdkNjhlMTA1MDk4NTc5MWUyOWZhMmViYWVkZGJjN2ViMGU4Mjg1YWFhYjgwZTA0Njk2ODA0YjY3NWZhNWFhNSIsImFjdGlvbl9oYXNoIjoiZjdkNjhlMTA1MDk4NTc5MWUyOWZhMmViYWVkZGJjN2ViMGU4Mjg1YWFhYjgwZTA0Njk2ODA0YjY3NWZhNWFhNSJ9"
+      },
+      "logs": [
+        "AGENTSHIELD_DECISION request_id=f7d68e1050985791e29fa2ebaeddbc7eb0e8285aaab80e04696804b675fa5aa5 decision=AUTHORIZED version=1"
+      ]
+    },
+    {
+      "id": "76hE3jsBgdCi8BCBZakcwEMri9Ut7JVu2gDWf3rxK2dS",
+      "executorId": "agentshield-recipient-7bb4a0df1077.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    },
+    {
+      "id": "3r7QAj4Ft9XE3Np55ifzMKdk6SrSv5if519hyn123NNW",
+      "executorId": "agentshield-agent-0359da1630bb.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    },
+    {
+      "id": "2XEVt4Ky57cLLxRZsDcJ6DBTZ1exMNsFQ9xHHjboxbG7",
+      "executorId": "vault.agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": "dHJ1ZQ=="
+      },
+      "logs": [
+        "AGENTSHIELD_SETTLEMENT request_id=f7d68e1050985791e29fa2ebaeddbc7eb0e8285aaab80e04696804b675fa5aa5 status=SETTLED"
+      ]
+    },
+    {
+      "id": "GrNjXcu5Qqfvzhx1dFL2FjTLHRLXgr7YiJb6PSJnHsj1",
+      "executorId": "agentshield-agent-0359da1630bb.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    },
+    {
+      "id": "4UjUs9vr77HGX8VHD9ianf7E5YDi4kQzCQg5VXV7QYJS",
+      "executorId": "agentshield-agent-0359da1630bb.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    }
+  ],
+  "details": {
+    "requestId": "f7d68e1050985791e29fa2ebaeddbc7eb0e8285aaab80e04696804b675fa5aa5",
+    "record": {
+      "request_id": "f7d68e1050985791e29fa2ebaeddbc7eb0e8285aaab80e04696804b675fa5aa5",
+      "action_hash": "f7d68e1050985791e29fa2ebaeddbc7eb0e8285aaab80e04696804b675fa5aa5",
+      "agent": "agentshield-agent-0359da1630bb.testnet",
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "amount_yocto": "5000000000000000000000",
+      "nonce": "demo4e84dc53cee7c4d226acb4fa",
+      "mandate_version": 1,
+      "requested_at_ns": "1793615143540599085",
+      "request_day": 20759,
+      "status": "SETTLED"
+    },
+    "recipientReceiptId": "76hE3jsBgdCi8BCBZakcwEMri9Ut7JVu2gDWf3rxK2dS",
+    "recipientBalanceBeforeYocto": "10000000000000000000000000",
+    "recipientBalanceAfterYocto": "10005000000000000000000000",
+    "confirmedTotalBeforeYocto": "0",
+    "confirmedTotalAfterYocto": "5000000000000000000000",
+    "callbackSettled": true
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm"
+}

@@ -1,0 +1,20 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "scenario": "overspend",
+  "transactionHash": "FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A",
+  "finality": "FINAL",
+  "decision": {
+    "decision": "REJECTED",
+    "reason": "PER_PAYMENT_LIMIT"
+  },
+  "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+  "amountYocto": "11000000000000000000000",
+  "nonce": "limitprobe029de7f88a64",
+  "vaultTransferReceipts": 0,
+  "confirmedTotalBeforeYocto": "5000000000000000000000",
+  "confirmedTotalAfterYocto": "5000000000000000000000",
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "recipientBalanceAfterYocto": "10005000000000000000000000",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A"
+}

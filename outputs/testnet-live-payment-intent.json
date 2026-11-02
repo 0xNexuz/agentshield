@@ -1,0 +1,13 @@
+{
+  "network": "testnet",
+  "stage": "payment",
+  "hash": "3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm",
+  "signerId": "agentshield-agent-0359da1630bb.testnet",
+  "receiverId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "proposalFile": "deployment/testnet-live-demo-proposal.json",
+  "before": {
+    "recipientBalanceYocto": "10000000000000000000000000",
+    "vaultConfirmedYocto": "0"
+  },
+  "createdAt": "2026-11-02T10:25:40.408Z"
+}

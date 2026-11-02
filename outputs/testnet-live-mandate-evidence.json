@@ -1,0 +1,44 @@
+{
+  "network": "testnet",
+  "stage": "mandate",
+  "transactionHash": "GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7",
+  "finality": "FINAL",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "receiptOutcomes": [
+    {
+      "id": "HvSX6BY92jXvVwp1vJtPxFdgGGqDkL7p6Q3YWzTutHLd",
+      "executorId": "vault.agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": "eyJhZ2VudCI6ImFnZW50c2hpZWxkLWFnZW50LTAzNTlkYTE2MzBiYi50ZXN0bmV0IiwicmVjaXBpZW50cyI6WyJhZ2VudHNoaWVsZC1yZWNpcGllbnQtN2JiNGEwZGYxMDc3LnRlc3RuZXQiXSwicGVyX3BheW1lbnRfeW9jdG8iOiIxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImRhaWx5X3lvY3RvIjoiMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ0b3RhbF95b2N0byI6IjUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwiZXhwaXJlc19hdF9ucyI6IjE3OTQyMTYxMDUzMzk4NzA3NzYiLCJ2ZXJzaW9uIjoxLCJwYXVzZWQiOmZhbHNlLCJyZXZva2VkIjpmYWxzZX0="
+      },
+      "logs": [
+        "AGENTSHIELD_POLICY version=1 action=SET"
+      ]
+    },
+    {
+      "id": "6e7uhmx2Q8vRZCew1swo3WwrBodGuMbYDSAKc2JcQq7p",
+      "executorId": "agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    }
+  ],
+  "details": {
+    "observed": {
+      "agent": "agentshield-agent-0359da1630bb.testnet",
+      "recipients": [
+        "agentshield-recipient-7bb4a0df1077.testnet"
+      ],
+      "per_payment_yocto": "10000000000000000000000",
+      "daily_yocto": "20000000000000000000000",
+      "total_yocto": "50000000000000000000000",
+      "expires_at_ns": "1794216105339870776",
+      "version": 1,
+      "paused": false,
+      "revoked": false
+    }
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7"
+}

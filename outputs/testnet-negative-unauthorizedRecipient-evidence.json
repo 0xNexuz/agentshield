@@ -1,0 +1,20 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "scenario": "unauthorizedRecipient",
+  "transactionHash": "GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9",
+  "finality": "FINAL",
+  "decision": {
+    "decision": "REJECTED",
+    "reason": "RECIPIENT_NOT_ALLOWED"
+  },
+  "recipient": "agentshield-mag-1d2f78801994.testnet",
+  "amountYocto": "5000000000000000000000",
+  "nonce": "recipientprobe029de7f88a64",
+  "vaultTransferReceipts": 0,
+  "confirmedTotalBeforeYocto": "5000000000000000000000",
+  "confirmedTotalAfterYocto": "5000000000000000000000",
+  "recipientBalanceBeforeYocto": "4988878684087334100000000",
+  "recipientBalanceAfterYocto": "4988878684087334100000000",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9"
+}

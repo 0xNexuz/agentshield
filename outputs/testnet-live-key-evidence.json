@@ -1,0 +1,35 @@
+{
+  "network": "testnet",
+  "stage": "key",
+  "transactionHash": "3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "agentshield-agent-0359da1630bb.testnet",
+  "receiptOutcomes": [
+    {
+      "id": "7iBCEnGSnDsYLLcLfR9WthzVHxwS6G2ryNvtxApjzzij",
+      "executorId": "agentshield-agent-0359da1630bb.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    },
+    {
+      "id": "C8SV3qXZme4Ttgb6cJT6mRUTPxhwGF2ETzDAu6SYCqij",
+      "executorId": "agentshield-agent-0359da1630bb.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    }
+  ],
+  "details": {
+    "publicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+    "receiverId": "vault.agentshield-mag-1d2f78801994.testnet",
+    "methods": [
+      "request_payment"
+    ],
+    "allowanceYocto": "100000000000000000000000"
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP"
+}

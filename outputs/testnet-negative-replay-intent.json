@@ -1,0 +1,17 @@
+{
+  "network": "testnet",
+  "scenario": "replay",
+  "hash": "8ktDr3AFxE8kVQP1KNkvGBY44oMWWvRCY6tXUqWyvyjY",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "demo4e84dc53cee7c4d226acb4fa",
+    "expires_at_ns": "1794216105339870776",
+    "expected_version": 1
+  },
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "confirmedBeforeYocto": "5000000000000000000000",
+  "createdAt": "2026-11-02T11:37:50.030Z"
+}

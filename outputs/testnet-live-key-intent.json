@@ -1,0 +1,10 @@
+{
+  "network": "testnet",
+  "stage": "key",
+  "hash": "3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP",
+  "signerId": "agentshield-agent-0359da1630bb.testnet",
+  "receiverId": "agentshield-agent-0359da1630bb.testnet",
+  "proposalFile": "deployment/testnet-live-demo-proposal.json",
+  "before": {},
+  "createdAt": "2026-11-02T10:22:25.782Z"
+}

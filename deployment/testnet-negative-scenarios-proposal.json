@@ -1,0 +1,33 @@
+{
+  "network": "testnet",
+  "status": "PROPOSED_NOT_SIGNED",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "agentAccountId": "agentshield-agent-0359da1630bb.testnet",
+  "restrictedPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+  "method": "request_payment",
+  "gas": "70000000000000",
+  "attachedDepositYocto": "0",
+  "expectedVersion": 1,
+  "expiryNs": "1794216105339870776",
+  "scenarios": {
+    "overspend": {
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "amountYocto": "11000000000000000000000",
+      "nonce": "limitprobe029de7f88a64",
+      "expectedReason": "PER_PAYMENT_LIMIT"
+    },
+    "unauthorizedRecipient": {
+      "recipient": "agentshield-mag-1d2f78801994.testnet",
+      "amountYocto": "5000000000000000000000",
+      "nonce": "recipientprobe029de7f88a64",
+      "expectedReason": "RECIPIENT_NOT_ALLOWED"
+    },
+    "replay": {
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "amountYocto": "5000000000000000000000",
+      "nonce": "demo4e84dc53cee7c4d226acb4fa",
+      "expectedReason": "REPLAY"
+    }
+  }
+}

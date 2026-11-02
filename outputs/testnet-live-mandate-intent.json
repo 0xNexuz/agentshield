@@ -1,0 +1,10 @@
+{
+  "network": "testnet",
+  "stage": "mandate",
+  "hash": "GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7",
+  "signerId": "agentshield-mag-1d2f78801994.testnet",
+  "receiverId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "proposalFile": "deployment/testnet-live-demo-proposal.json",
+  "before": {},
+  "createdAt": "2026-11-02T10:23:55.609Z"
+}

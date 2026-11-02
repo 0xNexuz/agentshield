@@ -1,0 +1,40 @@
+{
+  "network": "testnet",
+  "status": "PROPOSED_NOT_SIGNED",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "expectedCodeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "ownerAccountId": "agentshield-mag-1d2f78801994.testnet",
+  "agentAccountId": "agentshield-agent-0359da1630bb.testnet",
+  "recipientAccountId": "agentshield-recipient-7bb4a0df1077.testnet",
+  "restrictedKey": {
+    "publicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+    "receiverId": "vault.agentshield-mag-1d2f78801994.testnet",
+    "methodNames": ["request_payment"],
+    "allowanceYocto": "100000000000000000000000",
+    "signer": "agentshield-agent-0359da1630bb.testnet"
+  },
+  "mandate": {
+    "signer": "agentshield-mag-1d2f78801994.testnet",
+    "method": "set_mandate",
+    "gas": "30000000000000",
+    "attachedDepositYocto": "0",
+    "agent": "agentshield-agent-0359da1630bb.testnet",
+    "recipients": ["agentshield-recipient-7bb4a0df1077.testnet"],
+    "per_payment_yocto": "10000000000000000000000",
+    "daily_yocto": "20000000000000000000000",
+    "total_yocto": "50000000000000000000000",
+    "expires_at_ns": "1794216105339870776",
+    "expectedVersion": 1
+  },
+  "firstPayment": {
+    "signer": "agentshield-agent-0359da1630bb.testnet",
+    "method": "request_payment",
+    "gas": "70000000000000",
+    "attachedDepositYocto": "0",
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "demo4e84dc53cee7c4d226acb4fa",
+    "expires_at_ns": "1794216105339870776",
+    "expected_version": 1
+  }
+}

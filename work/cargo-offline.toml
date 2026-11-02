@@ -1,0 +1,5 @@
+[source.crates-io]
+replace-with = "verified-local"
+
+[source.verified-local]
+registry = "sparse+http://127.0.0.1:4727/"

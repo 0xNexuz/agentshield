@@ -1,0 +1,34 @@
+{
+  "network": "testnet",
+  "transactionHash": "7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ",
+  "finality": "FINAL",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "actionOrder": [
+    "CreateAccount",
+    "Transfer",
+    "DeployContract",
+    "FunctionCall:initialize"
+  ],
+  "transferYocto": "5000000000000000000000000",
+  "initializeGas": "30000000000000",
+  "initializeDepositYocto": "0",
+  "receiptIds": [
+    "4QeLnsHZUFyQoHxGarsKEdMjMQDp9QU2HMThf6U9mGMj",
+    "8wjdDKhbLVEVUrRjZ4n2FFtGKVL21xwHyzKiviHmtF9f"
+  ],
+  "wasmSha256Hex": "138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09",
+  "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "vaultBalanceYocto": "5000000000000000000000000",
+  "vaultStorageUsageBytes": 324984,
+  "storageCostYocto": "3249840000000000000000000",
+  "operatingReserveYocto": "200000000000000000000000",
+  "availableYocto": "1550160000000000000000000",
+  "owner": "agentshield-mag-1d2f78801994.testnet",
+  "domain": "agentshield:testnet:v1",
+  "vaultAccessKeyCount": 0,
+  "mandatePresent": false,
+  "accountBlockHeight": 275873790,
+  "vaultViewBlockHeight": 275873806,
+  "explorerUrl": "https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ"
+}

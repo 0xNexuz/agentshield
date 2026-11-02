@@ -1,0 +1,9 @@
+{
+  "network": "testnet",
+  "ownerAccountId": "",
+  "agentAccountId": "",
+  "recipientAccountId": "",
+  "vaultAccountId": "",
+  "initialVaultBalanceYocto": "",
+  "maximumTestPaymentYocto": ""
+}

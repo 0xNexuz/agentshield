@@ -1,0 +1,53 @@
+[
+  {
+    "network": "testnet",
+    "verification": "PASS",
+    "scenario": "overspend",
+    "decision": "REJECTED",
+    "reason": "PER_PAYMENT_LIMIT",
+    "transactionHash": "FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A",
+    "finality": "FINAL",
+    "signer": "agentshield-agent-0359da1630bb.testnet",
+    "restrictedPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amountYocto": "11000000000000000000000",
+    "nonce": "limitprobe029de7f88a64",
+    "vaultTransferReceiptCount": 0,
+    "explorerUrl": "https://testnet.nearblocks.io/txns/FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A",
+    "checkedAt": "2026-11-02T11:40:37.895Z"
+  },
+  {
+    "network": "testnet",
+    "verification": "PASS",
+    "scenario": "unauthorizedRecipient",
+    "decision": "REJECTED",
+    "reason": "RECIPIENT_NOT_ALLOWED",
+    "transactionHash": "GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9",
+    "finality": "FINAL",
+    "signer": "agentshield-agent-0359da1630bb.testnet",
+    "restrictedPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+    "recipient": "agentshield-mag-1d2f78801994.testnet",
+    "amountYocto": "5000000000000000000000",
+    "nonce": "recipientprobe029de7f88a64",
+    "vaultTransferReceiptCount": 0,
+    "explorerUrl": "https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9",
+    "checkedAt": "2026-11-02T11:40:36.884Z"
+  },
+  {
+    "network": "testnet",
+    "verification": "PASS",
+    "scenario": "replay",
+    "decision": "REJECTED",
+    "reason": "REPLAY",
+    "transactionHash": "8ktDr3AFxE8kVQP1KNkvGBY44oMWWvRCY6tXUqWyvyjY",
+    "finality": "FINAL",
+    "signer": "agentshield-agent-0359da1630bb.testnet",
+    "restrictedPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amountYocto": "5000000000000000000000",
+    "nonce": "demo4e84dc53cee7c4d226acb4fa",
+    "vaultTransferReceiptCount": 0,
+    "explorerUrl": "https://testnet.nearblocks.io/txns/8ktDr3AFxE8kVQP1KNkvGBY44oMWWvRCY6tXUqWyvyjY",
+    "checkedAt": "2026-11-02T11:40:36.908Z"
+  }
+]
