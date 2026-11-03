@@ -189,3 +189,11 @@
 ## Next action
 
 Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Cloud credits/spend limit and obtain fresh bounded inference approval before live model tests. Ask the user to verify owner wallet sign-in without a transaction. Review the exact renewal proposal before 2026-11-09; sign only with specific owner approval. Do not resume isolated revocation without fresh approval. Re-scan all tracked history and review documentation before any separately approved public release or submission.
+
+### 2026-11-03 — Private CI verified
+
+- Initial GitHub Actions run `41528077371` failed at `npm ci` because the lockfile omitted two Linux optional package records. Linux regenerated the lockfile; a Linux `npm ci --dry-run` then exited 0.
+- Second run `41529320203` passed the secret scan, npm install, all 18 Node tests, wallet build and Rust units, but Sandbox found that its test path referenced an ignored local build artifact absent from a clean clone. The test now uses the checked-in deployed WASM with the expected code hash. Local NEAR Sandbox rerun passed **8/8**.
+- Third run [`41530355326`](https://github.com/0xNexuz/agentshield/actions/runs/41530355326) on private commit `213969f` completed **successfully**, including the credential scan, Node tests, wallet build, Rust units and Sandbox. A fresh local scan of the six tracked commits returned **zero findings**. The production site still served the previous deployment after the private Git push; no Vercel redeploy occurred.
+- Mocked browser account-recognition check passed for owner and non-owner labels, but no real browser wallet sign-in happened. The real sign-in gate remains open.
+- Production dependency audit (`npm audit --omit=dev --json`) returned 0 critical, 5 high, 6 moderate, and 15 low advisories. The high advisories are within the Meteor wallet selector dependency chain; npm marks them without an automatic fix. No dependency changes were made without a tested replacement, and this remains a public-release risk.
