@@ -215,3 +215,12 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Production deployment `dpl_Fw9krVEZS7rSnt8Uif2JUd2aCvRS` (from `main` at `17417c3`) is READY and aliased to `https://agentshield-lab.vercel.app/`. `/api/testnet/proof` returned `PASS / SETTLED` with current mandate version 1, unrevoked, expiring `1794216105339870776`; `/api/testnet/gallery` returned all three rejections `PASS` with zero vault transfer receipts; `/site.webmanifest` is served. The earlier preview `dpl_85Rrakf38nCfVtjbK1jbzMFqSJNh` had a 23-hour share link.
 - No Testnet signature, mandate renewal, NEAR AI call, wallet sign-in, or GitHub visibility change occurred. The repository is still private.
 
+### 2026-11-03 — Repository public; deployed WASM reproduced from source
+
+- The owner made `0xNexuz/agentshield` public. A tracked-history credential scan returned zero findings before and after.
+- The deployed WASM's `producers` section names `rustc 1.96.0 (ac68faa20 2026-05-25)`, and its panic strings contain the original Windows build folders (`C:\Users\USER\.rustup\toolchains\stable-x86_64-pc-windows-msvc` and a project `.cargo-home` whose registry folder came from the local proxy on `127.0.0.1:4727`). A temporary experiment branch rebuilt `contracts/vault` on a GitHub Windows runner two ways, through the same local registry proxy and with `--remap-path-prefix` from crates.io; both produced SHA-256 `138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09`, 324,708 bytes, identical to `deployment/agentshield_vault.wasm`.
+- `work/reproduce-vault-wasm.ps1` (remap method) now runs in CI as the Windows job "Rebuild the deployed WASM from source". Run [`41623668630`](https://github.com/0xNexuz/agentshield/actions/runs/41623668630) on `96c01f2` printed `MATCH`, and the Linux job passed every step, including Sandbox.
+- The homepage gained a "Verify it yourself" list (proof APIs, NearBlocks payment, README claims table, source) and a footer GitHub link. Browser QA 63/63, `npm test` 31/31.
+- Production deployment `dpl_B65KRzdGjq7Udv9NuQqT3tviGxbA` from `main` at `96c01f2` is READY and aliased to `https://agentshield-lab.vercel.app/`; `/api/testnet/status` reported a healthy, synced Testnet RPC.
+- Not done from this session: the GitHub repository homepage and topics (the session's GitHub proxy refuses repository-settings writes), and deleting the experiment branch `repro-wasm-experiment` (branch deletion is refused too). No Testnet signature, renewal, NEAR AI call, or wallet sign-in occurred.
+
