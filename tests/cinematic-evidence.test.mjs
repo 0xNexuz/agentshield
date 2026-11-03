@@ -195,7 +195,7 @@ test('mandate status is computed, never hard-coded as active', () => {
   assert.equal(formatUtcNs(expiry), '2026-11-09 09:21 UTC');
   const html = fs.readFileSync(path.join(ui, 'index.html'), 'utf8');
   assert.ok(html.includes('data-mandate-status'), 'homepage mandate card is wired for live status');
-  for (const stale of ['ACTIVE / TESTNET', 'DESIGN STUDY', 'LOCAL BUILD', 'vault design', 'source is compiled', 'Live revocation remains unverified']) {
+  for (const stale of ['ACTIVE / TESTNET', 'DESIGN STUDY', 'LOCAL BUILD', 'vault design', 'source is compiled', 'Live revocation remains unverified', 'until 2026-11-09']) {
     assert.ok(!html.includes(stale), `stale wording "${stale}" is gone from the site`);
   }
 });

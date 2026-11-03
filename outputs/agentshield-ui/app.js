@@ -210,6 +210,7 @@ import { setupCinematic } from "./cinematic.mjs";
         ["TRANSACTION", proof.transactionHash], ["TRANSFER RECEIPT", proof.recipientReceiptId],
         ["REQUEST ID", proof.requestId], ["VAULT CODE HASH", proof.codeHash],
         ["PAYMENT MANDATE VERSION", proof.mandateVersion],
+        ...(/^\d+$/.test(proof.mandateExpiryNs || "") ? [["CURRENT MANDATE", `Version ${proof.currentMandateVersion}${proof.mandateRevoked ? ", revoked" : ""}, expires ${new Date(Number(BigInt(proof.mandateExpiryNs) / 1000000n)).toISOString().slice(0, 16).replace("T", " ")} UTC`]] : []),
         ["CURRENT VAULT PENDING", `${proof.pendingTotalYocto} yoctoNEAR`],
       ]) {
         const dt = document.createElement("dt"); dt.textContent = label;

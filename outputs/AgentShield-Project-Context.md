@@ -243,3 +243,11 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - `npm audit --omit=dev`: 0 critical, 0 high, 6 moderate (HOT wallet chain; the only offered fix is a major downgrade to `@near-wallet-selector/hot-wallet` 9.5.4), 15 low. `outputs/agentshield-ui/wallet-bundle.js` went from 3.0 MB to 1.1 MB.
 - Checks: `npm test` 33/33, browser QA 93/93 and 70/70, wallet dialog lists HOT Wallet with no page errors.
 
+### 2026-11-03 — Current mandate shown everywhere
+
+- Judge mode scene 1 showed the version 1 expiry (2026-11-09) as its main value, with the renewal only as a trailing note; a tab opened before the renewal-aware deployment showed no note at all. Scene 1 now lists the version in force and its expiry (version 2, 2026-11-30 00:00 UTC) and links both the original mandate and the renewal transaction.
+- The homepage card's static text (seen before the live check finishes or without JavaScript) said 2026-11-09; it now says version 2 until 2026-11-30.
+- The Evidence view now adds a "Current mandate" row (version and expiry from the live proof) next to the payment's own mandate version 1.
+- Records that ran under version 1 (the payment, the three rejections) keep version 1 by design.
+- Checks: `npm test` 33/33, browser QA 93/93 and 71/71.
+

@@ -4,6 +4,7 @@
 import {
   TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS,
   explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs, currentMandate,
+  MANDATE_RENEWAL,
 } from "./evidence-records.mjs";
 import { createSimulator, fromYocto } from "./simulator.mjs";
 import { preflightPayment } from "./preflight.mjs";
@@ -63,15 +64,17 @@ const SCENES = [
     kicker: "Scene 1 of 6 · The owner", line: "The owner defines the limits.",
     sub: "One mandate, signed by the owner's own key and stored in the vault contract.",
     panel() {
+      const now = currentMandate();
       const limits = [
         ["Agent", MANDATE.agent], ["Allowed recipient", MANDATE.recipients[0]],
         ["Per payment", `${MANDATE.perPaymentNear} NEAR`], ["Per UTC day", `${MANDATE.dailyNear} NEAR`],
-        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Expires", `${MANDATE.expiresAtUtc}${expiryNote()}`],
+        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Version", versionNote(now)],
+        ["Expires", `${formatUtcNs(now.expiresAtNs)}${mandateExpired() ? " (now expired)" : ""}`],
       ];
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "The mandate" }), truth("historical")), 400),
-        limits.map(([label, value], i) => beat(row(label, value), 1300 + i * 700)),
-        beat(h("p", { class: "etch-foot" }, "Set in finalized transaction ", txLink(MANDATE.transactionHash), ", signed by the owner."), 6000));
+        limits.map(([label, value], i) => beat(row(label, value), 1300 + i * 650)),
+        beat(h("p", { class: "etch-foot" }, ...mandateFoot(now)), 6000));
     },
     anchors(svg) {
       svg.append(beat(s("ellipse", { class: "anchor-sweep", cx: 1334, cy: 250, rx: 404, ry: 156 }), 6100));
@@ -513,11 +516,18 @@ const STEPS = ["Opening scene", "Attempted attack", "Agent request", "Security c
 const PAYMENT_TIME = Date.parse("2026-11-02T10:25:40Z"); // outputs/testnet-live-payment-intent.json createdAt
 // Expiry of the mandate in force now: the live proof's when it has answered, otherwise the committed record's.
 function mandateExpired(now = Date.now()) { return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(currentMandate().expiresAtNs); }
-function expiryNote() {
-  const m = currentMandate();
-  const expired = mandateExpired();
-  if (m.version > MANDATE.version) return ` (renewed as version ${m.version}, until ${formatUtcNs(m.expiresAtNs)}${expired ? "; now expired" : ""})`;
-  return expired ? " (now expired)" : "";
+// Scene 1 shows the mandate in force now: version 1 as signed, or the renewal that replaced it.
+function versionNote(m) {
+  if (m.version === MANDATE_RENEWAL.version) return `${m.version}, renewed 2026-11-03`;
+  if (m.version > MANDATE.version) return `${m.version}, renewed onchain`;
+  return String(m.version);
+}
+function mandateFoot(m) {
+  if (m.version === MANDATE_RENEWAL.version) return ["Set in finalized transaction ", txLink(MANDATE.transactionHash),
+    " and renewed in ", txLink(MANDATE_RENEWAL.transactionHash), ", both signed by the owner."];
+  if (m.version > MANDATE.version) return ["Set in finalized transaction ", txLink(MANDATE.transactionHash),
+    `, then renewed onchain as version ${m.version}; both signed by the owner.`];
+  return ["Set in finalized transaction ", txLink(MANDATE.transactionHash), ", signed by the owner."];
 }
 function seededSimulator() {
   // Mirrors the live mandate and replays its one settled payment on its real UTC day,
