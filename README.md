@@ -52,7 +52,7 @@ node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 ```
 
-For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. The [private GitHub Actions CI run for `213969f`](https://github.com/0xNexuz/agentshield/actions/runs/41530355326) passed the credential scan, all Node tests, wallet build, Rust units, and Sandbox on 2026-11-03. Run the scripts again to check current RPC state.
+For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. The [private GitHub Actions CI run for `cea8871`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed the credential scan, all Node tests, wallet build, Rust units, and Sandbox on 2026-11-03. Run the scripts again to check current RPC state.
 
 ## Security boundaries and limitations
 
