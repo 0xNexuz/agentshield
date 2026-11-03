@@ -14,7 +14,6 @@ import { setupCinematic } from "./cinematic.mjs";
     if (!views.includes(name)) return;
     if (name === "testnet") {
       prefillTestnetFields();
-      ensureWallet().catch(error => { walletStatus.textContent = `Wallet setup unavailable: ${error.message}`; walletStatus.classList.add("is-error"); });
     }
     if (name === "activity") { loadLiveProof(); loadNegativeGallery(); }
     for (const view of views) document.getElementById(`view-${view}`).hidden = view !== name;
@@ -92,7 +91,6 @@ import { setupCinematic } from "./cinematic.mjs";
   const walletDialogStatus = document.getElementById("wallet-dialog-status");
   const walletStatus = document.getElementById("wallet-status");
   const walletAccount = document.getElementById("wallet-account");
-  const walletOpen = document.getElementById("wallet-open");
   const deployedOwner = "agentshield-mag-1d2f78801994.testnet";
   let walletBridge;
   let walletLoading;
@@ -101,7 +99,6 @@ import { setupCinematic } from "./cinematic.mjs";
     const accountId = state.accountId && testnetAccountPattern.test(state.accountId) ? state.accountId : null;
     if (accountId === deployedOwner) ownerInput.value = accountId;
     walletAccount.textContent = accountId || "NOT CONNECTED";
-    walletOpen.firstChild.textContent = accountId ? `${accountId} ` : "CONNECT WALLET ";
     walletStatus.textContent = state.error || (accountId === deployedOwner
       ? "Connected deployed vault owner. No transaction has been signed."
       : accountId ? `Connected ${accountId}; this is not the deployed vault owner. No transaction has been signed.`
@@ -173,7 +170,6 @@ import { setupCinematic } from "./cinematic.mjs";
       walletDialogStatus.textContent = `Wallet setup failed: ${error.message}`;
     }
   }
-  walletOpen.addEventListener("click", openWalletDialog);
   document.getElementById("lab-wallet-open").addEventListener("click", openWalletDialog);
   document.getElementById("wallet-close").addEventListener("click", () => walletDialog.close());
 

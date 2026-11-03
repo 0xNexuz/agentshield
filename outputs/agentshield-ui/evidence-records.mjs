@@ -132,6 +132,16 @@ export function formatUtcNs(ns) {
   return `${new Date(Number(BigInt(ns) / 1_000_000n)).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 }
 
+// The mandate as the chain reports it now. It starts as the committed version 1 record and is
+// replaced when a live proof passes, so a renewal (version 2, later expiry) shows up without a redeploy.
+let mandateNow = Object.freeze({ expiresAtNs: MANDATE.expiresAtNs, version: MANDATE.version, revoked: false, live: false });
+export function currentMandate() { return mandateNow; }
+function adoptLiveMandate(proof) {
+  if (!proof?.mandateExpiryNs || !/^\d+$/.test(proof.mandateExpiryNs)) return;
+  mandateNow = Object.freeze({ expiresAtNs: proof.mandateExpiryNs, version: Number(proof.currentMandateVersion) || MANDATE.version,
+    revoked: proof.mandateRevoked === true, live: true });
+}
+
 // One shared, cached live recheck per page load. Each call site decides how to label failure.
 let liveProof;
 let liveGallery;
@@ -143,6 +153,7 @@ export function fetchLiveProof({ force = false } = {}) {
       const proof = await response.json();
       if (!response.ok || proof.verification !== "PASS" || proof.settlement !== "SETTLED" ||
         proof.transactionHash !== PAYMENT.transactionHash) throw new Error(proof.error || "The live proof did not pass every check.");
+      adoptLiveMandate(proof);
       return proof;
     })
     .catch(error => { liveProof = undefined; throw error; });

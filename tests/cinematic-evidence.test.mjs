@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   TRUTH, ACCOUNTS, VAULT, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, checkIndexFor,
-  mandateState, formatUtcNs,
+  mandateState, formatUtcNs, currentMandate, fetchLiveProof,
 } from '../outputs/agentshield-ui/evidence-records.mjs';
 import { preflightPayment as browserPreflight } from '../outputs/agentshield-ui/preflight.mjs';
 import { preflightPayment as serverPreflight } from '../work/near-ai-payment-agent.mjs';
@@ -198,4 +198,21 @@ test('mandate status is computed, never hard-coded as active', () => {
   for (const stale of ['ACTIVE / TESTNET', 'DESIGN STUDY', 'LOCAL BUILD', 'vault design', 'source is compiled', 'Live revocation remains unverified']) {
     assert.ok(!html.includes(stale), `stale wording "${stale}" is gone from the site`);
   }
+});
+
+test('a passing live proof replaces the committed mandate, so a renewal needs no redeploy', async () => {
+  assert.deepEqual({ ...currentMandate() }, { expiresAtNs: MANDATE.expiresAtNs, version: 1, revoked: false, live: false });
+  const renewal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-mandate-renewal-proposal.json'), 'utf8'));
+  assert.equal(renewal.status, 'PROPOSED_NOT_SIGNED');
+  assert.ok(BigInt(renewal.proposedExpiryNs) > BigInt(Date.parse('2026-11-18T23:59:00Z')) * 1_000_000n, 'renewal covers judging and results');
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({
+    verification: 'PASS', settlement: 'SETTLED', transactionHash: PAYMENT.transactionHash,
+    mandateExpiryNs: renewal.proposedExpiryNs, currentMandateVersion: 2, mandateRevoked: false,
+  }) });
+  try {
+    await fetchLiveProof({ force: true });
+    assert.deepEqual({ ...currentMandate() }, { expiresAtNs: renewal.proposedExpiryNs, version: 2, revoked: false, live: true });
+    assert.equal(mandateState(currentMandate(), Date.parse('2026-11-17T00:00:00Z')), 'active');
+  } finally { globalThis.fetch = realFetch; }
 });

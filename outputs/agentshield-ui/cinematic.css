@@ -453,3 +453,4 @@ svg .beat{transform:none}
 .footer-link:hover{opacity:.65}
 @media(max-width:760px){.verify-block{grid-template-columns:1fr;margin-top:50px}.verify-list a{grid-template-columns:minmax(0,1fr) auto}.verify-list span{grid-column:1/-1;grid-row:2}}
 @media(prefers-reduced-motion:reduce){.verify-list a,.verify-list b{transition:none}}
+.mandate-expired[hidden]{display:none}

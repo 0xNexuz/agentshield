@@ -3,7 +3,7 @@
 // Onchain facts come from ./evidence-records.mjs (historical) or the read-only /api/testnet/* proofs (live).
 import {
   TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS,
-  explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs,
+  explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs, currentMandate,
 } from "./evidence-records.mjs";
 import { createSimulator, fromYocto } from "./simulator.mjs";
 import { preflightPayment } from "./preflight.mjs";
@@ -66,7 +66,7 @@ const SCENES = [
       const limits = [
         ["Agent", MANDATE.agent], ["Allowed recipient", MANDATE.recipients[0]],
         ["Per payment", `${MANDATE.perPaymentNear} NEAR`], ["Per UTC day", `${MANDATE.dailyNear} NEAR`],
-        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Expires", `${MANDATE.expiresAtUtc}${mandateExpired() ? " (now expired)" : ""}`],
+        ["Total budget", `${MANDATE.totalNear} NEAR`], ["Expires", `${MANDATE.expiresAtUtc}${expiryNote()}`],
       ];
       return h("div", { class: "etch" },
         beat(h("div", { class: "etch-head" }, h("strong", { text: "The mandate" }), truth("historical")), 400),
@@ -511,7 +511,13 @@ const ATTACKS = [
 const STEPS = ["Opening scene", "Attempted attack", "Agent request", "Security check", "Guardian response", "Decision", "Evidence"];
 
 const PAYMENT_TIME = Date.parse("2026-11-02T10:25:40Z"); // outputs/testnet-live-payment-intent.json createdAt
-function mandateExpired(now = Date.now()) { return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(MANDATE.expiresAtNs); }
+// Expiry of the mandate in force now: the live proof's when it has answered, otherwise the committed record's.
+function mandateExpired(now = Date.now()) { return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(currentMandate().expiresAtNs); }
+function expiryNote() {
+  const m = currentMandate();
+  if (m.version > MANDATE.version) return ` (renewed as version ${m.version}, until ${formatUtcNs(m.expiresAtNs)})`;
+  return mandateExpired() ? " (now expired)" : "";
+}
 function seededSimulator() {
   // Mirrors the live mandate and replays its one settled payment on its real UTC day,
   // so replay and budgets behave like the vault.
@@ -557,10 +563,15 @@ function setupAttack(root) {
   let timers = [];
   let current = null;
   let announcement = "";
-  if (mandateExpired()) {
-    picker.before(h("p", { class: "mandate-expired" }, h("strong", { text: "The live mandate has expired." }),
-      ` It ran until ${MANDATE.expiresAtUtc}; new requests to this vault are now rejected as EXPIRED. The four onchain records below were made on 2 Nov 2026, while it was active.`));
-  }
+  const expiredNote = h("p", { class: "mandate-expired" });
+  picker.before(expiredNote);
+  const updateExpiredNote = () => {
+    expiredNote.hidden = !mandateExpired();
+    expiredNote.replaceChildren(h("strong", { text: "The live mandate has expired." }),
+      ` It ran until ${formatUtcNs(currentMandate().expiresAtNs)}; new requests to this vault are now rejected as EXPIRED. The four onchain records below were made on 2 Nov 2026, while it was active.`);
+  };
+  updateExpiredNote();
+  fetchLiveProof().then(updateExpiredNote, updateExpiredNote);
 
   const cards = ATTACKS.map(attack => {
     const card = h("button", { type: "button", class: "attack-card", "aria-pressed": "false", "data-attack": attack.id },
@@ -730,8 +741,8 @@ function recordedVaultStatus(now = new Date()) {
   const sameDay = now.toISOString().slice(0, 10) === "2026-11-02";
   return {
     mandate: { agent: MANDATE.agent, recipients: [...MANDATE.recipients], per_payment_yocto: MANDATE.perPaymentYocto,
-      daily_yocto: MANDATE.dailyYocto, total_yocto: MANDATE.totalYocto, expires_at_ns: MANDATE.expiresAtNs,
-      version: MANDATE.version, paused: false, revoked: false },
+      daily_yocto: MANDATE.dailyYocto, total_yocto: MANDATE.totalYocto, expires_at_ns: currentMandate().expiresAtNs,
+      version: currentMandate().version, paused: false, revoked: false },
     confirmed_total_yocto: PAYMENT.amountYocto, pending_total_yocto: "0",
     day_confirmed_yocto: sameDay ? PAYMENT.amountYocto : "0", day_pending_yocto: "0",
     // Not rechecked in the browser: treated as no larger than the mandate's total budget.
@@ -772,7 +783,7 @@ function setupInjection(root) {
       ? h("p", {}, contract.decision === "AUTHORIZED" ? "This exact recipient and amount were authorized and settled on Testnet: " : "This exact request was refused on Testnet: ", txLink(contract.record.transactionHash), ".")
       : contract.record
         ? h("div", { class: "inj-related" }, h("p", {}, "Simulated with the vault's rules. A related onchain record shows the same rule at work: ", txLink(contract.record.transactionHash), "."), truth("historical", "related record"))
-        : h("p", { text: contract.reason === "EXPIRED" ? `The live mandate expired on ${MANDATE.expiresAtUtc}, so the vault would refuse any new request. There is no onchain proof of this rejection.` : "This outcome comes from the local simulator; there is no onchain proof for it." });
+        : h("p", { text: contract.reason === "EXPIRED" ? `The live mandate expired on ${formatUtcNs(currentMandate().expiresAtNs)}, so the vault would refuse any new request. There is no onchain proof of this rejection.` : "This outcome comes from the local simulator; there is no onchain proof for it." });
     output.replaceChildren(
       h("article", { class: "inj-card" }, h("span", { class: "inj-step", text: "3 · Model proposal" }), truth("simulation", "not NEAR AI"),
         h("code", { class: "step-code", text: JSON.stringify(proposal) }),

@@ -6,7 +6,7 @@
   "ownerAccountId": "agentshield-mag-1d2f78801994.testnet",
   "expectedCurrentVersion": 1,
   "currentExpiryNs": "1794216105339870776",
-  "proposedExpiryNs": "1794700800000000000",
+  "proposedExpiryNs": "1795996800000000000",
   "method": "set_mandate",
   "gas": "30000000000000",
   "attachedDepositYocto": "0",
@@ -16,6 +16,6 @@
     "per_payment_yocto": "10000000000000000000000",
     "daily_yocto": "20000000000000000000000",
     "total_yocto": "50000000000000000000000",
-    "expires_at_ns": "1794700800000000000"
+    "expires_at_ns": "1795996800000000000"
   }
 }
