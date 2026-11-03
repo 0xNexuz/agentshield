@@ -19,6 +19,7 @@ You don't need a wallet, an account or a key.
 | `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 12 passed` (the vault's Rust unit tests) |
 | `node --use-system-ca work/verify-testnet-live-payment.mjs` | The same `PASS` / `SETTLED` record, rechecked from public RPC on your machine. Needs network access, and rewrites `outputs/testnet-live-payment-independent-proof.json` with a fresh `checkedAt`. |
 | `sha256sum deployment/agentshield_vault.wasm` | `138b17e7…be09`. Its base58 form is the code hash the chain reports for the vault, `2KHm9Waz…CqN`. |
+| Open the latest run in [GitHub Actions](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml), job **Rebuild the deployed WASM from source** | Rust 1.96.0 rebuilds `contracts/vault` on Windows and prints `MATCH`: the same 324,708 bytes as the deployed WASM |
 
 The site also has **Attack the vault** (`#attack`): the four recorded scenarios with a live recheck button, custom attacks run in the local simulator, and a prompt-injection challenge.
 
@@ -56,9 +57,9 @@ Each rule the vault enforces, where it lives in [`contracts/vault/src/lib.rs`](c
 | No payments while an owner withdrawal is pending | [L269](contracts/vault/src/lib.rs#L269) `WITHDRAWAL_PENDING`; `withdraw_excess` [L428](contracts/vault/src/lib.rs#L428) | Unit `pending_withdrawal_blocks_payment_and_failure_releases_guard`, `…_success_releases_guard`; Sandbox "pause, stale version and owner withdrawal" | — |
 | Settlement is recorded only after the transfer result, exactly once | `on_transfer_result` [L381](contracts/vault/src/lib.rs#L381), `#[private]` | Unit `successful_transfer_settles_exactly_once`, `failed_transfer_releases_budget_but_keeps_nonce`; Sandbox "failed recipient transfer releases reservation without settlement" | [`3buDvB…53jm`](https://testnet.nearblocks.io/txns/3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm): receipt `76hE3j…K2dS`, log `status=SETTLED` |
 | Only the owner changes policy or funds | `assert_owner` [L489](contracts/vault/src/lib.rs#L489) | Unit `non_owner_cannot_change_policy`, `initializer_must_be_owner`, `only_owner_can_fund_and_attached_amount_is_reported` | Mandate [`GLhrrb…xbG7`](https://testnet.nearblocks.io/txns/GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7), signed by the owner |
-| The deployed code is the WASM in this repo | `deployment/agentshield_vault.wasm` | `sha256sum`, then compare with the chain's code hash | Deployment [`7K4729…y2dJ`](https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ); `codeHash` in `/api/testnet/proof` |
+| The deployed code is the WASM in this repo, and that WASM is built from `lib.rs` | `deployment/agentshield_vault.wasm`; [`work/reproduce-vault-wasm.ps1`](work/reproduce-vault-wasm.ps1) | `sha256sum`, then compare with the chain's code hash; CI job "Rebuild the deployed WASM from source" prints `MATCH` | Deployment [`7K4729…y2dJ`](https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ); `codeHash` in `/api/testnet/proof` |
 
-**Not yet shown:** that `deployment/agentshield_vault.wasm` rebuilds byte for byte from `lib.rs`. The Rust toolchain used for the deployed build was not recorded. The trust boundaries are drawn in [docs/ARCHITECTURE_AND_EVIDENCE.md](docs/ARCHITECTURE_AND_EVIDENCE.md).
+**The deployed WASM rebuilds byte for byte from this source.** The WASM names its compiler in its `producers` section, `rustc 1.96.0 (ac68faa20 2026-05-25)`, and its panic strings contain the folders of the original Windows build machine. [`work/reproduce-vault-wasm.ps1`](work/reproduce-vault-wasm.ps1) installs Rust 1.96.0, recreates those folders, builds `contracts/vault` and compares SHA-256 hashes. The CI job **Rebuild the deployed WASM from source** runs it on a Windows runner on every push. On 2026-11-03 the rebuilt file was 324,708 bytes with SHA-256 `138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09`, the same as `deployment/agentshield_vault.wasm` and therefore the code hash on chain. The trust boundaries are drawn in [docs/ARCHITECTURE_AND_EVIDENCE.md](docs/ARCHITECTURE_AND_EVIDENCE.md).
 
 ## Where things are
 
@@ -70,7 +71,7 @@ Each rule the vault enforces, where it lives in [`contracts/vault/src/lib.rs`](c
 | `sandbox/` | NEAR Sandbox tests that run the deployed WASM |
 | `tests/` | Node tests: simulator, key scope, AI preflight, API routes, historical proof regression and site evidence (`npm test`) |
 | `api/testnet/` | Read-only Vercel functions `proof`, `gallery`, `status` and `account`. GET only; no signing. |
-| `work/` | Scripts: `verify-*.mjs` verifiers, the NEAR AI agent, the execution scripts used for the recorded runs, the preview server and the secret scan |
+| `work/` | Scripts: `verify-*.mjs` verifiers, `reproduce-vault-wasm.ps1` (byte-for-byte rebuild), the NEAR AI agent, the execution scripts used for the recorded runs, the preview server and the secret scan |
 | `outputs/testnet-*.json` | Committed evidence: intents (written before broadcast), results and independent proofs |
 | `outputs/agentshield-ui/` | The website, served as static files by Vercel |
 | `frontend/wallet-entry.mjs` | Source of the wallet bundle (`npm run build:wallet`) |
@@ -145,7 +146,7 @@ node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 ```
 
-For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2. On 2026-11-03 `npm test` passed 31/31 and the Rust unit tests passed 12/12, including the new total-budget test. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. The [private GitHub Actions CI run for `cea8871`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed the credential scan, all Node tests, wallet build, Rust units, and Sandbox on 2026-11-03; CI runs the same steps on every push. Run the scripts again to check current RPC state.
+For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2. On 2026-11-03 `npm test` passed 31/31 and the Rust unit tests passed 12/12, including the new total-budget test. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. The [private GitHub Actions CI run for `cea8871`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed the credential scan, all Node tests, wallet build, Rust units, and Sandbox on 2026-11-03; CI runs the same steps on every push, plus the Windows rebuild of the deployed WASM. Run the scripts again to check current RPC state.
 
 ## Security boundaries and limitations
 
@@ -168,7 +169,7 @@ node --use-system-ca work/prepare-near-ai-payment.mjs --check-policy
 
 Those checks passed locally (5/5 tests and a read-only live ALLOW/WARN/BLOCK policy check). A local `.env` now supplies `NEAR_AI_KEY` without entering Git or Vercel. The first authorized NEAR AI Cloud request returned HTTP 402 on 2026-11-02; a later **non-inference** API key check also returned 402, meaning credits or the configured spend limit must be resolved. No model completion was received, and the prompt-injection inference was not sent. Fresh approval is required before any further billable call. The local CLI can also read a key from `NEAR_AI_KEY_FILE` outside the repository. Do not put the key in the frontend, Git, or a Vercel public environment variable. The deployed site has no NEAR AI inference route and does not need the key. Do not call the proposed agent payment settled without its own authorized transaction and receipt verification. [NEAR AI's quickstart](https://docs.near.ai/cloud/quickstart) documents key and credit setup.
 
-Detailed implementation and current gates are in [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md), [release/submission draft](docs/RELEASE_AND_SUBMISSION.md), and [project context](outputs/AgentShield-Project-Context.md). The GitHub repository is private until the owner approves public release; the website is public.
+Detailed implementation and current gates are in [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md), [release/submission draft](docs/RELEASE_AND_SUBMISSION.md), and [project context](outputs/AgentShield-Project-Context.md). The GitHub repository and the website are public.
 
 ## Licence
 

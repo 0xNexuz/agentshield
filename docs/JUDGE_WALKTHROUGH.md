@@ -21,12 +21,10 @@ For a guided version, open **Judge mode** (`/#judge`) and press **Watch AgentShi
 
 | Time | Screen / spoken line |
 | --- | --- |
-| 0–12s | Thesis hero. “AI agents can act quickly. AgentShield gives them spending authority with a hard onchain boundary.” |
-| 12–28s | Architecture graphic. “The owner sets one agent, one recipient, per-payment, daily and total caps. A function-call key can only request payment from this vault.” |
-| 28–43s | Instant Demo. “Try the scenarios. This is a simulator for exploration, clearly separate from the live evidence.” |
-| 43–67s | Evidence payment proof and JSON. “Here is a real restricted-key Testnet request. The transfer receipt succeeded, the callback recorded SETTLED, and the contract accounting agrees.” |
-| 67–90s | Three rejection cards. “Overspend, an unlisted recipient, and replay were all signed and rejected by the contract. Each produced zero payout receipts.” |
-| 90–104s | Lab and policy. “The public vault is readable without a wallet. The owner wallet path and live AI model are still verification gates.” |
-| 104–120s | Evidence table / closing. “Every onchain claim has a transaction and a reproducible RPC check. The model can propose; the vault decides.” |
+| 0–10s | Homepage, with the preloader running into the hero. “AI agents can be talked into spending. AgentShield puts the spending rules in a NEAR contract instead.” |
+| 10–65s | **Judge mode**, press **Watch AgentShield in action**. Use **Next** to step through the owner, agent, guardian, authorized payment and attack scenes, then let the proof scene finish. “The owner signs the limits. The agent's key can only ask. The contract checks every rule itself. Here is a real Testnet payment that settled, and a real attack it refused.” |
+| 65–85s | **Attack the vault**, choose **Wrong recipient**, press the live recheck. “Three attacks were really signed and sent: overspend, an unlisted recipient and a replay. The contract refused each one, with zero payouts, and the site rechecks that against public RPC right now.” |
+| 85–100s | Open `/api/testnet/proof`. “PASS, SETTLED, and the code hash of the deployed contract.” |
+| 100–120s | The README claims table on GitHub. “Every rule maps to a line of code, its tests and its transaction. Revocation and the live AI model are not yet shown on Testnet, and the site says so. The model can propose; the vault decides.” |
 
 Record the actual UI and genuine receipts. If AI inference or owner sign-in later becomes verified, revise the script to show the new evidence; do not splice mock output into a live claim.

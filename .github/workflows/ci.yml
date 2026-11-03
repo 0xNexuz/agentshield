@@ -36,3 +36,13 @@ jobs:
           bash work/setup-near-sandbox.sh
           npm ci --prefix sandbox --ignore-scripts --no-audit --no-fund
           bash work/run-sandbox-tests.sh
+
+  reproduce-wasm:
+    name: Rebuild the deployed WASM from source
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild with Rust 1.96.0 and compare with deployment/agentshield_vault.wasm
+        shell: pwsh
+        run: ./work/reproduce-vault-wasm.ps1

@@ -2,7 +2,7 @@
 
 ## Public-release gate
 
-- [x] Private repository exists at `0xNexuz/agentshield`; production site is public.
+- [x] Repository `0xNexuz/agentshield` is public (made public by the owner on 2026-11-03); the production site is public.
 - [x] Tracked Git history through the passing private CI checkpoint scanned with `node work/scan-tracked-secrets.mjs`: zero findings. Scan again immediately before changing repository visibility; a pattern scan is not a guarantee that no credential exists.
 - [x] `.env`, `.env.*`, local Testnet credentials and `.vercel/` are Git ignored. Public transaction hashes and account IDs are intentional evidence, not secrets.
 - [x] Read-only Testnet payment and three rejection proof APIs returned PASS on 2026-11-02.
@@ -14,7 +14,7 @@
 - [ ] Add NEAR AI Cloud credits, obtain a fresh bounded inference approval, then record genuine normal and prompt-injection responses. Until then describe P5 as blocked.
 - [ ] Decide whether to renew the mandate before its 2026-11-09 expiry. Review [the unsigned proposal](../deployment/testnet-mandate-renewal-proposal.json); owner approval and signature are still required.
 - [ ] Decide whether to fund an isolated revocation vault. The prior attempt failed at initialization and the user stopped that lab. No new transaction is authorized.
-- [ ] Repeat the tracked-history scan and manual review, then obtain explicit permission before changing GitHub visibility to public.
+- [x] The tracked-history scan returned zero findings on 2026-11-03, and the owner then made the repository public.
 - [ ] Publish a genuine video or screenshots on X and submit the two public links only after separate user authorization.
 
 ## Reproduce from a clone
@@ -52,17 +52,19 @@ The original vault stays active. The stopped attempt's first transaction failed 
 ## Submission form draft
 
 - **Project:** AgentShield
-- **Track:** AI Security & Defense
+- **Tracks:** `security` (AI Security & Defense). `agents` (Agent Economy) also fits; the form accepts every track the project fits, still as one submission.
 - **Website:** https://agentshield-lab.vercel.app/
-- **Repository:** https://github.com/0xNexuz/agentshield — **currently private**; must be made public with approval before submission.
+- **Repository:** https://github.com/0xNexuz/agentshield (public).
 - **Demo post:** pending; no post is claimed.
-- **What we built:** AgentShield is a NEAR Testnet vault that lets an owner bound an AI agent's payment authority. An onchain mandate names one agent and an allowlisted recipient and enforces per-payment, daily, total, expiry, nonce, and revocation rules. The agent uses a function-call key restricted to the vault's `request_payment` method. A real 0.005 test NEAR payment has a finalized recipient transfer and SETTLED callback; three signed attacks were rejected with zero payout receipts. The site offers a separate five-scenario simulator and a walletless Evidence view that rechecks public RPC. NEAR AI proposal parsing and ALLOW/WARN/BLOCK preflight are implemented locally, with mocked tests, but genuine model inference is currently blocked by HTTP 402. Browser owner sign-in and live revocation remain unverified.
+- **What we built (1267 characters):** AgentShield is a NEAR Testnet vault that lets an owner give an AI agent spending power without giving it the keys. An owner-signed onchain mandate names one agent and an allowlisted recipient and enforces per-payment, daily and total budgets (pending payments included), expiry, single-use nonces and revocation. The agent holds a function-call key restricted to the vault's request_payment method; the contract, not the agent, decides and pays, and records settlement only after the transfer result. On Testnet, a real 0.005 test NEAR payment settled, and three signed attacks (overspend, unlisted recipient, replay) were refused with zero payout receipts. The site's walletless Judge Mode replays these records in a six-scene film, labelling every fact as simulation, historical onchain replay, live RPC verified or not yet verified, and its proof APIs recheck public RPC on each visit. The README maps each rule to its line of code, its unit and NEAR Sandbox tests, and its transaction. Honest limits: revocation is tested in NEAR Sandbox against the deployed WASM but not yet on Testnet; NEAR AI proposal parsing and ALLOW/WARN/BLOCK preflight are implemented with mocked tests, but no real model completion has run (HTTP 402); owner wallet sign-in is unverified.
 
 The [official event page](https://nearhackathon.com/) says development closes **14 Nov 2026, 23:59 UTC**, the repository must be public, a public X demo post with video or screenshots must tag **@NEARProtocol** and **#NEARHackathon**, and both links must be submitted. The form requires a team lead, email, team size, track, payout NEAR wallet account, repository link, demo post link, and 20–2,000-character description. One submission per project; no wallet connection is needed to submit.
 
 ## Public X post draft — do not post yet
 
-Built AgentShield at NEAR HACKATHON: a NEAR Testnet vault that limits what an AI payment agent can request. One settled restricted-key payment, three onchain rejection proofs, and a public RPC-backed evidence lab. Live AI inference is still gated by credits; we label that honestly. Demo: https://agentshield-lab.vercel.app/ Code: https://github.com/0xNexuz/agentshield @NEARProtocol #NEARHackathon
+Built AgentShield at NEAR HACKATHON: a NEAR Testnet vault that caps what an AI agent can pay. One real settled payment and three attacks the contract refused, rechecked live on every visit. 75-second replay: https://agentshield-lab.vercel.app/#judge Code: https://github.com/0xNexuz/agentshield @NEARProtocol #NEARHackathon
+
+That is 276 characters as X counts them (each link counts as 23). Record the video from the live site, not a local build: open `/#judge`, press **Watch AgentShield in action**, and let the proof scene reach `LIVE RPC VERIFIED`, then open `/api/testnet/proof` to show `PASS / SETTLED`.
 
 Attach the actual demo video or genuine screenshots before posting. Recheck the AI sentence if that milestone changes.
 
