@@ -1,0 +1,21 @@
+{
+  "network": "testnet",
+  "status": "PROPOSED_NOT_SIGNED",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "expectedCodeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "ownerAccountId": "agentshield-mag-1d2f78801994.testnet",
+  "expectedCurrentVersion": 1,
+  "currentExpiryNs": "1794216105339870776",
+  "proposedExpiryNs": "1794700800000000000",
+  "method": "set_mandate",
+  "gas": "30000000000000",
+  "attachedDepositYocto": "0",
+  "args": {
+    "agent": "agentshield-agent-0359da1630bb.testnet",
+    "recipients": ["agentshield-recipient-7bb4a0df1077.testnet"],
+    "per_payment_yocto": "10000000000000000000000",
+    "daily_yocto": "20000000000000000000000",
+    "total_yocto": "50000000000000000000000",
+    "expires_at_ns": "1794700800000000000"
+  }
+}

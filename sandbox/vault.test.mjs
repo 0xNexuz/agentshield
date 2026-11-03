@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { KeyPair, Worker } from 'near-workspaces';
 import { transactions } from 'near-api-js';
 
-const WASM = fileURLToPath(new URL('../contracts/vault/target/wasm32-unknown-unknown/release/agentshield_vault.wasm', import.meta.url));
+const WASM = fileURLToPath(new URL('../deployment/agentshield_vault.wasm', import.meta.url));
 const EXPECTED_CODE_HASH = '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN';
 const NEAR = 10n ** 24n;
 const DAY_NS = 86_400_000_000_000n;

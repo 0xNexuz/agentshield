@@ -1,0 +1,38 @@
+name: AgentShield checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Scan tracked history for credential material
+        run: node work/scan-tracked-secrets.mjs
+      - name: Install JavaScript dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Test simulator, key scope, AI preflight, routes, and historical proof
+        run: node --test tests/*.test.mjs
+      - name: Build wallet bundle
+        run: npm run build:wallet
+      - name: Test vault units
+        run: cargo test --manifest-path contracts/vault/Cargo.toml --locked
+      - name: Install local Sandbox and test actual WASM
+        run: |
+          bash work/setup-linux-node.sh
+          bash work/setup-near-sandbox.sh
+          npm ci --prefix sandbox --ignore-scripts --no-audit --no-fund
+          bash work/run-sandbox-tests.sh

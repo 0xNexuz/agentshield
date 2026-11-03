@@ -1,0 +1,3 @@
+# AgentShield project context
+
+The full chronological evidence and decisions are in [AgentShield-Project-Context.md](../outputs/AgentShield-Project-Context.md). Use [architecture and evidence](ARCHITECTURE_AND_EVIDENCE.md) for current proof references and [release/submission packet](RELEASE_AND_SUBMISSION.md) for pending gates. The latest checkpoint is 2026-11-02: one settled restricted-agent Testnet payment and three finalized contract rejections are independently verified; live revocation, real NEAR AI inference, and browser owner sign-in are unverified. The production site is public, the GitHub repository is private, and the active mandate expires 2026-11-09 09:21:45 UTC. The renewal proposal is unsigned.
