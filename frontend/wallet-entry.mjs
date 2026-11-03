@@ -1,5 +1,4 @@
 import { setupWalletSelector, actionCreators } from '@near-wallet-selector/core';
-import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
 import { setupHotWallet } from '@near-wallet-selector/hot-wallet';
 
 const OWNER_METHODS = new Set(['fund', 'set_mandate', 'pause', 'resume', 'revoke', 'withdraw_excess']);
@@ -8,7 +7,7 @@ const ACCOUNT = /^(?:[a-z0-9_-]+(?:\.[a-z0-9_-]+)*\.testnet|[0-9a-f]{64})$/;
 export async function createWalletBridge(onChange = () => {}) {
   const selector = await setupWalletSelector({
     network: 'testnet',
-    modules: [setupMeteorWallet(), setupHotWallet()],
+    modules: [setupHotWallet()],
     optimizeWalletOrder: true,
   });
   if (selector.options.network.networkId !== 'testnet') throw new Error('Wallet selector is not on NEAR testnet.');

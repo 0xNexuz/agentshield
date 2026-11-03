@@ -237,3 +237,9 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Independent check from this session: the production `/api/testnet/proof` (public RPC) reported `PASS / SETTLED` for the historical payment, `currentMandateVersion` 2, `mandateExpiryNs` `1795996800000000000`, not revoked, unchanged limits.
 - The site now treats the version 2 renewal as its committed fallback (`MANDATE_RENEWAL` in `evidence-records.mjs`, checked against the evidence file by a new test), so the homepage shows version 2 even if RPC is unreachable. `npm test` 33/33; browser QA 93/93 and 70/70.
 
+### 2026-11-03 — Meteor wallet removed
+
+- All 5 high `npm audit --omit=dev` advisories came through `@near-wallet-selector/meteor-wallet` (`@meteorwallet/sdk`, `nanoid`, `query-string`, `decode-uri-component`), so it was removed from `package.json` and `frontend/wallet-entry.mjs`. The Lab's owner-wallet dialog now offers HOT Wallet only, and wallet code still loads only when that button is pressed.
+- `npm audit --omit=dev`: 0 critical, 0 high, 6 moderate (HOT wallet chain; the only offered fix is a major downgrade to `@near-wallet-selector/hot-wallet` 9.5.4), 15 low. `outputs/agentshield-ui/wallet-bundle.js` went from 3.0 MB to 1.1 MB.
+- Checks: `npm test` 33/33, browser QA 93/93 and 70/70, wallet dialog lists HOT Wallet with no page errors.
+

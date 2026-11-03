@@ -147,7 +147,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 - The vault account has no access keys of its own, and no upgrade method was found in its interface. That is not a formal immutability claim.
 - Revocation is tested in NEAR Sandbox only. An isolated Testnet revocation vault was attempted, but the transaction finalized `FAILED` because the initializer was given an unsupported domain; that lab was then stopped. See `outputs/testnet-revocation-deploy-failure.json`.
 - NEAR AI calls return HTTP 402 until credits are added, so no model output is presented as live. The key stays in a local `.env` and never reaches Git, Vercel or the browser.
-- Owner wallet sign-in has not been verified. On 2026-11-03 `npm audit --omit=dev` reported 5 high advisories, all in the Meteor wallet dependency chain, with no automatic fix.
+- Owner wallet sign-in has not been verified; the Lab offers HOT Wallet only. After the Meteor wallet was removed on 2026-11-03, `npm audit --omit=dev` reports no high or critical advisories (6 moderate, all in the HOT wallet chain, whose only offered fix is a major downgrade, and 15 low).
 - The mandate (version 2) expires 2026-11-30 00:00 UTC; after that the vault refuses new requests. The homepage shows the live state, and the payment and rejection proofs stay verifiable after expiry because they are tied to version 1.
 
 ## More
