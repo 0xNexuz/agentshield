@@ -10,9 +10,9 @@ This artwork is the hero image, rather than a row of separate reference panels. 
 
 ## Copy and product truth
 
-The lead line is **“Power to act. Authority to stop.”** The owner specifies identity, recipient, amount, daily and total budget, and expiry. The agent requests payment under that mandate. The intended NEAR contract vault would enforce it. This is a proposed architecture, not a verified security claim.
+The lead line is **“Power to act. Authority to stop.”** The owner specifies identity, recipient, amount, daily and total budget, and expiry. The agent requests payment under that mandate. The NEAR contract vault enforces it. It is deployed on NEAR Testnet; this is not a mainnet or audited security claim.
 
-The current interface has a local-only mandate draft and a read-only NEAR testnet account check. It has no wallet, deployed AgentShield vault, transaction path, or execution. AgentShield evidence is empty, and pause/revoke controls are disabled. Keep authorization, chain submission, and independent settlement confirmation distinct when real integration is built. Never fill empty product screens with invented balances or receipts.
+The vault is deployed on NEAR Testnet. One restricted-agent payment has settled and three contract rejections are independently verified, and the site rechecks them against public RPC. The Mandate form is a browser-only draft. Owner pause and revoke controls stay disabled until a wallet signing flow is verified end to end. Revocation is tested in NEAR Sandbox only, and NEAR AI inference has not run. Keep authorization, chain submission, and settlement confirmation distinct. Never fill product screens with invented balances or receipts.
 
 ## Interaction rules
 

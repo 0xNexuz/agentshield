@@ -1,5 +1,7 @@
 # AgentShield mainnet read-only smoke check
 
+> **Historical note, written 2026-10-26.** A read-only mainnet check from before the build. AgentShield has no mainnet deployment and claims none; current state is in [README.md](../README.md).
+
 **Date:** 2026-10-26. **Scope:** public NEAR mainnet reads only. No wallet, signing, deployment, deposit, or transfer.
 
 ## Hackathon network rule

@@ -7,6 +7,7 @@
 - [x] `.env`, `.env.*`, local Testnet credentials and `.vercel/` are Git ignored. Public transaction hashes and account IDs are intentional evidence, not secrets.
 - [x] Read-only Testnet payment and three rejection proof APIs returned PASS on 2026-11-02.
 - [x] Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, route 2/2, historical proof regression 2/2 passed locally on 2026-11-02.
+- [x] On 2026-11-03, `npm test` passed 31/31 and the Rust unit tests passed 12/12, including a new total-budget test.
 - [x] [Private GitHub Actions run `41586354770`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed secret scanning, Node tests, wallet build, Rust units, and Sandbox for commit `cea8871` on 2026-11-03. Earlier CI runs exposed a missing cross-platform lockfile entry, an ignored local WASM path, and a concurrent signer race in the test harness. All were fixed and the complete suite reran successfully.
 - [ ] Triage production dependency advisories before public release. `npm audit --omit=dev --json` on 2026-11-03 reported **0 critical, 5 high, 6 moderate, 15 low**. The high findings are in the Meteor wallet dependency chain (`@meteorwallet/sdk`, `decode-uri-component`, `nanoid`, `query-string`, and the direct Meteor selector module); npm reported no automatic fix. The wallet is browser-side and sign-in is not yet verified, so do not claim this path is security-audited.
 - [ ] Verify a real owner browser wallet sign-in. No transaction approval is needed for this check.

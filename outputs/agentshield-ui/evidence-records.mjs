@@ -90,7 +90,8 @@ export const REJECTIONS_SOURCE = "outputs/testnet-negative-independent-proofs.js
 
 export const REVOCATION = Object.freeze({
   status: "NOT_YET_VERIFIED",
-  note: "No live revocation proof exists. Revoking this vault's mandate would permanently stop its new requests, and the isolated revocation-vault deployment finalized FAILED. Revocation is shown as a simulation only.",
+  note: "Not yet shown on NEAR Testnet. The NEAR Sandbox tests run the deployed contract code and confirm that a revoked mandate refuses new requests. A Testnet proof needs a separate vault, because revoking this one would stop it permanently, and the first isolated attempt finalized FAILED. Here revocation runs in the local simulator.",
+  sandboxTest: "sandbox/vault.test.mjs: revocation prevents new payments after settlement",
   source: "outputs/testnet-revocation-deploy-failure.json",
 });
 
@@ -120,6 +121,15 @@ export function checkIndexFor(reason) {
   if (reason === "INVALID_EXPIRY") return 3;
   const index = CONTRACT_CHECKS.findIndex(check => check.code === reason);
   return index;
+}
+
+// Current mandate state from either the live proof (current chain state) or the committed record.
+export function mandateState({ expiresAtNs, revoked = false } = {}, now = Date.now()) {
+  if (revoked) return "revoked";
+  return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(expiresAtNs) ? "expired" : "active";
+}
+export function formatUtcNs(ns) {
+  return `${new Date(Number(BigInt(ns) / 1_000_000n)).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 }
 
 // One shared, cached live recheck per page load. Each call site decides how to label failure.

@@ -3,7 +3,7 @@
 // Onchain facts come from ./evidence-records.mjs (historical) or the read-only /api/testnet/* proofs (live).
 import {
   TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS,
-  explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery,
+  explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs,
 } from "./evidence-records.mjs";
 import { createSimulator, fromYocto } from "./simulator.mjs";
 import { preflightPayment } from "./preflight.mjs";
@@ -504,7 +504,7 @@ const ATTACKS = [
     request: { recipient: REJECTIONS.replay.recipient, amountNear: REJECTIONS.replay.amountNear, nonce: REJECTIONS.replay.nonce },
     reason: REJECTIONS.replay.reason, decision: `REJECTED · ${REJECTIONS.replay.reason}`, record: REJECTIONS.replay },
   { id: "revoke", title: "Revocation", plate: "owner-mandate", focus: "75% 40%", truth: "unverified",
-    attempt: "The owner revokes the mandate, then the agent asks again. Shown in the local simulator only.",
+    attempt: "The owner revokes the mandate, then the agent asks again. Not yet shown on Testnet, so this runs in the local simulator. The NEAR Sandbox tests get the same result from the deployed contract code.",
     request: { recipient: ACCOUNTS.recipient, amountNear: PAYMENT.amountNear, nonce: "after-revoke-1" },
     reason: "REVOKED", decision: null, record: null },
 ];
@@ -814,10 +814,41 @@ function setupCast(root) {
   });
 }
 
+/* ---------- overview mandate status: live chain state when the proof API answers ---------- */
+function setupMandateStatus(root) {
+  const card = root.querySelector("[data-mandate-status]");
+  if (!card) return;
+  const strong = card.querySelector("strong");
+  const line = card.querySelector("p");
+  const committed = { expiresAtNs: MANDATE.expiresAtNs, revoked: false, version: MANDATE.version, perPaymentYocto: MANDATE.perPaymentYocto };
+  const render = (mandate, source) => {
+    const state = mandateState(mandate);
+    const until = formatUtcNs(mandate.expiresAtNs);
+    card.dataset.state = state;
+    strong.textContent = `${state.toUpperCase()} / TESTNET`;
+    const text = {
+      active: `Version ${mandate.version} allows up to ${fromYocto(mandate.perPaymentYocto)} NEAR per payment, until ${until}.`,
+      expired: `Version ${mandate.version} expired on ${until}, so the vault refuses new requests. The settled payment and the three rejections stay verifiable.`,
+      revoked: `The owner revoked version ${mandate.version}, so the vault refuses new requests. Past evidence stays verifiable.`,
+    }[state];
+    line.textContent = `${text} ${source}`;
+  };
+  render(committed, "From the committed record; checking the chain…");
+  fetchLiveProof()
+    .then(proof => proof.mandateExpiryNs
+      ? render({
+        expiresAtNs: proof.mandateExpiryNs, revoked: proof.mandateRevoked === true,
+        version: proof.currentMandateVersion ?? MANDATE.version, perPaymentYocto: proof.mandatePerPaymentYocto ?? MANDATE.perPaymentYocto,
+      }, "Rechecked against Testnet RPC on this visit.")
+      : render(committed, "From the committed record; the live proof did not report the current mandate."))
+    .catch(() => render(committed, "From the committed record; the live recheck did not answer."));
+}
+
 export function setupCinematic() {
   const judge = document.getElementById("view-judge");
   const attack = document.getElementById("view-attack");
   if (judge) setupJudge(judge);
   if (attack) { setupAttack(attack); setupInjection(attack.querySelector("#injection")); }
   setupCast(document);
+  setupMandateStatus(document);
 }

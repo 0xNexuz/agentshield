@@ -797,4 +797,34 @@ mod tests {
             RequestStatus::Settled
         );
     }
+
+    #[test]
+    fn total_budget_counts_pending_requests() {
+        let mut vault = setup();
+        testing_env!(context("owner.testnet").build());
+        vault.set_mandate(
+            id("agent.testnet"),
+            vec![id("merchant.testnet")],
+            U128(TENTH),
+            U128(TENTH * 3),
+            U128(TENTH * 2),
+            (NOW + DAY_NS).to_string(),
+        );
+        testing_env!(context("agent.testnet").build());
+        assert!(matches!(
+            request(&mut vault, "total-1", TENTH, "merchant.testnet"),
+            PaymentDecision::Authorized { .. }
+        ));
+        assert!(matches!(
+            request(&mut vault, "total-2", TENTH, "merchant.testnet"),
+            PaymentDecision::Authorized { .. }
+        ));
+        assert!(
+            matches!(request(&mut vault, "total-3", 1, "merchant.testnet"),
+            PaymentDecision::Rejected { reason } if reason == "TOTAL_LIMIT")
+        );
+        let status = vault.get_vault_status();
+        assert_eq!(status.pending_total_yocto.0, TENTH * 2);
+        assert_eq!(status.accepted_requests, 2);
+    }
 }

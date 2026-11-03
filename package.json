@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
     "build:wallet": "node work/build-wallet.mjs",
     "test:sim": "node --test tests/simulator.test.mjs",
     "test:key-scope": "node --test tests/agent-key-scope.test.mjs",
@@ -21,5 +22,6 @@
   },
   "devDependencies": {
     "esbuild": "0.28.2"
-  }
+  },
+  "license": "MIT"
 }

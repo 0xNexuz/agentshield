@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   TRUTH, ACCOUNTS, VAULT, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, checkIndexFor,
+  mandateState, formatUtcNs,
 } from '../outputs/agentshield-ui/evidence-records.mjs';
 import { preflightPayment as browserPreflight } from '../outputs/agentshield-ui/preflight.mjs';
 import { preflightPayment as serverPreflight } from '../work/near-ai-payment-agent.mjs';
@@ -183,4 +184,18 @@ test('favicon and app icons exist and are linked from the page', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(ui, 'site.webmanifest'), 'utf8'));
   for (const icon of manifest.icons) assert.ok(fs.existsSync(path.join(ui, icon.src)), `${icon.src} exists`);
   assert.match(fs.readFileSync(path.join(ui, 'assets/icons/favicon.svg'), 'utf8'), /^<svg [^>]*viewBox="0 0 64 64"/);
+});
+
+test('mandate status is computed, never hard-coded as active', () => {
+  const expiry = MANDATE.expiresAtNs;
+  const expiryMs = Number(BigInt(expiry) / 1_000_000n);
+  assert.equal(mandateState({ expiresAtNs: expiry }, expiryMs - 1), 'active');
+  assert.equal(mandateState({ expiresAtNs: expiry }, expiryMs + 1), 'expired');
+  assert.equal(mandateState({ expiresAtNs: expiry, revoked: true }, expiryMs - 1), 'revoked');
+  assert.equal(formatUtcNs(expiry), '2026-11-09 09:21 UTC');
+  const html = fs.readFileSync(path.join(ui, 'index.html'), 'utf8');
+  assert.ok(html.includes('data-mandate-status'), 'homepage mandate card is wired for live status');
+  for (const stale of ['ACTIVE / TESTNET', 'DESIGN STUDY', 'LOCAL BUILD', 'vault design', 'source is compiled', 'Live revocation remains unverified']) {
+    assert.ok(!html.includes(stale), `stale wording "${stale}" is gone from the site`);
+  }
 });

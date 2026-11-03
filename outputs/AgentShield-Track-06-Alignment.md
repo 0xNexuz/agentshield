@@ -1,5 +1,7 @@
 # AgentShield — Track 06 alignment checkpoint
 
+> **Historical note, written 2026-10-31.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with one settled payment and three contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
+
 **Recorded:** 2026-10-31 (Africa/Lagos). **Scope:** existing Balanced AgentShield architecture, local work only. Official example: https://github.com/nearai/near-hackathon-prompt-examples/blob/main/tracks/06-security.md .
 
 Track 06 names spending limits, policy engines, function-call keys, and an allow/warn/block counterparty example. AgentShield keeps its contract-held vault as the final spending authority. The example's account-history scoring, shared blocklist, and TEE verification are deferred.

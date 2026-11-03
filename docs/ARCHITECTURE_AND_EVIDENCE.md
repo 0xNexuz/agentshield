@@ -30,7 +30,7 @@ The live owner wallet has **not** been verified through browser sign-in. The NEA
 | Contract rejection | Finalized signed call, contract rejection, zero payout receipts | Three public Testnet transactions independently checked |
 | Authorized call | Finalized `request_payment` and decision log | One public Testnet transaction independently checked |
 | Completed settlement | Exact successful recipient transfer receipt, callback log, `SETTLED` request record | One public Testnet transaction independently checked |
-| Live revocation | Separate approved owner revoke and post-revoke agent probe | **Unverified; isolated experiment stopped** |
+| Live revocation | Separate approved owner revoke and post-revoke agent probe | **Not yet on Testnet; isolated experiment stopped.** NEAR Sandbox test `revocation prevents new payments after settlement` passes against `deployment/agentshield_vault.wasm` |
 
 ## Public Testnet references
 
