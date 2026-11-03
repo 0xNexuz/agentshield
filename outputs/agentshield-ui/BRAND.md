@@ -34,3 +34,7 @@ Judge Mode, Attack the Vault, and the prompt-injection challenge use eight origi
 ## Preloader (2026-11-03)
 
 The first-visit preloader (`preloader.css`, `preloader.js`) puts a hand-drawn sticker agent over the existing hero composite. The agent is drawn as inline SVG with a white die-cut border, inked limbs, a slit visor and a gold four-point star, and it runs in place. It borrows only the sticker-cutout style of the fourth reference the owner supplied; it is an original drawing, not a copy of that character. The hero artwork itself is unchanged. The preloader waits for the hero image, fonts and page load, shows for at least 1.8 s on a first visit (0.6 s on repeat visits in the same tab), never longer than 5 s, and can be skipped with Escape, a click or the Skip intro button. With reduced motion it does not animate. Without JavaScript it hides itself after 7 s.
+
+## Favicon (2026-11-03)
+
+The favicon is the site's ✣ brand sigil, drawn as an original vector: four ivory balloon spokes with a gold centre on an obsidian tile. Files: `favicon.ico` (16/32/48), `assets/icons/favicon.svg`, `assets/icons/apple-touch-icon.png` (180, square; iOS rounds it), and `assets/icons/icon-192.png` / `icon-512.png` (mark inside the maskable safe zone) listed in `site.webmanifest`.

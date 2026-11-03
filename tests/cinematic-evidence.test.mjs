@@ -173,3 +173,14 @@ test('the cinematic layer never signs or sends transactions', () => {
   assert.doesNotMatch(code, /wallet-bundle|signAndSend|signTransaction|functionCall\(|privateKey|NEAR_AI_KEY|method:\s*["']POST/);
   for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/testnet\/(proof|gallery)"/);
 });
+
+test('favicon and app icons exist and are linked from the page', () => {
+  const html = fs.readFileSync(path.join(ui, 'index.html'), 'utf8');
+  for (const href of ['./favicon.ico', './assets/icons/favicon.svg', './assets/icons/apple-touch-icon.png', './site.webmanifest']) {
+    assert.ok(html.includes(`href="${href}"`), `index.html links ${href}`);
+    assert.ok(fs.existsSync(path.join(ui, href)), `${href} exists`);
+  }
+  const manifest = JSON.parse(fs.readFileSync(path.join(ui, 'site.webmanifest'), 'utf8'));
+  for (const icon of manifest.icons) assert.ok(fs.existsSync(path.join(ui, icon.src)), `${icon.src} exists`);
+  assert.match(fs.readFileSync(path.join(ui, 'assets/icons/favicon.svg'), 'utf8'), /^<svg [^>]*viewBox="0 0 64 64"/);
+});
