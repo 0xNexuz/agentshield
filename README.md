@@ -8,6 +8,8 @@ The frontend includes a five-scenario Instant Demo and a walletless Evidence vie
 
 [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) serves the existing frontend and read-only Testnet proof functions. Its Evidence view rechecks the public RPC on each visit. It has no signing endpoint; wallet sign-in has not been verified end to end. The deployment is separate from the onchain vault and does not change its mandate.
 
+The 2026-11-03 production deployment `dpl_Cyu9uYgYiomNDmpCSPXgx6NFfxdm` serves the corrected owner-account label and a renewal-safe historical payment proof. Public unauthenticated checks returned HTTP 200 for the page, Testnet status, payment proof (`PASS / SETTLED`), and all three rejection proofs. Desktop and mobile browser checks passed; real owner wallet sign-in remains unverified.
+
 ## Verified Testnet deployment
 
 - Vault: [`vault.agentshield-mag-1d2f78801994.testnet`](https://testnet.nearblocks.io/address/vault.agentshield-mag-1d2f78801994.testnet)
