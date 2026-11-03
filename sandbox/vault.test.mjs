@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { KeyPair, Worker } from 'near-workspaces';
-import { transactions } from 'near-api-js';
+import { connect, keyStores, transactions } from 'near-api-js';
 
 const WASM = fileURLToPath(new URL('../deployment/agentshield_vault.wasm', import.meta.url));
 const EXPECTED_CODE_HASH = '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN';
@@ -175,11 +175,23 @@ test('AgentShield vault executes in NEAR Sandbox', { timeout: 240_000 }, async (
       await agent.batch(agent).addKey(key.getPublicKey()).transact();
     }
     const recipientBefore = BigInt((await merchant.balance()).total);
-    const transactions = await Promise.all(keys.map((key, index) =>
-      agent.callRaw(vault, 'request_payment', requestArgs(merchant.accountId, NEAR / 10n, `parallel-${index}`, expiry), { signWithKey: key })
+    // near-workspaces temporarily swaps keys in one filesystem file per account.
+    // Isolated in-memory signers let both agent keys sign concurrently without
+    // racing that test-harness file, while preserving the shared onchain budget.
+    const signers = await Promise.all(keys.map(async key => {
+      const keyStore = new keyStores.InMemoryKeyStore();
+      await keyStore.setKey('sandbox', agent.accountId, key);
+      const near = await connect({ networkId: 'sandbox', nodeUrl: worker.rpcAddr, keyStore });
+      return near.account(agent.accountId);
+    }));
+    const outcomes = await Promise.all(signers.map((signer, index) =>
+      signer.signAndSendTransaction({ receiverId: vault.accountId,
+        actions: [transactions.functionCall('request_payment',
+          requestArgs(merchant.accountId, NEAR / 10n, `parallel-${index}`, expiry), 70_000_000_000_000n, 0n)],
+        returnError: true })
     ));
-    assert.ok(transactions.every((tx) => !tx.failed), 'both request transactions must reach the contract');
-    const decisions = transactions.map((tx) => tx.parseResult());
+    assert.ok(outcomes.every((outcome) => !outcome.status.Failure), 'both request transactions must reach the contract');
+    const decisions = outcomes.map((outcome) => JSON.parse(Buffer.from(outcome.status.SuccessValue, 'base64').toString('utf8')));
     assert.equal(decisions.filter((d) => d.decision === 'AUTHORIZED').length, 1);
     assert.equal(decisions.filter((d) => d.reason === 'DAILY_LIMIT').length, 1);
     const status = await vault.view('get_vault_status');

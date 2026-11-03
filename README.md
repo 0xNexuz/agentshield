@@ -8,6 +8,8 @@ The frontend includes a five-scenario Instant Demo and a walletless Evidence vie
 
 [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) serves the existing frontend and read-only Testnet proof functions. Its Evidence view rechecks the public RPC on each visit. It has no signing endpoint; wallet sign-in has not been verified end to end. The deployment is separate from the onchain vault and does not change its mandate.
 
+The 2026-11-03 production deployment `dpl_Cyu9uYgYiomNDmpCSPXgx6NFfxdm` serves the corrected owner-account label and a renewal-safe historical payment proof. Public unauthenticated checks returned HTTP 200 for the page, Testnet status, payment proof (`PASS / SETTLED`), and all three rejection proofs. Desktop and mobile browser checks passed; real owner wallet sign-in remains unverified.
+
 ## Judge Mode and Attack the Vault
 
 Two walletless views sit on top of the same evidence, and neither signs or sends anything:
@@ -69,7 +71,7 @@ node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 ```
 
-For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2; on 2026-11-03 the cinematic evidence tests passed 11/11. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. GitHub Actions CI is prepared but has not run remotely. Run the scripts again to check current RPC state.
+For Rust unit tests on Windows, use `work/run-vault-tests.cmd`. For NEAR Sandbox, use Ubuntu/WSL2 with `work/run-sandbox-tests.sh`; see [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md). On 2026-11-02 the local results were Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, Vercel routes 2/2, and historical proof regression 2/2; on 2026-11-03 the cinematic evidence tests passed 12/12. The independent live payment verifier and all three negative-scenario verifiers passed against public RPC. The [private GitHub Actions CI run for `cea8871`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed the credential scan, all Node tests, wallet build, Rust units, and Sandbox on 2026-11-03. Run the scripts again to check current RPC state.
 
 ## Security boundaries and limitations
 

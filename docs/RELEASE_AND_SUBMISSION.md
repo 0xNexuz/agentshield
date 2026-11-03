@@ -3,11 +3,12 @@
 ## Public-release gate
 
 - [x] Private repository exists at `0xNexuz/agentshield`; production site is public.
-- [x] Tracked Git history (3 commits as of 2026-11-02) scanned with `node work/scan-tracked-secrets.mjs`: zero findings. Scan again immediately before changing repository visibility; a pattern scan is not a guarantee that no credential exists.
+- [x] Tracked Git history through the passing private CI checkpoint scanned with `node work/scan-tracked-secrets.mjs`: zero findings. Scan again immediately before changing repository visibility; a pattern scan is not a guarantee that no credential exists.
 - [x] `.env`, `.env.*`, local Testnet credentials and `.vercel/` are Git ignored. Public transaction hashes and account IDs are intentional evidence, not secrets.
 - [x] Read-only Testnet payment and three rejection proof APIs returned PASS on 2026-11-02.
 - [x] Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, route 2/2, historical proof regression 2/2 passed locally on 2026-11-02.
-- [ ] Verify the new GitHub Actions workflow on the private remote after a push. Local files alone do not establish a passing CI run.
+- [x] [Private GitHub Actions run `41586354770`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed secret scanning, Node tests, wallet build, Rust units, and Sandbox for commit `cea8871` on 2026-11-03. Earlier CI runs exposed a missing cross-platform lockfile entry, an ignored local WASM path, and a concurrent signer race in the test harness. All were fixed and the complete suite reran successfully.
+- [ ] Triage production dependency advisories before public release. `npm audit --omit=dev --json` on 2026-11-03 reported **0 critical, 5 high, 6 moderate, 15 low**. The high findings are in the Meteor wallet dependency chain (`@meteorwallet/sdk`, `decode-uri-component`, `nanoid`, `query-string`, and the direct Meteor selector module); npm reported no automatic fix. The wallet is browser-side and sign-in is not yet verified, so do not claim this path is security-audited.
 - [ ] Verify a real owner browser wallet sign-in. No transaction approval is needed for this check.
 - [ ] Add NEAR AI Cloud credits, obtain a fresh bounded inference approval, then record genuine normal and prompt-injection responses. Until then describe P5 as blocked.
 - [ ] Decide whether to renew the mandate before its 2026-11-09 expiry. Review [the unsigned proposal](../deployment/testnet-mandate-renewal-proposal.json); owner approval and signature are still required.
