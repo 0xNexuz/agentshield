@@ -1,0 +1,103 @@
+{
+  "network": "testnet",
+  "transactionHash": "EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw",
+  "finalExecutionStatus": "FINAL",
+  "status": {
+    "SuccessValue": "eyJhZ2VudCI6ImFnZW50c2hpZWxkLWFnZW50LTAzNTlkYTE2MzBiYi50ZXN0bmV0IiwicmVjaXBpZW50cyI6WyJhZ2VudHNoaWVsZC1yZWNpcGllbnQtN2JiNGEwZGYxMDc3LnRlc3RuZXQiXSwicGVyX3BheW1lbnRfeW9jdG8iOiIxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImRhaWx5X3lvY3RvIjoiMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ0b3RhbF95b2N0byI6IjUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwiZXhwaXJlc19hdF9ucyI6IjE3OTU5OTY4MDAwMDAwMDAwMDAiLCJ2ZXJzaW9uIjoyLCJwYXVzZWQiOmZhbHNlLCJyZXZva2VkIjpmYWxzZX0="
+  },
+  "transactionMatches": true,
+  "verification": "PASS",
+  "verificationNote": "Initial executor compared RPC numeric gas with proposal string; this independent public-RPC recheck compared integer values.",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "receipts": [
+    {
+      "predecessor_id": "agentshield-mag-1d2f78801994.testnet",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "FunctionCall": {
+                "args": "eyJhZ2VudCI6ImFnZW50c2hpZWxkLWFnZW50LTAzNTlkYTE2MzBiYi50ZXN0bmV0IiwicmVjaXBpZW50cyI6WyJhZ2VudHNoaWVsZC1yZWNpcGllbnQtN2JiNGEwZGYxMDc3LnRlc3RuZXQiXSwicGVyX3BheW1lbnRfeW9jdG8iOiIxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImRhaWx5X3lvY3RvIjoiMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ0b3RhbF95b2N0byI6IjUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwiZXhwaXJlc19hdF9ucyI6IjE3OTU5OTY4MDAwMDAwMDAwMDAifQ==",
+                "deposit": "0",
+                "gas": 30000000000000,
+                "method_name": "set_mandate"
+              }
+            }
+          ],
+          "gas_price": "1000000000",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "agentshield-mag-1d2f78801994.testnet",
+          "signer_public_key": "ed25519:A5dmTvsTjpkVEWgeQGbFKfxP6XKgJW1Vkgq8W6LTMNzS"
+        }
+      },
+      "receipt_id": "3Eufj1ApkpHKNoWkHAHZNzu5FB6co5qKWDwD7LNF4392",
+      "receiver_id": "vault.agentshield-mag-1d2f78801994.testnet"
+    },
+    {
+      "predecessor_id": "system",
+      "priority": 0,
+      "receipt": {
+        "Action": {
+          "actions": [
+            {
+              "Transfer": {
+                "deposit": "30724065800916300000000"
+              }
+            }
+          ],
+          "gas_price": "0",
+          "input_data_ids": [],
+          "is_promise_yield": false,
+          "output_data_receivers": [],
+          "signer_id": "agentshield-mag-1d2f78801994.testnet",
+          "signer_public_key": "ed25519:A5dmTvsTjpkVEWgeQGbFKfxP6XKgJW1Vkgq8W6LTMNzS"
+        }
+      },
+      "receipt_id": "5ywLnfq45bAv1yU9caPfVdRmL1hYjpnyWk9NJoXTPWQQ",
+      "receiver_id": "agentshield-mag-1d2f78801994.testnet"
+    }
+  ],
+  "receiptOutcomes": [
+    {
+      "id": "3Eufj1ApkpHKNoWkHAHZNzu5FB6co5qKWDwD7LNF4392",
+      "executorId": "vault.agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": "eyJhZ2VudCI6ImFnZW50c2hpZWxkLWFnZW50LTAzNTlkYTE2MzBiYi50ZXN0bmV0IiwicmVjaXBpZW50cyI6WyJhZ2VudHNoaWVsZC1yZWNpcGllbnQtN2JiNGEwZGYxMDc3LnRlc3RuZXQiXSwicGVyX3BheW1lbnRfeW9jdG8iOiIxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCIsImRhaWx5X3lvY3RvIjoiMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAiLCJ0b3RhbF95b2N0byI6IjUwMDAwMDAwMDAwMDAwMDAwMDAwMDAwIiwiZXhwaXJlc19hdF9ucyI6IjE3OTU5OTY4MDAwMDAwMDAwMDAiLCJ2ZXJzaW9uIjoyLCJwYXVzZWQiOmZhbHNlLCJyZXZva2VkIjpmYWxzZX0="
+      },
+      "logs": [
+        "AGENTSHIELD_POLICY version=2 action=SET"
+      ]
+    },
+    {
+      "id": "5ywLnfq45bAv1yU9caPfVdRmL1hYjpnyWk9NJoXTPWQQ",
+      "executorId": "agentshield-mag-1d2f78801994.testnet",
+      "status": {
+        "SuccessValue": ""
+      },
+      "logs": []
+    }
+  ],
+  "logs": [
+    "AGENTSHIELD_POLICY version=2 action=SET"
+  ],
+  "vaultCodeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "observedMandate": {
+    "agent": "agentshield-agent-0359da1630bb.testnet",
+    "recipients": [
+      "agentshield-recipient-7bb4a0df1077.testnet"
+    ],
+    "per_payment_yocto": "10000000000000000000000",
+    "daily_yocto": "20000000000000000000000",
+    "total_yocto": "50000000000000000000000",
+    "expires_at_ns": "1795996800000000000",
+    "version": 2,
+    "paused": false,
+    "revoked": false
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw",
+  "checkedAt": "2026-11-03T11:56:47.064Z"
+}
