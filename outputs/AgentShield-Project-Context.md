@@ -224,3 +224,10 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Production deployment `dpl_B65KRzdGjq7Udv9NuQqT3tviGxbA` from `main` at `96c01f2` is READY and aliased to `https://agentshield-lab.vercel.app/`; `/api/testnet/status` reported a healthy, synced Testnet RPC.
 - Not done from this session: the GitHub repository homepage and topics (the session's GitHub proxy refuses repository-settings writes), and deleting the experiment branch `repro-wasm-experiment` (branch deletion is refused too). No Testnet signature, renewal, NEAR AI call, or wallet sign-in occurred.
 
+### 2026-11-03 — Renewal-ready site and single-branch cleanup
+
+- With the owner's go-ahead, commit `1593217` was fast-forwarded into `main`. It moves the unsigned renewal proposal to 2026-11-30 00:00 UTC (after judging and within the contract's 30-day `MAX_LIFETIME_NS`), lets the site adopt the mandate reported by a passing live proof so a renewal needs no redeploy, and replaces the top-bar Connect Wallet button with a GitHub source link (the wallet loads only from the Lab).
+- CI run [`41628105961`](https://github.com/0xNexuz/agentshield/actions/runs/41628105961) passed both jobs; the Windows rebuild again produced SHA-256 `138b17e7…be09`, 324,708 bytes. Local checks: `npm test` 32/32, browser QA 93/93 and 69/69.
+- Production deployment `dpl_G9aZdbqU2sUxdsJPsjxbHxpMM7Aw` from `main` at `1593217` is READY and aliased to `https://agentshield-lab.vercel.app/`; `/api/testnet/proof` returned `PASS / SETTLED`, mandate version 1, unrevoked.
+- The owner is deleting the branches `repro-wasm-experiment` and `cinematic-judge-mode` on GitHub, leaving `main` only. The renewal itself is still unsigned.
+
