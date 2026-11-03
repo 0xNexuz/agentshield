@@ -30,3 +30,7 @@ The supplied source images live in `assets/crowned-guardian.png`, `assets/winged
 ## Cinematic layer (2026-11-02)
 
 Judge Mode, Attack the Vault, and the prompt-injection challenge use eight original plates in `assets/cinematic/`. They were generated from text prompts only, with no third-party image given to the model. The character bible, prompts, provenance, and asset inventory are in `../AgentShield-Cinematic-Art-Direction.md`. The usage-rights caution above still applies to the three supplied reference images and the composite hero.
+
+## Preloader (2026-11-03)
+
+The first-visit preloader (`preloader.css`, `preloader.js`) puts a hand-drawn sticker agent over the existing hero composite. The agent is drawn as inline SVG with a white die-cut border, inked limbs, a slit visor and a gold four-point star, and it runs in place. It borrows only the sticker-cutout style of the fourth reference the owner supplied; it is an original drawing, not a copy of that character. The hero artwork itself is unchanged. The preloader waits for the hero image, fonts and page load, shows for at least 1.8 s on a first visit (0.6 s on repeat visits in the same tab), never longer than 5 s, and can be skipped with Escape, a click or the Skip intro button. With reduced motion it does not animate. Without JavaScript it hides itself after 7 s.

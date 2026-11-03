@@ -169,7 +169,7 @@ test('every referenced cinematic plate exists in all three sizes and stays light
 });
 
 test('the cinematic layer never signs or sends transactions', () => {
-  const code = ['cinematic.mjs', 'evidence-records.mjs', 'preflight.mjs'].map(f => fs.readFileSync(path.join(ui, f), 'utf8')).join('\n');
+  const code = ['cinematic.mjs', 'evidence-records.mjs', 'preflight.mjs', 'preloader.js'].map(f => fs.readFileSync(path.join(ui, f), 'utf8')).join('\n');
   assert.doesNotMatch(code, /wallet-bundle|signAndSend|signTransaction|functionCall\(|privateKey|NEAR_AI_KEY|method:\s*["']POST/);
   for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/testnet\/(proof|gallery)"/);
 });

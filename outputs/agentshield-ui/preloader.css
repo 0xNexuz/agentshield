@@ -1,0 +1,69 @@
+/* AgentShield preloader: the agent, drawn as a die-cut sticker, runs across the hero artwork
+   while the page loads, then dashes off as the art brightens into the real hero. */
+.preloader{position:fixed;inset:0;z-index:300;display:grid;place-items:center;overflow:hidden;background:#030404;color:#e7e8df;cursor:pointer;
+  animation:pre-failsafe .5s ease 6.5s forwards}
+@keyframes pre-failsafe{to{opacity:0;visibility:hidden;pointer-events:none}}
+html.is-preloading,html.is-preloading body{overflow:hidden}
+
+.pre-art{position:absolute;inset:-3%;pointer-events:none}
+.pre-art img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 45%;filter:grayscale(.75) contrast(1.15) brightness(.56);
+  animation:pre-drift 9s ease-in-out infinite alternate;transition:filter .9s ease}
+@keyframes pre-drift{from{transform:scale(1.06) translate3d(1.2%,0,0)}to{transform:scale(1.02) translate3d(-1.2%,0,0)}}
+.pre-grade{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,rgba(3,4,4,.35) 0%,rgba(3,4,4,.5) 45%,rgba(3,4,4,.88) 100%)}
+.preloader:before{content:'';position:absolute;inset:16px;border:1px solid rgba(231,232,223,.16);pointer-events:none;z-index:1}
+
+.pre-center{position:relative;z-index:2;display:grid;justify-items:center;gap:6px;margin-top:-4vh}
+.pre-stage{position:relative;width:min(340px,58vw);aspect-ratio:1}
+.pre-slap{width:100%;height:100%;animation:pre-slap .62s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pre-slap{0%{transform:scale(.35) rotate(-20deg);opacity:0}70%{transform:scale(1.05) rotate(-2deg);opacity:1}100%{transform:scale(1) rotate(-4deg)}}
+.pre-sticker{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55)) drop-shadow(0 2px 2px rgba(0,0,0,.35));transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.preloader:hover .pre-sticker{transform:rotate(3deg) scale(1.03)}
+.pre-shadow{position:absolute;left:22%;right:22%;bottom:-2%;height:9%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,0) 70%);animation:pre-shadow .29s ease-in-out infinite alternate}
+@keyframes pre-shadow{to{transform:scaleX(.82);opacity:.7}}
+
+/* run cycle: limbs swing about their joints, in the drawing's own coordinates */
+.pre-sticker .part{transform-box:view-box}
+.pre-sticker .runner{animation:pre-bob .29s ease-in-out infinite alternate}
+.pre-sticker .back-leg{transform-origin:209px 246px;animation:pre-leg-a .58s ease-in-out infinite alternate}
+.pre-sticker .front-leg{transform-origin:232px 247px;animation:pre-leg-b .58s ease-in-out infinite alternate}
+.pre-sticker .back-arm{transform-origin:205px 178px;animation:pre-arm-a .58s ease-in-out infinite alternate}
+.pre-sticker .front-arm{transform-origin:247px 178px;animation:pre-arm-b .58s ease-in-out infinite alternate}
+.pre-sticker .head{transform-box:view-box;transform-origin:228px 150px;animation:pre-head .58s ease-in-out infinite alternate}
+.pre-sticker .speed{animation:pre-speed .29s linear infinite alternate}
+.pre-sticker .eye{animation:pre-eye 1.6s ease-in-out infinite}
+.pre-sticker .glint{transform-box:view-box;transform-origin:302px 165px;animation:pre-glint 1.2s ease-in-out infinite}
+@keyframes pre-bob{from{transform:translateY(2px)}to{transform:translateY(-9px)}}
+@keyframes pre-leg-a{from{transform:rotate(-16deg)}to{transform:rotate(22deg)}}
+@keyframes pre-leg-b{from{transform:rotate(18deg)}to{transform:rotate(-22deg)}}
+@keyframes pre-arm-a{from{transform:rotate(20deg)}to{transform:rotate(-16deg)}}
+@keyframes pre-arm-b{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+@keyframes pre-head{from{transform:rotate(-2deg)}to{transform:rotate(3deg)}}
+@keyframes pre-speed{from{transform:translateX(4px);opacity:1}to{transform:translateX(-10px);opacity:.55}}
+@keyframes pre-eye{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes pre-glint{0%,100%{transform:scale(.8);opacity:.5}50%{transform:scale(1.12);opacity:1}}
+
+.pre-copy{display:grid;justify-items:center;gap:12px;text-align:center}
+.pre-brand{margin:0;font:700 clamp(1.6rem,3.2vw,2.3rem)/1 'UnifrakturCook',Georgia,serif;letter-spacing:-.03em;color:#f1f1e8;text-shadow:0 4px 18px #000}
+.pre-brand span{font-family:'Cormorant Garamond',Georgia,serif;margin-right:8px}
+.pre-tag{margin:0;font:500 .66rem 'IBM Plex Mono',monospace;letter-spacing:.2em;color:#c9cec4;text-transform:uppercase}
+.pre-bar{width:min(240px,56vw);height:2px;background:rgba(231,232,223,.18);overflow:hidden;margin-top:6px}
+.pre-bar span{display:block;height:100%;background:#e7e8df;transform:scaleX(.06);transform-origin:left;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.pre-status{margin:0;font:500 .6rem 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#9fa89f;text-transform:uppercase;min-height:1em}
+.pre-skip{position:absolute;z-index:3;right:clamp(20px,4vw,48px);bottom:clamp(20px,4vw,40px);min-height:44px;padding:0 16px;border:1px solid rgba(231,232,223,.45);background:rgba(3,4,4,.4);color:#e7e8df;
+  font:500 .62rem 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
+.pre-skip:hover,.pre-skip:focus-visible{background:#e7e8df;color:#050606;border-color:#e7e8df}
+.pre-skip:focus-visible{outline:2px solid #e7e8df;outline-offset:4px}
+
+/* exit: the agent dashes off and the art lifts into the hero */
+.preloader.is-leaving{opacity:0;pointer-events:none;transition:opacity .75s ease .2s}
+.preloader.is-leaving .pre-art img{filter:grayscale(.75) contrast(1.15) brightness(.77)}
+.preloader.is-leaving .pre-stage{animation:pre-dash .7s cubic-bezier(.55,0,.8,.2) forwards}
+.preloader.is-leaving .pre-copy,.preloader.is-leaving .pre-skip{opacity:0;transition:opacity .3s ease}
+@keyframes pre-dash{0%{transform:none}22%{transform:translate(-14px,-22px) rotate(-6deg)}100%{transform:translate(75vw,-60px) rotate(8deg)}}
+
+@media (max-width:600px){.pre-center{margin-top:-8vh}.pre-tag{letter-spacing:.14em;font-size:.58rem}}
+@media (prefers-reduced-motion:reduce){
+  .pre-art img,.pre-slap,.pre-shadow,.pre-sticker *{animation:none!important}
+  .preloader.is-leaving .pre-stage{animation:none}
+  .preloader.is-leaving{transition-duration:.2s;transition-delay:0s}
+}
