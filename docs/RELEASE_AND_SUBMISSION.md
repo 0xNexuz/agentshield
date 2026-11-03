@@ -49,24 +49,9 @@ The read-only preflight passed against finalized public state on 2026-11-02. A p
 
 The original vault stays active. The stopped attempt's first transaction failed and did not create or fund the isolated account. A new, corrected plan would: (1) owner creates/funds an isolated keyless vault with **4 test NEAR**, deploys the same WASM and initializes required domain `agentshield:testnet:v1`; (2) agent adds one key restricted to that isolated vault's `request_payment` method with **0.02 test NEAR gas allowance**; (3) owner sets a small one-recipient mandate; (4) owner revokes; (5) agent requests **0.005 test NEAR**, expecting `REVOKED` and zero payout receipts. Each stage must finalize and verify before the next. Cost is **4 test NEAR locked in the isolated vault** (mostly storage/reserve, not recoverable with its current keyless/no-withdrawal design) plus transaction gas; the blocked request should transfer **zero** to the recipient. The exact account, key, expiry and policy must be rechecked and shown for fresh user approval. No part of this plan may execute under the previous authorization because the user explicitly stopped that lab.
 
-## Submission form draft
+## Submission requirements
 
-- **Project:** AgentShield
-- **Tracks:** `security` (AI Security & Defense). `agents` (Agent Economy) also fits; the form accepts every track the project fits, still as one submission.
-- **Website:** https://agentshield-lab.vercel.app/
-- **Repository:** https://github.com/0xNexuz/agentshield (public).
-- **Demo post:** pending; no post is claimed.
-- **What we built (1267 characters):** AgentShield is a NEAR Testnet vault that lets an owner give an AI agent spending power without giving it the keys. An owner-signed onchain mandate names one agent and an allowlisted recipient and enforces per-payment, daily and total budgets (pending payments included), expiry, single-use nonces and revocation. The agent holds a function-call key restricted to the vault's request_payment method; the contract, not the agent, decides and pays, and records settlement only after the transfer result. On Testnet, a real 0.005 test NEAR payment settled, and three signed attacks (overspend, unlisted recipient, replay) were refused with zero payout receipts. The site's walletless Judge Mode replays these records in a six-scene film, labelling every fact as simulation, historical onchain replay, live RPC verified or not yet verified, and its proof APIs recheck public RPC on each visit. The README maps each rule to its line of code, its unit and NEAR Sandbox tests, and its transaction. Honest limits: revocation is tested in NEAR Sandbox against the deployed WASM but not yet on Testnet; NEAR AI proposal parsing and ALLOW/WARN/BLOCK preflight are implemented with mocked tests, but no real model completion has run (HTTP 402); owner wallet sign-in is unverified.
-
-The [official event page](https://nearhackathon.com/) says development closes **14 Nov 2026, 23:59 UTC**, the repository must be public, a public X demo post with video or screenshots must tag **@NEARProtocol** and **#NEARHackathon**, and both links must be submitted. The form requires a team lead, email, team size, track, payout NEAR wallet account, repository link, demo post link, and 20–2,000-character description. One submission per project; no wallet connection is needed to submit.
-
-## Public X post draft — do not post yet
-
-Built AgentShield at NEAR HACKATHON: a NEAR Testnet vault that caps what an AI agent can pay. One real settled payment and three attacks the contract refused, rechecked live on every visit. 75-second replay: https://agentshield-lab.vercel.app/#judge Code: https://github.com/0xNexuz/agentshield @NEARProtocol #NEARHackathon
-
-That is 276 characters as X counts them (each link counts as 23). Record the video from the live site, not a local build: open `/#judge`, press **Watch AgentShield in action**, and let the proof scene reach `LIVE RPC VERIFIED`, then open `/api/testnet/proof` to show `PASS / SETTLED`.
-
-Attach the actual demo video or genuine screenshots before posting. Recheck the AI sentence if that milestone changes.
+The [official event page](https://nearhackathon.com/) says development closes **14 Nov 2026, 23:59 UTC**, the repository must be public, a public X demo post with video or screenshots must tag **@NEARProtocol** and **#NEARHackathon**, and both links must be submitted. The form requires a team lead, email, team size, track, payout NEAR wallet account, repository link, demo post link, and 20–2,000-character description. One submission per project; no wallet connection is needed to submit. The submission text, X post and video script are kept with the team, not in this repository.
 
 ## Prize-payout wallet checklist
 
