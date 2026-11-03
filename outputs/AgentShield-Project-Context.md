@@ -231,3 +231,9 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Production deployment `dpl_G9aZdbqU2sUxdsJPsjxbHxpMM7Aw` from `main` at `1593217` is READY and aliased to `https://agentshield-lab.vercel.app/`; `/api/testnet/proof` returned `PASS / SETTLED`, mandate version 1, unrevoked.
 - The owner is deleting the branches `repro-wasm-experiment` and `cinematic-judge-mode` on GitHub, leaving `main` only. The renewal itself is still unsigned.
 
+### 2026-11-03 — Mandate renewed to version 2
+
+- With the owner's specific authorization, Codex on the owner's machine ran `work/execute-testnet-mandate-renewal.mjs` once. The owner signed [`EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw): `set_mandate` on the vault, 30 TGas, zero deposit, same agent, recipient and limits, `expires_at_ns` `1795996800000000000` (2026-11-30 00:00 UTC). The intent record was written before broadcasting. The final status returned version 2, unpaused, unrevoked, with log `AGENTSHIELD_POLICY version=2 action=SET`; the vault code hash is unchanged.
+- Independent check from this session: the production `/api/testnet/proof` (public RPC) reported `PASS / SETTLED` for the historical payment, `currentMandateVersion` 2, `mandateExpiryNs` `1795996800000000000`, not revoked, unchanged limits.
+- The site now treats the version 2 renewal as its committed fallback (`MANDATE_RENEWAL` in `evidence-records.mjs`, checked against the evidence file by a new test), so the homepage shows version 2 even if RPC is unreachable. `npm test` 33/33; browser QA 93/93 and 70/70.
+

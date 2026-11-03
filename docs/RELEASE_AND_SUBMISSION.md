@@ -12,7 +12,7 @@
 - [ ] Triage production dependency advisories before public release. `npm audit --omit=dev --json` on 2026-11-03 reported **0 critical, 5 high, 6 moderate, 15 low**. The high findings are in the Meteor wallet dependency chain (`@meteorwallet/sdk`, `decode-uri-component`, `nanoid`, `query-string`, and the direct Meteor selector module); npm reported no automatic fix. The wallet is browser-side and sign-in is not yet verified, so do not claim this path is security-audited.
 - [ ] Verify a real owner browser wallet sign-in. No transaction approval is needed for this check.
 - [ ] Add NEAR AI Cloud credits, obtain a fresh bounded inference approval, then record genuine normal and prompt-injection responses. Until then describe P5 as blocked.
-- [ ] Decide whether to renew the mandate before its 2026-11-09 expiry. Review [the unsigned proposal](../deployment/testnet-mandate-renewal-proposal.json); owner approval and signature are still required.
+- [x] The owner renewed the mandate on 2026-11-03: [`EuUUbL…vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) set version 2, same agent, recipient and limits, expiry 2026-11-30 00:00 UTC. Evidence: `outputs/testnet-mandate-renewal-evidence.json`; the production proof API reports version 2.
 - [ ] Decide whether to fund an isolated revocation vault. The prior attempt failed at initialization and the user stopped that lab. No new transaction is authorized.
 - [x] The tracked-history scan returned zero findings on 2026-11-03, and the owner then made the repository public.
 - [ ] Publish a genuine video or screenshots on X and submit the two public links only after separate user authorization.
@@ -36,14 +36,13 @@ The Sandbox commands require Linux/WSL2. `work/run-sandbox-tests.sh` runs agains
 ```sh
 node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
-node --use-system-ca work/check-mandate-renewal.mjs
 ```
 
-The first two scripts recheck public Testnet evidence. The third checks the proposed renewal against the current vault; it **does not sign**. The deployment verifier also needs ignored `deployment/testnet.local.json` and the compiled WASM, so the public judge path should use the proof API or the historical receipt verifiers.
+Both scripts recheck public Testnet evidence. `work/check-mandate-renewal.mjs` was the read-only preflight for the renewal; now that the vault is at version 2 it reports that the current version differs, which is expected. The deployment verifier also needs ignored `deployment/testnet.local.json` and the compiled WASM, so the public judge path should use the proof API or the historical receipt verifiers.
 
-## Exact unsigned mandate renewal
+## Mandate renewal — signed 2026-11-03
 
-The read-only preflight passed against finalized public state on 2026-11-02 for an earlier 15 Nov expiry; rerun it for the current proposal. A proposed **single owner-signed Testnet `set_mandate`** call would use 30 TGas, zero attached deposit, and the same vault and owner. Agent `agentshield-agent-0359da1630bb.testnet`, recipient `agentshield-recipient-7bb4a0df1077.testnet`, and limits **0.01 per payment / 0.02 per day / 0.05 total test NEAR** remain unchanged. The only proposed field change is expiry from **2026-11-09 09:21:45 UTC** to **2026-11-30 00:00 UTC**, after judging (16–18 Nov) and within the contract's 30-day limit from any signing date after 31 Oct. A successful call would increment mandate version **1 → 2**; nonce replay protection is version-scoped, so a new-version request must still use a fresh nonce. `set_mandate` unpauses; current mandate is unpaused, and preflight must reject any unexpected pause/revocation before signing. No call is authorized or signed. Request exact owner approval and rerun the preflight immediately before any transaction.
+The owner signed the renewal as [`EuUUbL…vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) after the read-only preflight passed; `work/execute-testnet-mandate-renewal.mjs` wrote its intent record before broadcasting. The plan below is kept as approved. A **single owner-signed Testnet `set_mandate`** call would use 30 TGas, zero attached deposit, and the same vault and owner. Agent `agentshield-agent-0359da1630bb.testnet`, recipient `agentshield-recipient-7bb4a0df1077.testnet`, and limits **0.01 per payment / 0.02 per day / 0.05 total test NEAR** remain unchanged. The only proposed field change is expiry from **2026-11-09 09:21:45 UTC** to **2026-11-30 00:00 UTC**, after judging (16–18 Nov) and within the contract's 30-day limit from any signing date after 31 Oct. A successful call would increment mandate version **1 → 2**; nonce replay protection is version-scoped, so a new-version request must still use a fresh nonce. `set_mandate` unpauses; current mandate is unpaused, and preflight must reject any unexpected pause/revocation before signing. No call is authorized or signed. Request exact owner approval and rerun the preflight immediately before any transaction.
 
 ## Optional isolated revocation proof — fresh approval required
 

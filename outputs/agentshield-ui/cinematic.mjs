@@ -515,8 +515,9 @@ const PAYMENT_TIME = Date.parse("2026-11-02T10:25:40Z"); // outputs/testnet-live
 function mandateExpired(now = Date.now()) { return BigInt(Math.floor(now)) * 1_000_000n >= BigInt(currentMandate().expiresAtNs); }
 function expiryNote() {
   const m = currentMandate();
-  if (m.version > MANDATE.version) return ` (renewed as version ${m.version}, until ${formatUtcNs(m.expiresAtNs)})`;
-  return mandateExpired() ? " (now expired)" : "";
+  const expired = mandateExpired();
+  if (m.version > MANDATE.version) return ` (renewed as version ${m.version}, until ${formatUtcNs(m.expiresAtNs)}${expired ? "; now expired" : ""})`;
+  return expired ? " (now expired)" : "";
 }
 function seededSimulator() {
   // Mirrors the live mandate and replays its one settled payment on its real UTC day,
@@ -831,7 +832,7 @@ function setupMandateStatus(root) {
   if (!card) return;
   const strong = card.querySelector("strong");
   const line = card.querySelector("p");
-  const committed = { expiresAtNs: MANDATE.expiresAtNs, revoked: false, version: MANDATE.version, perPaymentYocto: MANDATE.perPaymentYocto };
+  const committed = { ...currentMandate(), perPaymentYocto: MANDATE.perPaymentYocto };
   const render = (mandate, source) => {
     const state = mandateState(mandate);
     const until = formatUtcNs(mandate.expiresAtNs);

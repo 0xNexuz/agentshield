@@ -42,6 +42,17 @@ export const MANDATE = Object.freeze({
   source: "outputs/testnet-live-mandate-evidence.json",
 });
 
+// On 2026-11-03 the owner renewed the mandate as version 2: same agent, recipient and limits, later expiry.
+// The settled payment and the three rejections stay tied to version 1.
+export const MANDATE_RENEWAL = Object.freeze({
+  transactionHash: "EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw",
+  signer: ACCOUNTS.owner,
+  version: 2,
+  expiresAtNs: "1795996800000000000",
+  expiresAtUtc: "2026-11-30 00:00:00 UTC",
+  source: "outputs/testnet-mandate-renewal-evidence.json",
+});
+
 export const RESTRICTED_KEY = Object.freeze({
   transactionHash: "3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP",
   publicKey: "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
@@ -132,9 +143,9 @@ export function formatUtcNs(ns) {
   return `${new Date(Number(BigInt(ns) / 1_000_000n)).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 }
 
-// The mandate as the chain reports it now. It starts as the committed version 1 record and is
-// replaced when a live proof passes, so a renewal (version 2, later expiry) shows up without a redeploy.
-let mandateNow = Object.freeze({ expiresAtNs: MANDATE.expiresAtNs, version: MANDATE.version, revoked: false, live: false });
+// The mandate as the chain reports it now. It starts as the latest committed record (the version 2
+// renewal) and is replaced when a live proof passes, so a later renewal shows up without a redeploy.
+let mandateNow = Object.freeze({ expiresAtNs: MANDATE_RENEWAL.expiresAtNs, version: MANDATE_RENEWAL.version, revoked: false, live: false });
 export function currentMandate() { return mandateNow; }
 function adoptLiveMandate(proof) {
   if (!proof?.mandateExpiryNs || !/^\d+$/.test(proof.mandateExpiryNs)) return;

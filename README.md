@@ -50,13 +50,14 @@ Offchain, [`work/near-ai-payment-agent.mjs`](work/near-ai-payment-agent.mjs) ask
 
 ## Evidence on NEAR Testnet
 
-Vault [`vault.agentshield-mag-1d2f78801994.testnet`](https://testnet.nearblocks.io/address/vault.agentshield-mag-1d2f78801994.testnet), code hash `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`. Mandate version 1 allows one agent, `agentshield-agent-0359da1630bb.testnet`, to pay one recipient, `agentshield-recipient-7bb4a0df1077.testnet`, up to 0.01 test NEAR per payment, 0.02 per UTC day and 0.05 in total, until 2026-11-09 09:21:45 UTC.
+Vault [`vault.agentshield-mag-1d2f78801994.testnet`](https://testnet.nearblocks.io/address/vault.agentshield-mag-1d2f78801994.testnet), code hash `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`. The mandate allows one agent, `agentshield-agent-0359da1630bb.testnet`, to pay one recipient, `agentshield-recipient-7bb4a0df1077.testnet`, up to 0.01 test NEAR per payment, 0.02 per UTC day and 0.05 in total. The payment and the attacks ran under version 1. On 2026-11-03 the owner renewed it as version 2 with the same rules, valid until 2026-11-30 00:00 UTC.
 
 | Event | Transaction | Result |
 | --- | --- | --- |
 | Vault deployed | [`7K4729…y2dJ`](https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ) | Code hash `2KHm9Waz…CqN`, the SHA-256 of `deployment/agentshield_vault.wasm` |
 | Agent key created | [`3faZ6…5CaP`](https://testnet.nearblocks.io/txns/3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP) | `ed25519:3mVXz3ww…5Y6V`, limited to the vault's `request_payment` |
 | Mandate signed | [`GLhrrb…xbG7`](https://testnet.nearblocks.io/txns/GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7) | Version 1, signed by the owner |
+| Mandate renewed | [`EuUUbL…vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) | Version 2, signed by the owner: same agent, recipient and limits, expiry 2026-11-30 00:00 UTC |
 | Authorized payment, 0.005 test NEAR | [`3buDvB…53jm`](https://testnet.nearblocks.io/txns/3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm) | `SETTLED`; recipient transfer receipt `76hE3jsBgdCi8BCBZakcwEMri9Ut7JVu2gDWf3rxK2dS` |
 | Attack: over the per-payment cap | [`FEfj7K…L8A`](https://testnet.nearblocks.io/txns/FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A) | `REJECTED / PER_PAYMENT_LIMIT`, no transfer |
 | Attack: recipient not on the allowlist | [`GvMLEq…gDX9`](https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9) | `REJECTED / RECIPIENT_NOT_ALLOWED`, no transfer |
@@ -147,7 +148,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 - Revocation is tested in NEAR Sandbox only. An isolated Testnet revocation vault was attempted, but the transaction finalized `FAILED` because the initializer was given an unsupported domain; that lab was then stopped. See `outputs/testnet-revocation-deploy-failure.json`.
 - NEAR AI calls return HTTP 402 until credits are added, so no model output is presented as live. The key stays in a local `.env` and never reaches Git, Vercel or the browser.
 - Owner wallet sign-in has not been verified. On 2026-11-03 `npm audit --omit=dev` reported 5 high advisories, all in the Meteor wallet dependency chain, with no automatic fix.
-- Mandate version 1 expires 2026-11-09 09:21:45 UTC. An unsigned [renewal proposal](deployment/testnet-mandate-renewal-proposal.json) exists. The homepage shows the live state, and the payment and rejection proofs stay verifiable after expiry.
+- The mandate (version 2) expires 2026-11-30 00:00 UTC; after that the vault refuses new requests. The homepage shows the live state, and the payment and rejection proofs stay verifiable after expiry because they are tied to version 1.
 
 ## More
 

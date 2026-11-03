@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   TRUTH, ACCOUNTS, VAULT, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, checkIndexFor,
-  mandateState, formatUtcNs, currentMandate, fetchLiveProof,
+  mandateState, formatUtcNs, MANDATE_RENEWAL, currentMandate, fetchLiveProof,
 } from '../outputs/agentshield-ui/evidence-records.mjs';
 import { preflightPayment as browserPreflight } from '../outputs/agentshield-ui/preflight.mjs';
 import { preflightPayment as serverPreflight } from '../work/near-ai-payment-agent.mjs';
@@ -201,7 +201,7 @@ test('mandate status is computed, never hard-coded as active', () => {
 });
 
 test('a passing live proof replaces the committed mandate, so a renewal needs no redeploy', async () => {
-  assert.deepEqual({ ...currentMandate() }, { expiresAtNs: MANDATE.expiresAtNs, version: 1, revoked: false, live: false });
+  assert.deepEqual({ ...currentMandate() }, { expiresAtNs: MANDATE_RENEWAL.expiresAtNs, version: 2, revoked: false, live: false });
   const renewal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-mandate-renewal-proposal.json'), 'utf8'));
   assert.equal(renewal.status, 'PROPOSED_NOT_SIGNED');
   assert.ok(BigInt(renewal.proposedExpiryNs) > BigInt(Date.parse('2026-11-18T23:59:00Z')) * 1_000_000n, 'renewal covers judging and results');
@@ -215,4 +215,26 @@ test('a passing live proof replaces the committed mandate, so a renewal needs no
     assert.deepEqual({ ...currentMandate() }, { expiresAtNs: renewal.proposedExpiryNs, version: 2, revoked: false, live: true });
     assert.equal(mandateState(currentMandate(), Date.parse('2026-11-17T00:00:00Z')), 'active');
   } finally { globalThis.fetch = realFetch; }
+});
+
+test('the committed renewal record matches the finalized Testnet renewal', () => {
+  const evidence = json('outputs/testnet-mandate-renewal-evidence.json');
+  const intent = json('outputs/testnet-mandate-renewal-intent.json');
+  assert.equal(evidence.verification, 'PASS');
+  assert.equal(evidence.finalExecutionStatus, 'FINAL');
+  assert.equal(MANDATE_RENEWAL.transactionHash, evidence.transactionHash);
+  assert.equal(MANDATE_RENEWAL.transactionHash, intent.transactionHash);
+  assert.equal(evidence.signer, ACCOUNTS.owner);
+  assert.equal(evidence.receiver, ACCOUNTS.vault);
+  assert.equal(evidence.vaultCodeHash, VAULT.codeHash);
+  const result = JSON.parse(Buffer.from(evidence.status.SuccessValue, 'base64').toString('utf8'));
+  assert.equal(result.version, MANDATE_RENEWAL.version);
+  assert.equal(result.expires_at_ns, MANDATE_RENEWAL.expiresAtNs);
+  assert.equal(result.revoked, false);
+  for (const [field, key] of [['per_payment_yocto', 'perPaymentYocto'], ['daily_yocto', 'dailyYocto'], ['total_yocto', 'totalYocto']]) {
+    assert.equal(result[field], MANDATE[key], `${field} unchanged by the renewal`);
+  }
+  assert.equal(result.agent, MANDATE.agent);
+  assert.deepEqual(result.recipients, [...MANDATE.recipients]);
+  assert.equal(formatUtcNs(MANDATE_RENEWAL.expiresAtNs), '2026-11-30 00:00 UTC');
 });

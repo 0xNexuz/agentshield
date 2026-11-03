@@ -15,4 +15,4 @@ For a guided version, open **Judge mode** (`/#judge`) and press **Watch AgentShi
 - The **Mandate** form saves a browser-only draft. It does not set the deployed policy.
 - Owner controls are not a proven browser signing flow.
 - The local AI agent has strict output validation and mocked injection coverage, but genuine NEAR AI inference has not completed: the key check and first inference returned HTTP 402. Do not present the mock as a live model outcome.
-- The mandate version 1 expires **2026-11-09 09:21:45 UTC** unless the owner approves and signs a renewal. The historical payment and rejection evidence remain independently verifiable after expiry.
+- The owner renewed the mandate on 2026-11-03 as version 2, with the same rules, until **2026-11-30 00:00 UTC**. The payment and rejection evidence is tied to version 1 and stays independently verifiable.
