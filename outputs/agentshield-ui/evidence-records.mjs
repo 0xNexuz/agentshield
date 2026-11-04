@@ -8,6 +8,7 @@ export const TRUTH = Object.freeze({
   historical: { label: "HISTORICAL ONCHAIN REPLAY", detail: "A replay of a transaction that already finalized on NEAR Testnet. Nothing is executing now." },
   live: { label: "LIVE RPC VERIFIED", detail: "Rechecked by the read-only proof API on this visit: current vault state from public NEAR Testnet RPC, the finalized transactions from a public archival Testnet node." },
   unverified: { label: "NOT YET VERIFIED", detail: "No genuine onchain evidence exists for this yet." },
+  liveModel: { label: "LIVE MODEL REPLY", detail: "A real reply from the model on NEAR AI Cloud during this visit, signed inside its TEE; the server checked the signature against today's attestation. Nothing is signed or sent to the chain." },
 });
 
 export const EXPLORER = "https://testnet.nearblocks.io/txns/";

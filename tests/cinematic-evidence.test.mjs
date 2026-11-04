@@ -18,9 +18,9 @@ const json = file => JSON.parse(read(file));
 const NEAR = 10n ** 24n;
 const near = yocto => { const v = BigInt(yocto); const f = String(v % NEAR).padStart(24, '0').replace(/0+$/, ''); return `${v / NEAR}${f ? `.${f}` : ''}`; };
 
-test('truth states are exactly the four required labels', () => {
+test('truth states are exactly the five required labels', () => {
   assert.deepEqual(Object.values(TRUTH).map(t => t.label),
-    ['SIMULATION', 'HISTORICAL ONCHAIN REPLAY', 'LIVE RPC VERIFIED', 'NOT YET VERIFIED']);
+    ['SIMULATION', 'HISTORICAL ONCHAIN REPLAY', 'LIVE RPC VERIFIED', 'NOT YET VERIFIED', 'LIVE MODEL REPLY']);
 });
 
 test('payment record matches the committed independent proof and evidence', () => {
@@ -171,8 +171,12 @@ test('every referenced cinematic plate exists in all three sizes and stays light
 
 test('the cinematic layer never signs or sends transactions', () => {
   const code = ['cinematic.mjs', 'evidence-records.mjs', 'preflight.mjs', 'preloader.js'].map(f => fs.readFileSync(path.join(ui, f), 'utf8')).join('\n');
-  assert.doesNotMatch(code, /wallet-bundle|signAndSend|signTransaction|functionCall\(|privateKey|NEAR_AI_KEY|method:\s*["']POST/);
-  for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/testnet\/(proof|gallery)"/);
+  assert.doesNotMatch(code, /wallet-bundle|signAndSend|signTransaction|functionCall\(|privateKey|NEAR_AI_KEY/);
+  for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/(testnet\/(proof|gallery)|live\/injection)"/);
+  // The only POST goes to the live model route, which cannot sign (tests/live-injection.test.mjs checks that).
+  const posts = [...code.matchAll(/fetch\("([^"]+)",\s*\{[^}]*method:\s*["']POST/g)].map(m => m[1]);
+  assert.deepEqual(posts, ['/api/live/injection']);
+  assert.equal((code.match(/method:\s*["']POST/g) || []).length, 1);
 });
 
 test('favicon and app icons exist and are linked from the page', () => {

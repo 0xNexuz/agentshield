@@ -54,14 +54,14 @@ export function preflightPayment(modelOutput, vaultStatus, options = {}) {
 }
 
 export async function inferPaymentInstruction(instruction, { apiKey = process.env.NEAR_AI_KEY,
-  model = process.env.NEAR_AI_MODEL || defaultModel, fetchImpl = fetch } = {}) {
+  model = process.env.NEAR_AI_MODEL || defaultModel, fetchImpl = fetch, maxTokens: maxTokensOption } = {}) {
   if (typeof instruction !== 'string' || instruction.length < 5 || instruction.length > 2000) {
     throw new Error('Enter a payment instruction of 5–2000 characters.');
   }
   if (!apiKey) throw new Error('NEAR_AI_KEY is not configured in the server environment.');
   if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') throw new Error('TLS verification must be enabled.');
-  const maxTokens = process.env.NEAR_AI_MAX_TOKENS === undefined ? 180 :
-    Number(process.env.NEAR_AI_MAX_TOKENS);
+  const maxTokens = maxTokensOption ?? (process.env.NEAR_AI_MAX_TOKENS === undefined ? 180 :
+    Number(process.env.NEAR_AI_MAX_TOKENS));
   if (!Number.isSafeInteger(maxTokens) || maxTokens < 1 || maxTokens > 4096) {
     throw new Error('NEAR_AI_MAX_TOKENS must be an integer from 1 to 4096.');
   }

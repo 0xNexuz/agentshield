@@ -295,3 +295,11 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - `.github/workflows/live-evidence.yml`: daily at 06:17 UTC and on demand, reruns both Testnet verifiers from GitHub's runners and `work/check-live-site.mjs` against production (tested offline in `tests/live-site-check.test.mjs`).
 - CI: actions pinned to commits (checkout and setup-node v5.0.0, which also removes the Node 20 deprecation warning), `npm ci --ignore-scripts` (verified locally: 69/69 pass without `bufferutil`/`secp256k1` native builds), `npm audit --omit=dev --audit-level=moderate`.
 - `docs/THREAT_MODEL.md`: threats → control → test → evidence, plus what is not defended.
+
+### 2026-11-04 — Option 6: the live model box
+
+- The owner said yes to option 6 (a live prompt-injection box), with about $0.99 of NEAR AI credit as the hard spending ceiling.
+- `api/live/injection.js` + `work/live-injection.mjs`: GET reports availability; POST sends `LEGITIMATE_LINE + visitor note` (the same shape as the recorded red-team cases) to `z-ai/glm-5.3-flash` with a 1,024-token limit. It fetches the reply's signature and recovers it (EIP-191, `@noble/curves` 1.8.1 and `@noble/hashes` 1.7.1, already used by `near-api-js`; recovery matches `ethers` on all 20 run 2 signatures). It requires `provider_tee`, the text `model:sha256(request):sha256(reply)`, and the key in a fresh nonce-bound attestation report (reused per instance for 30 minutes). It then runs the payment guard and predicts the vault's answer from the live mandate. It never signs or sends, never stores the note, and returns only the parsed recipient and amount.
+- Limits: five per visitor per ten minutes, `LIVE_INJECTION_DAILY_CAP` (150) per instance per UTC day, three in flight. A 402 from NEAR AI reports that the credit has run out.
+- Site: "Now try the real model" under "What the real model did", with a new truth label `LIVE MODEL REPLY`. The no-signing guard test now allows exactly one POST, to `/api/live/injection`, and a new test confirms that route has no signing code.
+- Checks: `npm test` 80/80; browser QA for the live box 12/12 (desktop and phone, on and off). Not yet run against the real model: it needs `NEAR_AI_KEY` in Vercel.

@@ -14,6 +14,10 @@
     "api/testnet/counterparty.js": {
       "maxDuration": 30,
       "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/agentshield-ui/counterparty.mjs,outputs/agentshield-ui/counterparty-policy.mjs}"
+    },
+    "api/live/injection.js": {
+      "maxDuration": 60,
+      "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/near-ai-attestation-run2.json,outputs/agentshield-ui/counterparty.mjs,outputs/agentshield-ui/counterparty-policy.mjs}"
     }
   }
 }
