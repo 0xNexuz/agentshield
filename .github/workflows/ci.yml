@@ -13,20 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: '24'
           cache: npm
       - name: Scan tracked history for credential material
         run: node work/scan-tracked-secrets.mjs
-      - name: Install JavaScript dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Test simulator, key scope, AI preflight, routes, and historical proof
+      - name: Install JavaScript dependencies without install scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Fail on moderate or worse advisories in production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Node tests (simulator, guard, counterparty, MCP server via the official SDK client, routes, evidence)
         run: node --test tests/*.test.mjs
-      - name: Test vault units
+      - name: Vault unit tests, including the randomized rule test
         run: cargo test --manifest-path contracts/vault/Cargo.toml --locked
       - name: Install local Sandbox and test actual WASM
         run: |
@@ -40,7 +42,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - name: Rebuild with Rust 1.96.0 and compare with deployment/agentshield_vault.wasm
         shell: pwsh
         run: ./work/reproduce-vault-wasm.ps1

@@ -1,0 +1,30 @@
+name: Live evidence
+
+# Every day, recheck the Testnet evidence from GitHub's own runners: once straight from public
+# NEAR RPC (independent of our Vercel site) and once through the production site's read-only APIs.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install JavaScript dependencies without install scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Recheck the payment and its key and mandate transactions on public Testnet RPC
+        run: node work/verify-testnet-live-payment.mjs
+      - name: Recheck the three rejected attacks on public Testnet RPC
+        run: node work/verify-testnet-negative-scenarios.mjs
+      - name: Check the production site's proof, gallery, counterparty and status endpoints
+        run: node work/check-live-site.mjs https://agentshield-lab.vercel.app

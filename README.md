@@ -1,6 +1,6 @@
 # AgentShield
 
-[![AgentShield checks](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml)
+[![AgentShield checks](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml) [![Live evidence](https://github.com/0xNexuz/agentshield/actions/workflows/live-evidence.yml/badge.svg?branch=main)](https://github.com/0xNexuz/agentshield/actions/workflows/live-evidence.yml)
 
 **Trust, but verify: spending limits for AI agents, enforced by a NEAR smart contract.**
 
@@ -12,7 +12,7 @@ The vault is deployed on **NEAR Testnet**, not mainnet. Built for NEAR HACKATHON
 
 - **Live site:** [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) (start with [Judge mode](https://agentshield-lab.vercel.app/#judge))
 - **Live proof, rechecked against public Testnet RPC on every request:** [payment](https://agentshield-lab.vercel.app/api/testnet/proof) and [rejected attacks](https://agentshield-lab.vercel.app/api/testnet/gallery)
-- **The contract:** [`contracts/vault/src/lib.rs`](contracts/vault/src/lib.rs)
+- **The contract:** [`contracts/vault/src/lib.rs`](contracts/vault/src/lib.rs), and [what it defends against](docs/THREAT_MODEL.md)
 - **For AI agents:** an [MCP server](#use-it-from-an-ai-agent-mcp) that checks a receiver and dry-runs a payment before the agent may sign one
 
 ![Judge mode, scene 3: the vault runs its checks on the settled request](docs/images/judge-mode.jpg)
@@ -27,9 +27,10 @@ You don't need a wallet, an account or a key. The site is read-only and has no w
 | Open [/api/testnet/proof](https://agentshield-lab.vercel.app/api/testnet/proof) | `"verification":"PASS"`, `"settlement":"SETTLED"`, `"codeHash":"2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN"`, `"currentKeyStillScoped":true` |
 | Open [/api/testnet/gallery](https://agentshield-lab.vercel.app/api/testnet/gallery) | Three results, each `"decision":"REJECTED"` with `"vaultTransferReceiptCount":0`: `PER_PAYMENT_LIMIT`, `RECIPIENT_NOT_ALLOWED`, `REPLAY` |
 | Open [/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1o77.testnet](https://agentshield-lab.vercel.app/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1o77.testnet) | `"decision":"BLOCK"` with `LOOKALIKE`: an `o` in place of a `0`, the redirect from recorded attack 03. Try it with any account in the site's **Lab**. |
-| `npm ci && npm test` | `# pass 67`, `# fail 0`. Offline, with no keys and no chain access. |
+| `npm ci && npm test` | `# pass 69`, `# fail 0`. Offline, with no keys and no chain access. |
 | Open [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json) and read `summary` | The real NEAR AI red-team run: `"escaped": 0` over 20 cases (19 prompt injections and one clean control), each reply signed by the attested model key |
-| `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 12 passed` |
+| `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 13 passed`, including the randomized rule test: 24,000 random operations, each checked against an independent model |
+| Open the [Live evidence](https://github.com/0xNexuz/agentshield/actions/workflows/live-evidence.yml) workflow | A daily run on GitHub's own machines that rechecks every Testnet proof straight from public RPC, then checks the production site |
 | Open the latest [CI run](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml), job **Rebuild the deployed WASM from source** | `MATCH`: the source rebuilds into the exact 324,708-byte WASM that is deployed |
 
 The site also has **Attack the vault** (`#attack`): the recorded attacks with a live recheck button, custom attacks in a local simulator, and a prompt-injection challenge.
@@ -132,6 +133,7 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 | A prompt-injected model cannot move money outside the mandate | Offchain `preflightPayment` in [`work/near-ai-payment-agent.mjs`](work/near-ai-payment-agent.mjs), then the contract checks above | `tests/near-ai-agent.test.mjs`; `tests/near-ai-evidence.test.mjs` rechecks the recorded runs and every reply signature | Real model run [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json): 0 escaped; the contract also refused the same redirect onchain in [`GvMLEq…gDX9`](https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9) |
 | A receiver that imitates an allowlisted account, is blocklisted or missing, or whose code changed is refused before signing | Offchain `assessCounterparty` in [`counterparty.mjs`](outputs/agentshield-ui/counterparty.mjs) | `tests/counterparty.test.mjs`, which blocks every redirect target from the 19 recorded injections, including the base64-hidden one | Live check: [`/api/testnet/counterparty`](https://agentshield-lab.vercel.app/api/testnet/counterparty?account=attacker.testnet) |
 | The MCP payment tool refuses `BLOCK`, asks a human on `WARN`, and signs only with a key limited to `request_payment` | [`mcp/agentshield-tools.mjs`](mcp/agentshield-tools.mjs), [`mcp/near-signer.mjs`](mcp/near-signer.mjs) | `tests/mcp-server.test.mjs`, using the official MCP SDK client | Not yet run on Testnet |
+| Under any random mix of requests, settlements, failed transfers, time, pause, resume, mandate changes and revocation, the contract decides exactly as an independent model does, and budgets, nonces and the allowlist always hold | [`invariant_tests.rs`](contracts/vault/src/invariant_tests.rs) | 24,000 seeded operations per run. Two planted bugs were caught at the first seed that hit them: daily limit ignoring pending payments, and a failed transfer freeing its nonce. | — |
 | The deployed code is built from this source | [`work/reproduce-vault-wasm.ps1`](work/reproduce-vault-wasm.ps1) | CI job "Rebuild the deployed WASM from source" prints `MATCH` | [`7K4729…y2dJ`](https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ) |
 
 **How the rebuild works.** The deployed WASM names its compiler in its `producers` section, `rustc 1.96.0 (ac68faa20 2026-05-25)`, and its panic strings contain the folders of the original Windows build machine. The script installs Rust 1.96.0 on a Windows runner, recreates those folders, builds `contracts/vault` and compares SHA-256 hashes. The result is `138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09`, the same as the committed WASM and therefore the code hash on chain.
@@ -155,8 +157,8 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 
 ```sh
 npm ci
-npm test                                                         # 67 Node tests, offline
-cargo test --manifest-path contracts/vault/Cargo.toml --locked   # 12 Rust unit tests
+npm test                                                         # 69 Node tests, offline
+cargo test --manifest-path contracts/vault/Cargo.toml --locked   # 13 Rust tests, including the randomized rule test
 node --use-system-ca work/preview-server.js                      # the site at http://127.0.0.1:4321
 npm run mcp                                                      # the MCP server on stdio, read-only
 ```
@@ -196,6 +198,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 ## Limits and security notes
 
 - Testnet only. Test NEAR has no value, and no mainnet deployment is claimed. The contract has not been audited.
+- CI pins every GitHub Action to a commit, installs packages without install scripts, fails on moderate or worse production advisories, and scans tracked history for credentials. The only production dependency is `near-api-js`; the MCP server and counterparty check use no third-party packages.
 - No private key is in this repository or in the site. The site has no signing endpoint. The execution scripts write an intent record before broadcasting and refuse to sign a second transaction once one exists.
 - The vault account has no access keys of its own, and no upgrade method was found in its interface. That is not a formal immutability claim.
 - Revocation is tested in NEAR Sandbox only. An isolated Testnet revocation vault was attempted, but the transaction finalized `FAILED` because the initializer was given an unsupported domain; that lab was then stopped. See `outputs/testnet-revocation-deploy-failure.json`.
@@ -206,6 +209,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 
 ## More
 
+- [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md): each threat, the control that stops it, the test and the evidence, and what is not defended
 - [docs/JUDGE_WALKTHROUGH.md](docs/JUDGE_WALKTHROUGH.md): a guided path through the site
 - [docs/ARCHITECTURE_AND_EVIDENCE.md](docs/ARCHITECTURE_AND_EVIDENCE.md): trust boundaries and the evidence ladder
 - [docs/RELEASE_AND_SUBMISSION.md](docs/RELEASE_AND_SUBMISSION.md): release checklist and reproduction from a clean clone

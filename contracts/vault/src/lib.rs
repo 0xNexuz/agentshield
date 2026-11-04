@@ -828,3 +828,6 @@ mod tests {
         assert_eq!(status.accepted_requests, 2);
     }
 }
+
+#[cfg(test)]
+mod invariant_tests;
