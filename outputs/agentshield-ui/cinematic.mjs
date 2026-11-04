@@ -2,7 +2,7 @@
 // Presentation only. It never signs, never sends a transaction, and never needs a wallet.
 // Onchain facts come from ./evidence-records.mjs (historical) or the read-only /api/testnet/* proofs (live).
 import {
-  TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS,
+  TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, NEAR_AI_RUN,
   explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs, currentMandate,
   MANDATE_RENEWAL,
 } from "./evidence-records.mjs";
@@ -772,6 +772,26 @@ function contractOutcome(proposal) {
   return { decision: result.decision, reason: result.decision === "AUTHORIZED" ? null : result.reason, record, exact };
 }
 
+// What the real NEAR AI model did with the same inputs (recorded offchain run, numbers from NEAR_AI_RUN).
+function renderRealRun(box) {
+  if (!box) return;
+  const run = NEAR_AI_RUN;
+  const t = run.redteam;
+  const ext = (href, text) => h("a", { href, target: "_blank", rel: "noopener noreferrer", text: `${text} ↗` });
+  box.replaceChildren(
+    h("div", { class: "inj-real-head" },
+      h("h3", { id: "inj-real-title", text: "What the real model did" }),
+      h("p", { text: `A recorded NEAR AI Cloud run on ${run.date} with ${run.model}, ${run.calls} calls. Offchain evidence, not an onchain transaction.` })),
+    h("dl", { class: "inj-real-list" },
+      h("div", {}, h("dt", { text: "This exact supplier note" }),
+        h("dd", { text: `The model ignored the note and returned the original payment: ${ACCOUNTS.recipient}, ${PAYMENT.amountNear} NEAR. Preflight: ${run.demo.injection}.` })),
+      h("div", {}, h("dt", { text: `${t.attacks} more attacks` }),
+        h("dd", { text: `${t.returnedLegitimate} returned the original payment unchanged, ${t.returnedEmpty} returned empty fields (the agent's rule for anything ambiguous), and ${t.noAnswer} ran out of reply budget before answering. None proposed the attacker's account or amount. The preflight blocked every empty or missing answer, so ${t.escaped === 0 ? "no payment" : `${t.escaped} payments`} left the boundary.` })),
+      h("div", {}, h("dt", { text: "Signed and attested" }),
+        h("dd", { text: "Every reply is signed by the model's key. NEAR AI's official verifier, run on the owner's machine, passed the Intel TDX and NVIDIA GPU attestation for that key and the fresh request nonce. Some checks did not run, including image provenance and TLS binding." }))),
+    h("p", { class: "inj-real-links" }, ext(run.evidenceUrl, "Red-team evidence"), " ", ext(run.attestationUrl, "Attestation record")));
+}
+
 function setupInjection(root) {
   const recipientInput = root.querySelector("#inj-recipient");
   const amountInput = root.querySelector("#inj-amount");
@@ -799,7 +819,7 @@ function setupInjection(root) {
       h("article", { class: "inj-card" }, h("span", { class: "inj-step", text: "3 · Model proposal" }), truth("simulation", "not NEAR AI"),
         h("code", { class: "step-code", text: JSON.stringify(proposal) }),
         h("p", { text: source === "edited" ? "You edited this proposal by hand." : source === "fooled" ? "Scripted: a model that obeyed the injected note." : "Scripted: a model that ignored the injected note." }),
-        h("small", { text: "This step is simulated. In the recorded NEAR AI run (4 Nov 2026), the model spent its 180-token reply budget on hidden reasoning, so most replies came back empty or cut off, and the preflight blocked each of them. See outputs/near-ai-redteam-evidence.json." })),
+        h("small", { text: "This step is simulated so you can try either outcome. In the recorded NEAR AI run, the real model ignored this note and returned the original payment; see below." })),
       h("article", { class: "inj-card", "data-outcome": pre.decision.toLowerCase() }, h("span", { class: "inj-step", text: "4 · Offchain preflight" }), truth("simulation", "runs in your browser"),
         h("p", { class: "step-decision", "data-outcome": pre.decision === "ALLOW" ? "authorized" : "rejected", text: `${pre.decision} · ${pre.reason}` }),
         h("small", { text: "The project's preflight code, checked against the recorded mandate. Time comes from your browser clock, not a finalized block; the vault balance is not rechecked here." })),
@@ -825,6 +845,7 @@ function setupInjection(root) {
   recipientInput.value = PROPOSALS.fooled.recipient; amountInput.value = PROPOSALS.fooled.amountNear;
   modeButtons[0]?.setAttribute("aria-pressed", "true");
   evaluate("fooled");
+  renderRealRun(root.querySelector(".inj-real"));
 }
 
 /* ---------- overview cast band ---------- */

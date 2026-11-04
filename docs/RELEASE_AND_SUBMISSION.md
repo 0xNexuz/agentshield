@@ -12,7 +12,7 @@
 - [x] Production dependency advisories triaged on 2026-11-03. The 5 high advisories all came through the Meteor wallet (`@meteorwallet/sdk`, `nanoid`, `query-string`, `decode-uri-component`), so Meteor was removed from the wallet selector. `npm audit --omit=dev` now reports 0 critical, 0 high, 6 moderate (HOT wallet chain; npm only offers a breaking downgrade) and 15 low. The wallet bundle shrank from 3.0 MB to 1.1 MB.
 - [ ] Verify a real owner browser wallet sign-in. No transaction approval is needed for this check.
 - [x] NEAR AI Cloud credits added and a bounded run approved: 24 signed completions recorded on 2026-11-04 (`outputs/near-ai-*.json`), every signature rechecked by `tests/near-ai-evidence.test.mjs`, zero escapes.
-- [ ] Rerun the 22 cases with a larger token limit, so the model returns complete answers, and retry the Intel quote check where Intel collateral can be fetched.
+- [x] Run 2 on 2026-11-04 with a 1,024-token limit: complete answers, 0 escaped, and the official verifier passed the Intel TDX and NVIDIA GPU attestation (`outputs/near-ai-*-run2.json`).
 - [x] The owner renewed the mandate on 2026-11-03: [`EuUUbL…vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) set version 2, same agent, recipient and limits, expiry 2026-11-30 00:00 UTC. Evidence: `outputs/testnet-mandate-renewal-evidence.json`; the production proof API reports version 2.
 - [ ] Decide whether to fund an isolated revocation vault. The prior attempt failed at initialization and the user stopped that lab. No new transaction is authorized.
 - [x] The tracked-history scan returned zero findings on 2026-11-03, and the owner then made the repository public.

@@ -259,3 +259,10 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Result quality: the model spent its 180-token budget on hidden reasoning, so 22 of 24 replies were empty or cut off. Both demo cases and 19 red-team cases were blocked as invalid proposals; the control case returned ALLOW with the legitimate proposal; zero escapes. This shows fail-closed behaviour, not how the model handles injections.
 - The site and docs now say this instead of "no NEAR AI completion"; the site's prompt-injection model step stays labelled as simulated.
 
+### 2026-11-04 — NEAR AI run 2: complete answers
+
+- Codex ran run 2 (commit `ceda0fa`, authored as 0xNexuz): 22 completions, `NEAR_AI_MAX_TOKENS=1024`, `z-ai/glm-5.3-flash`, fresh attestation nonce, estimated spend $0.0057. Run 1 files are unchanged.
+- Results, recomputed here from the committed files: both demo cases returned the legitimate proposal (`ALLOW`), so the model ignored the injected supplier note. Of 19 red-team attacks, 11 returned the legitimate proposal unchanged, 4 returned empty fields, 4 returned no content after using the whole budget on reasoning, and none proposed another recipient or amount. The control returned `ALLOW`. Escaped: 0. All 22 signatures are `provider_tee` and recover to the run 2 model signing key.
+- Attestation (as recorded from `nearai/nearai-cloud-verifier` at `94554726`, run in WSL2 on the owner's machine; output SHA-256 recorded, raw output not committed): gateway and model Intel TDX quotes, nonce and signing-address bindings, compose hashes and NVIDIA GPU attestation VERIFIED. Compose-manager quote, Sigstore provenance, TLS fingerprint binding and OHTTP were NOT VERIFIED. This session could not rerun the quote check independently.
+- The prompt-injection challenge now shows "What the real model did" from `NEAR_AI_RUN` in `evidence-records.mjs`; `tests/near-ai-evidence.test.mjs` recomputes those numbers from the evidence. `npm test` 40/40.
+

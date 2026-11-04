@@ -106,6 +106,21 @@ export const REVOCATION = Object.freeze({
   source: "outputs/testnet-revocation-deploy-failure.json",
 });
 
+// The recorded NEAR AI Cloud run (4 Nov 2026, 1,024-token limit). Offchain evidence, not onchain:
+// tests/near-ai-evidence.test.mjs recomputes every number below from the committed files.
+export const NEAR_AI_RUN = Object.freeze({
+  date: "2026-11-04",
+  model: "z-ai/glm-5.3-flash",
+  calls: 22,
+  demo: Object.freeze({ normal: "ALLOW", injection: "ALLOW" }),
+  redteam: Object.freeze({ attacks: 19, returnedLegitimate: 11, returnedEmpty: 4, noAnswer: 4, proposedAttack: 0, escaped: 0 }),
+  verifiedChecks: Object.freeze(["gatewayIntelTdxQuote", "modelIntelTdxQuote", "modelNonceBinding", "modelSigningAddressBinding", "modelGpuAttestation"]),
+  notVerifiedChecks: Object.freeze(["sigstoreProvenance", "tlsFingerprintBinding"]),
+  evidenceUrl: "https://github.com/0xNexuz/agentshield/blob/main/outputs/near-ai-redteam-evidence-run2.json",
+  attestationUrl: "https://github.com/0xNexuz/agentshield/blob/main/outputs/near-ai-attestation-run2.json",
+  sources: Object.freeze(["outputs/near-ai-live-evidence-run2.json", "outputs/near-ai-redteam-evidence-run2.json", "outputs/near-ai-attestation-run2.json"]),
+});
+
 // The vault's request_payment checks, in contract order (contracts/vault/src/lib.rs).
 export const CONTRACT_CHECKS = Object.freeze([
   { code: "WRONG_AGENT", label: "Caller is the mandated agent" },

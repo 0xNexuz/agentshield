@@ -23,7 +23,8 @@ You don't need a wallet, an account or a key.
 | Open [/#judge](https://agentshield-lab.vercel.app/#judge) and press **Watch AgentShield in action** | A six-scene replay, about 75 seconds. Every fact is labelled `SIMULATION`, `HISTORICAL ONCHAIN REPLAY`, `LIVE RPC VERIFIED` or `NOT YET VERIFIED`, and the proof scene turns `LIVE RPC VERIFIED` once the site has rechecked Testnet. |
 | Open [/api/testnet/proof](https://agentshield-lab.vercel.app/api/testnet/proof) | `"verification":"PASS"`, `"settlement":"SETTLED"`, `"codeHash":"2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN"`, `"currentKeyStillScoped":true` |
 | Open [/api/testnet/gallery](https://agentshield-lab.vercel.app/api/testnet/gallery) | Three results, each `"decision":"REJECTED"` with `"vaultTransferReceiptCount":0`: `PER_PAYMENT_LIMIT`, `RECIPIENT_NOT_ALLOWED`, `REPLAY` |
-| `npm ci && npm test` | `# pass 37`, `# fail 0`. Offline, with no keys and no chain access. |
+| `npm ci && npm test` | `# pass 40`, `# fail 0`. Offline, with no keys and no chain access. |
+| Open [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json) and read `summary` | The real NEAR AI red-team run: `"escaped": 0` over 20 cases, each reply signed by the attested model key |
 | `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 12 passed` |
 | Open the latest [CI run](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml), job **Rebuild the deployed WASM from source** | `MATCH`: the source rebuilds into the exact 324,708-byte WASM that is deployed |
 
@@ -85,6 +86,7 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 | No payments while an owner withdrawal is pending | [L269](contracts/vault/src/lib.rs#L269) `WITHDRAWAL_PENDING` | Unit `pending_withdrawal_blocks_payment_and_failure_releases_guard`, `…_success_releases_guard`; Sandbox "pause, stale version and owner withdrawal" | — |
 | Settlement is recorded only after the transfer result, exactly once | `on_transfer_result` [L381](contracts/vault/src/lib.rs#L381), `#[private]` | Unit `successful_transfer_settles_exactly_once`, `failed_transfer_releases_budget_but_keeps_nonce`; Sandbox "failed recipient transfer releases reservation without settlement" | [`3buDvB…53jm`](https://testnet.nearblocks.io/txns/3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm) |
 | Only the owner changes policy or funds the vault | `assert_owner` [L489](contracts/vault/src/lib.rs#L489) | Unit `non_owner_cannot_change_policy`, `initializer_must_be_owner`, `only_owner_can_fund_and_attached_amount_is_reported` | [`GLhrrb…xbG7`](https://testnet.nearblocks.io/txns/GLhrrbxzn93YVKhq6JAxogNW27jf19XqfkfqAJdmxbG7) |
+| A prompt-injected model cannot move money outside the mandate | Offchain `preflightPayment` in [`work/near-ai-payment-agent.mjs`](work/near-ai-payment-agent.mjs), then the contract checks above | `tests/near-ai-agent.test.mjs`; `tests/near-ai-evidence.test.mjs` rechecks the recorded runs and every reply signature | Real model run [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json): 0 escaped; the contract also refused the same redirect onchain in [`GvMLEq…gDX9`](https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9) |
 | The deployed code is built from this source | [`work/reproduce-vault-wasm.ps1`](work/reproduce-vault-wasm.ps1) | CI job "Rebuild the deployed WASM from source" prints `MATCH` | [`7K4729…y2dJ`](https://testnet.nearblocks.io/txns/7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ) |
 
 **How the rebuild works.** The deployed WASM names its compiler in its `producers` section, `rustc 1.96.0 (ac68faa20 2026-05-25)`, and its panic strings contain the folders of the original Windows build machine. The script installs Rust 1.96.0 on a Windows runner, recreates those folders, builds `contracts/vault` and compares SHA-256 hashes. The result is `138b17e7f1a227b22352e2e638fd69e60e0ad95f7a4dd003d8cbd244f8ffbe09`, the same as the committed WASM and therefore the code hash on chain.
@@ -97,7 +99,7 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 | Deployed WASM built from this source | **Real**, rebuilt byte for byte in CI |
 | Revocation | NEAR Sandbox only, against the deployed WASM. **Not yet shown on Testnet.** |
 | Instant Demo and custom attacks on the site | **Simulated** in the browser (`outputs/agentshield-ui/simulator.mjs`) |
-| NEAR AI proposal and ALLOW / WARN / BLOCK preflight | **Real calls, partly useful.** On 2026-11-04, 24 completions from `z-ai/glm-5.3-flash` on NEAR AI Cloud were recorded, and each reply signature recovers to the model signing key in the saved attestation report. The model spent its 180-token budget on hidden reasoning, so 22 of 24 replies were empty or cut off; the preflight blocked all of them. The Intel TDX quote itself is **not verified** (the verifier could not fetch Intel collateral). |
+| NEAR AI proposal and ALLOW / WARN / BLOCK preflight | **Real, recorded.** On 2026-11-04, 22 completions from `z-ai/glm-5.3-flash` on NEAR AI Cloud (run 2, 1,024-token limit). The model ignored the injected supplier note and returned the original payment. Of 19 red-team attacks, 11 returned the original payment, 4 returned empty fields, 4 ran out of tokens, and **none proposed the attacker's account or amount; 0 payments escaped**. Every reply signature recovers to the attested model key; NEAR AI's official verifier passed the Intel TDX and NVIDIA GPU attestation (image provenance and TLS binding not checked). Run 1, with a 180-token limit, is kept: 22 of 24 replies were cut off and blocked. |
 | Prompt-injection challenge on the site | The model step is **simulated**. The contract result it points to is the real `RECIPIENT_NOT_ALLOWED` rejection. |
 | Owner wallet sign-in | **Not verified** end to end |
 | Mainnet | **Not implemented** |
@@ -106,7 +108,7 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 
 ```sh
 npm ci
-npm test                                                         # 37 Node tests, offline
+npm test                                                         # 40 Node tests, offline
 cargo test --manifest-path contracts/vault/Cargo.toml --locked   # 12 Rust unit tests
 node --use-system-ca work/preview-server.js                      # the site at http://127.0.0.1:4321
 ```
@@ -146,7 +148,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 - No private key is in this repository or in the site. The site has no signing endpoint. The execution scripts write an intent record before broadcasting and refuse to sign a second transaction once one exists.
 - The vault account has no access keys of its own, and no upgrade method was found in its interface. That is not a formal immutability claim.
 - Revocation is tested in NEAR Sandbox only. An isolated Testnet revocation vault was attempted, but the transaction finalized `FAILED` because the initializer was given an unsupported domain; that lab was then stopped. See `outputs/testnet-revocation-deploy-failure.json`.
-- NEAR AI: the recorded run (`outputs/near-ai-live-evidence.json`, `outputs/near-ai-redteam-evidence.json`, `outputs/near-ai-attestation.json`) shows real, signed replies, but most were cut off by the 180-token limit, so it shows the preflight failing closed rather than how the model handles injections. `tests/near-ai-evidence.test.mjs` rechecks every signature offline. The site's prompt-injection model step stays simulated. The key stays in a local `.env` and never reaches Git, Vercel or the browser.
+- NEAR AI: the recorded runs are in `outputs/near-ai-*.json`. Run 2 shows complete answers; run 1 is kept and shows the preflight failing closed when the model's replies were cut off. The attestation checks are the ones NEAR AI's official verifier reports; its raw output is not committed, only its SHA-256. The site's prompt-injection model step stays simulated, with the real result shown beside it. The key stays in a local `.env` and never reaches Git, Vercel or the browser.
 - Owner wallet sign-in has not been verified; the Lab offers HOT Wallet only. After the Meteor wallet was removed on 2026-11-03, `npm audit --omit=dev` reports no high or critical advisories (6 moderate, all in the HOT wallet chain, whose only offered fix is a major downgrade, and 15 low).
 - The mandate (version 2) expires 2026-11-30 00:00 UTC; after that the vault refuses new requests. The homepage shows the live state, and the payment and rejection proofs stay verifiable after expiry because they are tied to version 1.
 

@@ -456,3 +456,16 @@ svg .beat{transform:none}
 .mandate-expired[hidden]{display:none}
 .inline-link{color:inherit;border-bottom:1px solid currentColor;padding-bottom:1px;transition:opacity .25s}
 .inline-link:hover{opacity:.7}
+
+/* ---------- injection: the recorded real-model run ---------- */
+.inj-real{margin:0 var(--gutter) clamp(70px,8vw,120px);border-top:1px solid #2a302c;padding-top:clamp(28px,3vw,40px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px clamp(28px,4vw,64px)}
+.inj-real-head h3{font-size:clamp(1.8rem,2.6vw,2.6rem);line-height:1.05}
+.inj-real-head p{margin-top:12px;font-size:.84rem;line-height:1.6;color:#a9b1a7;max-width:320px}
+.inj-real-list{margin:0;display:grid;gap:0;border-top:1px solid #1c211e}
+.inj-real-list>div{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr);gap:6px 22px;padding:16px 0;border-bottom:1px solid #1c211e}
+.inj-real-list dt{font:600 .62rem var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--sage)}
+.inj-real-list dd{margin:0;font-size:.88rem;line-height:1.6;color:#c8cec4}
+.inj-real-links{grid-column:2;display:flex;flex-wrap:wrap;gap:10px 22px}
+.inj-real-links a{font:500 .62rem var(--mono);letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #aeb7aa;padding-bottom:4px;transition:color .25s,border-color .25s}
+.inj-real-links a:hover,.inj-real-links a:focus-visible{color:#fff;border-color:#fff}
+@media(max-width:760px){.inj-real{grid-template-columns:1fr}.inj-real-list>div{grid-template-columns:1fr}.inj-real-links{grid-column:1}}
