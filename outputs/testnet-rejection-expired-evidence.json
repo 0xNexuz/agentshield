@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "scenario": "expired",
+  "attack": "A request whose own expiry has already passed, e.g. a delayed or replayed instruction.",
+  "transactionHash": "EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "signerPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "expiredv2-8b810dfee74d6340",
+    "expires_at_ns": "1793824719865405937",
+    "expected_version": 2
+  },
+  "decision": {
+    "decision": "REJECTED",
+    "reason": "EXPIRED"
+  },
+  "vaultTransferReceipts": 0,
+  "mandateVersion": 2,
+  "confirmedTotalBeforeYocto": "5000000000000000000000",
+  "confirmedTotalAfterYocto": "5000000000000000000000",
+  "recipientExists": true,
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "recipientBalanceAfterYocto": "10005000000000000000000000",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d",
+  "recordedAt": "2026-11-04T20:40:06.335Z"
+}

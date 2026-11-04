@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "scenario": "staleVersion",
+  "attack": "An agent acting on the old mandate (version 1) after the owner renewed it.",
+  "transactionHash": "8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "signerPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "stalev2-88dd4ddb562290ad",
+    "expires_at_ns": "1793825232930537806",
+    "expected_version": 1
+  },
+  "decision": {
+    "decision": "REJECTED",
+    "reason": "STALE_VERSION"
+  },
+  "vaultTransferReceipts": 0,
+  "mandateVersion": 2,
+  "confirmedTotalBeforeYocto": "5000000000000000000000",
+  "confirmedTotalAfterYocto": "5000000000000000000000",
+  "recipientExists": true,
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "recipientBalanceAfterYocto": "10005000000000000000000000",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A",
+  "recordedAt": "2026-11-04T20:37:44.164Z"
+}

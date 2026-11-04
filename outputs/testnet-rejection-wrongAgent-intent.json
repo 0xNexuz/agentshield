@@ -1,0 +1,19 @@
+{
+  "network": "testnet",
+  "scenario": "wrongAgent",
+  "hash": "8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "signerPublicKey": "ed25519:A5dmTvsTjpkVEWgeQGbFKfxP6XKgJW1Vkgq8W6LTMNzS",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "wrongagentv2-fe324c7dbe3e7598",
+    "expires_at_ns": "1793825596744046145",
+    "expected_version": 2
+  },
+  "blockTimeNs": "1793824996744046145",
+  "confirmedBeforeYocto": "5000000000000000000000",
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "createdAt": "2026-11-04T20:43:31.613Z"
+}

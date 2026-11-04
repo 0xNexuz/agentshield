@@ -1,0 +1,18 @@
+{
+  "network": "testnet",
+  "via": "AgentShield MCP server (mcp/agentshield-mcp.mjs)",
+  "client": "@modelcontextprotocol/sdk Client",
+  "tool": "agentshield_request_payment",
+  "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+  "amountNear": "0.005",
+  "mandateVersion": 2,
+  "dryRun": {
+    "decision": "ALLOW",
+    "reasons": [
+      "Recipient, amount, budgets, expiry and receiver checks all pass."
+    ]
+  },
+  "createdAt": "2026-11-04T20:47:20.175Z",
+  "transactionHash": "HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  "outcome": "AUTHORIZED"
+}

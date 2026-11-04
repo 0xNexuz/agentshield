@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "scenario": "wrongAgent",
+  "attack": "Someone other than the mandated agent asks for a payment; here even the vault owner is refused.",
+  "transactionHash": "8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE",
+  "finality": "FINAL",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "signerPublicKey": "ed25519:A5dmTvsTjpkVEWgeQGbFKfxP6XKgJW1Vkgq8W6LTMNzS",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "wrongagentv2-fe324c7dbe3e7598",
+    "expires_at_ns": "1793825596744046145",
+    "expected_version": 2
+  },
+  "decision": {
+    "decision": "REJECTED",
+    "reason": "WRONG_AGENT"
+  },
+  "vaultTransferReceipts": 0,
+  "mandateVersion": 2,
+  "confirmedTotalBeforeYocto": "5000000000000000000000",
+  "confirmedTotalAfterYocto": "5000000000000000000000",
+  "recipientExists": true,
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "recipientBalanceAfterYocto": "10005000000000000000000000",
+  "explorerUrl": "https://testnet.nearblocks.io/txns/8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE",
+  "recordedAt": "2026-11-04T20:43:45.714Z"
+}

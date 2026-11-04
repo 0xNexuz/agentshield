@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "via": "AgentShield MCP server",
+  "tool": "agentshield_request_payment",
+  "transactionHash": "HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  "requestId": "3422d39c4f91fafb560110c408a334bc919cc294638d453765e8e44b176d0f8e",
+  "request": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amountYocto": "5000000000000000000000",
+    "nonce": "mcp-14147d08b4ba7ccd6155618d",
+    "expiresAtNs": "1793825842198243706",
+    "expectedVersion": 2
+  },
+  "dryRun": {
+    "decision": "ALLOW",
+    "reasons": [
+      "Recipient, amount, budgets, expiry and receiver checks all pass."
+    ]
+  },
+  "contractDecision": {
+    "decision": "AUTHORIZED",
+    "request_id": "3422d39c4f91fafb560110c408a334bc919cc294638d453765e8e44b176d0f8e",
+    "action_hash": "3422d39c4f91fafb560110c408a334bc919cc294638d453765e8e44b176d0f8e"
+  },
+  "settlement": "SETTLED",
+  "recordMandateVersion": 2,
+  "explorerUrl": "https://testnet.nearblocks.io/txns/HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  "recordedAt": "2026-11-04T20:47:43.452Z"
+}

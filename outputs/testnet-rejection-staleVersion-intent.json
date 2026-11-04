@@ -1,0 +1,19 @@
+{
+  "network": "testnet",
+  "scenario": "staleVersion",
+  "hash": "8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "signerPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+  "receiver": "vault.agentshield-mag-1d2f78801994.testnet",
+  "args": {
+    "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+    "amount_yocto": "5000000000000000000000",
+    "nonce": "stalev2-88dd4ddb562290ad",
+    "expires_at_ns": "1793825232930537806",
+    "expected_version": 1
+  },
+  "blockTimeNs": "1793824632930537806",
+  "confirmedBeforeYocto": "5000000000000000000000",
+  "recipientBalanceBeforeYocto": "10005000000000000000000000",
+  "createdAt": "2026-11-04T20:37:26.095Z"
+}
