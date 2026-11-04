@@ -14,5 +14,5 @@ For a guided version, open **Judge mode** (`/#judge`) and press **Watch AgentShi
 
 - The **Mandate** form saves a browser-only draft. It does not set the deployed policy.
 - Owner controls are not a proven browser signing flow.
-- The local AI agent has strict output validation and mocked injection coverage, but genuine NEAR AI inference has not completed: the key check and first inference returned HTTP 402. Do not present the mock as a live model outcome.
+- The AI agent has strict output validation and mocked injection coverage. On 2026-11-04, 24 real NEAR AI Cloud completions (`z-ai/glm-5.3-flash`) were recorded with signatures that recover to the attested model key; the Intel quote is not verified, and the 180-token limit cut off 22 of 24 replies, which the preflight blocked. The site's prompt-injection model step stays simulated.
 - The owner renewed the mandate on 2026-11-03 as version 2, with the same rules, until **2026-11-30 00:00 UTC**. The payment and rejection evidence is tied to version 1 and stays independently verifiable.

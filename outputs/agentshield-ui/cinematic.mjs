@@ -799,7 +799,7 @@ function setupInjection(root) {
       h("article", { class: "inj-card" }, h("span", { class: "inj-step", text: "3 · Model proposal" }), truth("simulation", "not NEAR AI"),
         h("code", { class: "step-code", text: JSON.stringify(proposal) }),
         h("p", { text: source === "edited" ? "You edited this proposal by hand." : source === "fooled" ? "Scripted: a model that obeyed the injected note." : "Scripted: a model that ignored the injected note." }),
-        h("small", { text: "No NEAR AI completion has been received for this project: the authorized request returned HTTP 402 on 2 Nov 2026 (no credits). This step is simulated." })),
+        h("small", { text: "This step is simulated. In the recorded NEAR AI run (4 Nov 2026), the model spent its 180-token reply budget on hidden reasoning, so most replies came back empty or cut off, and the preflight blocked each of them. See outputs/near-ai-redteam-evidence.json." })),
       h("article", { class: "inj-card", "data-outcome": pre.decision.toLowerCase() }, h("span", { class: "inj-step", text: "4 · Offchain preflight" }), truth("simulation", "runs in your browser"),
         h("p", { class: "step-decision", "data-outcome": pre.decision === "ALLOW" ? "authorized" : "rejected", text: `${pre.decision} · ${pre.reason}` }),
         h("small", { text: "The project's preflight code, checked against the recorded mandate. Time comes from your browser clock, not a finalized block; the vault balance is not rechecked here." })),

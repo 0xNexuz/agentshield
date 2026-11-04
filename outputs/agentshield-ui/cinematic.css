@@ -454,3 +454,5 @@ svg .beat{transform:none}
 @media(max-width:760px){.verify-block{grid-template-columns:1fr;margin-top:50px}.verify-list a{grid-template-columns:minmax(0,1fr) auto}.verify-list span{grid-column:1/-1;grid-row:2}}
 @media(prefers-reduced-motion:reduce){.verify-list a,.verify-list b{transition:none}}
 .mandate-expired[hidden]{display:none}
+.inline-link{color:inherit;border-bottom:1px solid currentColor;padding-bottom:1px;transition:opacity .25s}
+.inline-link:hover{opacity:.7}

@@ -251,3 +251,11 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Records that ran under version 1 (the payment, the three rejections) keep version 1 by design.
 - Checks: `npm test` 33/33, browser QA 93/93 and 71/71.
 
+### 2026-11-04 — First real NEAR AI run, checked
+
+- With the owner's authorization, Codex ran 24 billable NEAR AI Cloud completions (2 demo cases with one retry each, 20 red-team cases) against `z-ai/glm-5.3-flash`, the canonical model for the alias `zai-org/GLM-5.1-FP8`, and pushed commit `34ed5c1` as 0xNexuz. All calls returned HTTP 200; the estimated spend was $0.0024. No Testnet transaction or signature occurred.
+- Rechecked here: the saved attestation report echoes the client nonce for both the gateway and the single model attestation, and all 24 reply signatures are `provider_tee` signatures over `model:request_sha256:response_sha256` that recover (EIP-191) to the attested model signing address. `tests/near-ai-evidence.test.mjs` now repeats these checks offline.
+- Not verified: the Intel TDX quotes, report-data binding, GPU, compose and provenance checks. The official verifier (`nearai/nearai-cloud-verifier` at `94554726`) could not fetch Intel collateral.
+- Result quality: the model spent its 180-token budget on hidden reasoning, so 22 of 24 replies were empty or cut off. Both demo cases and 19 red-team cases were blocked as invalid proposals; the control case returned ALLOW with the legitimate proposal; zero escapes. This shows fail-closed behaviour, not how the model handles injections.
+- The site and docs now say this instead of "no NEAR AI completion"; the site's prompt-injection model step stays labelled as simulated.
+

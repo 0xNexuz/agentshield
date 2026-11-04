@@ -19,14 +19,14 @@ flowchart LR
   Proof --> Browser[Evidence view]
 ```
 
-The live owner wallet has **not** been verified through browser sign-in. The NEAR AI call has returned HTTP 402, so the model-to-preflight edge is implemented and mocked but **not** live-verified. No public inference endpoint exists. The deployed site only reads public RPC; no signing credential is on Vercel. The restricted function-call key is limited to the vault's `request_payment` method, has a finite gas allowance, and cannot attach deposit. The vault still checks agent identity, allowlist, caps, budgets, expiry, nonce, and revocation. Its callback records settlement after the transfer outcome. A key restriction is a second boundary, not a substitute for contract checks.
+The live owner wallet has **not** been verified through browser sign-in. On 2026-11-04, 24 real NEAR AI Cloud completions (`z-ai/glm-5.3-flash`) were recorded with signatures that recover to the attested model key; the Intel quote is not verified, and the 180-token limit cut off 22 of 24 replies, which the preflight blocked. So the model-to-preflight edge has run for real and failed closed, but a meaningful model answer to an injection is **not** yet recorded. No public inference endpoint exists. The deployed site only reads public RPC; no signing credential is on Vercel. The restricted function-call key is limited to the vault's `request_payment` method, has a finite gas allowance, and cannot attach deposit. The vault still checks agent identity, allowlist, caps, budgets, expiry, nonce, and revocation. Its callback records settlement after the transfer outcome. A key restriction is a second boundary, not a substitute for contract checks.
 
 ## Evidence ladder
 
 | Claim | Required evidence | Current state |
 | --- | --- | --- |
 | Simulator decision | Deterministic local run | Seven local simulator tests pass; **simulation only** |
-| Offchain AI preflight | Genuine model response plus finalized policy read | Mocked AI tests 5/5; read-only ALLOW/WARN/BLOCK policy check passed; **genuine model response blocked by HTTP 402** |
+| Offchain AI preflight | Genuine model response plus finalized policy read | Mocked AI tests pass; read-only ALLOW/WARN/BLOCK policy check passed; 24 signed NEAR AI replies recorded, 22 cut off by the token limit and blocked; **no complete model answer to an injection yet** |
 | Contract rejection | Finalized signed call, contract rejection, zero payout receipts | Three public Testnet transactions independently checked |
 | Authorized call | Finalized `request_payment` and decision log | One public Testnet transaction independently checked |
 | Completed settlement | Exact successful recipient transfer receipt, callback log, `SETTLED` request record | One public Testnet transaction independently checked |
