@@ -11,13 +11,6 @@ export const ARCHIVAL_ENDPOINTS = Object.freeze([
   'https://archival-rpc.testnet.near.org',
 ]);
 
-// A FINAL transaction can never change, so a warm function instance may reuse
-// one it fetched recently instead of hitting rate-limited archival nodes again.
-// Callers get the fetch time back and report it, so a reused answer is never
-// presented as fetched during the current request.
-const REUSE_MS = 10 * 60 * 1000;
-const finalized = new Map();
-
 const host = endpoint => new URL(endpoint).host;
 
 export async function postRpc(endpoint, id, method, params, { timeoutMs = 20000, signal } = {}) {
@@ -43,13 +36,10 @@ export async function postRpc(endpoint, id, method, params, { timeoutMs = 20000,
 }
 
 // Asks every archival endpoint at once and keeps the first finalized answer.
-// Returns { result, endpoint, fetchedAt }.
+// Nothing is cached: each call is a fresh lookup. Returns { result, endpoint }.
 export async function archivalTxStatus(txHash, senderAccountId, {
-  id = 'agentshield-archival-tx', timeoutMs = 25000, endpoints = ARCHIVAL_ENDPOINTS, now = Date.now,
+  id = 'agentshield-archival-tx', timeoutMs = 25000, endpoints = ARCHIVAL_ENDPOINTS,
 } = {}) {
-  const key = `${txHash}:${senderAccountId}`;
-  const cached = finalized.get(key);
-  if (cached && now() - Date.parse(cached.fetchedAt) < REUSE_MS) return cached;
   const controllers = endpoints.map(() => new AbortController());
   const attempts = endpoints.map((endpoint, index) =>
     postRpc(endpoint, id, 'EXPERIMENTAL_tx_status',
@@ -58,17 +48,13 @@ export async function archivalTxStatus(txHash, senderAccountId, {
       .then(result => {
         if (result?.final_execution_status !== 'FINAL') throw new Error('transaction is not FINAL');
         controllers.forEach((controller, other) => { if (other !== index) controller.abort(); });
-        return { result, endpoint: host(endpoint), fetchedAt: new Date(now()).toISOString() };
+        return { result, endpoint: host(endpoint) };
       })
       .catch(error => { throw new Error(`${host(endpoint)}: ${error.message}`); }));
   try {
-    const answer = await Promise.any(attempts);
-    finalized.set(key, answer);
-    return answer;
+    return await Promise.any(attempts);
   } catch (error) {
     const reasons = (error.errors ?? [error]).map(item => item.message).join('; ');
     throw new Error(`No archival Testnet RPC returned transaction ${txHash.slice(0, 8)}… (${reasons})`);
   }
 }
-
-export function forgetFinalizedTransactions() { finalized.clear(); }

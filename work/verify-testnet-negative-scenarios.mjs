@@ -46,7 +46,7 @@ export async function verifyNegativeScenario(name) {
     signer: proposal.agentAccountId, restrictedPublicKey: proposal.restrictedPublicKey,
     recipient: scenario.recipient, amountYocto: scenario.amountYocto, nonce: scenario.nonce,
     vaultTransferReceiptCount: 0, explorerUrl: evidence.explorerUrl,
-    rpc: lookup.endpoint, transactionFetchedAt: lookup.fetchedAt,
+    rpc: lookup.endpoint,
     checkedAt: new Date().toISOString() };
 }
 export async function verifyNegativeScenarios() {

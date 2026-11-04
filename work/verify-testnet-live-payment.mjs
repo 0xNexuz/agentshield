@@ -113,7 +113,6 @@ export async function verifyLivePayment() {
     currentRecipientBalanceYocto: recipient.amount,
     explorerUrl: `https://testnet.nearblocks.io/txns/${evidence.transactionHash}`,
     rpc: { state: new URL(STATE_ENDPOINT).host, transactions: [...new Set(lookups.map(lookup => lookup.endpoint))] },
-    transactionsFetchedAt: lookups.map(lookup => lookup.fetchedAt).sort()[0],
     checkedAt: new Date().toISOString(),
   };
 }

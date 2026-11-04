@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ARCHIVAL_ENDPOINTS, STATE_ENDPOINT, archivalTxStatus, forgetFinalizedTransactions } from '../work/near-testnet-archival.mjs';
+import { ARCHIVAL_ENDPOINTS, STATE_ENDPOINT, archivalTxStatus } from '../work/near-testnet-archival.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const realFetch = globalThis.fetch;
@@ -12,10 +12,9 @@ const json = body => new Response(JSON.stringify(body), { status: 200, headers: 
 
 function withFetch(handler, run) {
   return async () => {
-    forgetFinalizedTransactions();
     const calls = [];
     globalThis.fetch = async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return handler(url, init); };
-    try { await run(calls); } finally { globalThis.fetch = realFetch; forgetFinalizedTransactions(); }
+    try { await run(calls); } finally { globalThis.fetch = realFetch; }
   };
 }
 
@@ -55,19 +54,11 @@ test('a transaction that is not FINAL is not accepted', withFetch(
   () => json({ jsonrpc: '2.0', result: { ...finalTx, final_execution_status: 'EXECUTED_OPTIMISTIC' } }),
   async () => { await assert.rejects(archivalTxStatus('HashThree33', 'agent.testnet'), /not FINAL/); }));
 
-test('a reused finalized answer keeps its original fetch time', withFetch(
+test('every call is a fresh lookup, with nothing reused between requests', withFetch(
   () => json({ jsonrpc: '2.0', result: finalTx }),
   async calls => {
-    let clock = Date.parse('2026-11-04T10:00:00Z');
-    const now = () => clock;
-    const first = await archivalTxStatus('HashFour444', 'agent.testnet', { now });
-    const fetches = calls.length;
-    clock += 60_000;
-    const second = await archivalTxStatus('HashFour444', 'agent.testnet', { now });
-    assert.equal(calls.length, fetches, 'no new archival request inside the reuse window');
-    assert.equal(second.fetchedAt, first.fetchedAt);
-    clock += 11 * 60_000;
-    const third = await archivalTxStatus('HashFour444', 'agent.testnet', { now });
-    assert.ok(calls.length > fetches, 'refetched after the reuse window');
-    assert.notEqual(third.fetchedAt, first.fetchedAt);
+    await archivalTxStatus('HashFour444', 'agent.testnet');
+    const first = calls.length;
+    await archivalTxStatus('HashFour444', 'agent.testnet');
+    assert.equal(calls.length, first * 2);
   }));
