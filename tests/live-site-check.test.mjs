@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checks, runChecks } from '../work/check-live-site.mjs';
+import { checks, liveModelCheck, runChecks } from '../work/check-live-site.mjs';
 
 // The daily live-evidence job must fail loudly when any endpoint regresses, and pass when all are healthy.
 const healthy = {
@@ -13,14 +13,17 @@ const healthy = {
   '/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1o77.testnet': { decision: 'BLOCK', signals: [{ code: 'LOOKALIKE' }] },
   '/api/testnet/status': { chainId: 'testnet', healthy: true, latestBlockHeight: 1 },
   '/': '<div class="overline"> TRUST, BUT VERIFY</div>',
+  'POST /api/live/injection': { signature: { verified: true, signingAddress: '0xabc', keyPassedOfficialVerifier: true }, guard: { decision: 'BLOCK' },
+    proposal: { recipient: 'agentshield-recipient-7bb4a0df1o77.testnet' }, modelBehaviour: 'PROPOSED_SOMETHING_ELSE', signed: false, sentToChain: false, estimatedCostUsd: 0.0001 },
 };
 
 async function withSite(overrides, run) {
   const realFetch = globalThis.fetch;
   const realLog = console.log;
-  globalThis.fetch = async url => {
+  globalThis.fetch = async (url, init) => {
     const route = new URL(url).pathname + new URL(url).search;
-    const entry = route in overrides ? overrides[route] : healthy[route];
+    const key = init?.method === 'POST' ? `POST ${route}` : route;
+    const entry = key in overrides ? overrides[key] : healthy[key];
     if (entry instanceof Error) throw entry;
     const { status = 200, body = entry } = entry?.status ? entry : {};
     return new Response(typeof body === 'string' ? body : JSON.stringify(body), { status });
@@ -44,4 +47,16 @@ test('a broken endpoint, a wrong answer or a network error each fail their check
   assert.deepEqual(results.filter(r => !r.ok).map(r => r.name),
     ['every rejection proof passes', 'counterparty check blocks the recorded look-alike', 'Testnet RPC is healthy']);
   assert.match(results.find(r => r.name === 'Testnet RPC is healthy').detail, /socket hang up/);
+});
+
+test('the live model check passes a verified reply, skips when the box is off, and fails an unverified one', async () => {
+  const [, check] = liveModelCheck;
+  assert.equal((await withSite({}, () => check()))[0], true);
+  assert.equal((await withSite({ 'POST /api/live/injection': { status: 503, body: { reason: 'CREDITS_EXHAUSTED' } } }, () => check()))[0], null);
+  const forged = { ...healthy['POST /api/live/injection'], signature: { verified: false } };
+  assert.equal((await withSite({ 'POST /api/live/injection': forged }, () => check()))[0], false);
+  const leaked = { ...healthy['POST /api/live/injection'], guard: { decision: 'ALLOW' }, proposal: { recipient: 'attacker.testnet' } };
+  assert.equal((await withSite({ 'POST /api/live/injection': leaked }, () => check()))[0], false, 'an ALLOW for anything but the real invoice fails');
+  const results = await withSite({ 'POST /api/live/injection': { status: 429, body: { reason: 'RATE_LIMITED' } } }, () => runChecks([...checks, liveModelCheck]));
+  assert.equal(results.filter(r => r.ok === false).length, 0, 'a skipped check does not fail the run');
 });

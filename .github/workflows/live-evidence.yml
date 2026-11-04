@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: '17 6 * * *'
   workflow_dispatch:
+    inputs:
+      live_model:
+        description: Also send one note to the live model box (spends about $0.0001 of NEAR AI credit)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,4 +32,4 @@ jobs:
       - name: Recheck the three rejected attacks on public Testnet RPC
         run: node work/verify-testnet-negative-scenarios.mjs
       - name: Check the production site's proof, gallery, counterparty and status endpoints
-        run: node work/check-live-site.mjs https://agentshield-lab.vercel.app
+        run: node work/check-live-site.mjs https://agentshield-lab.vercel.app ${{ inputs.live_model && '--with-live-model' || '' }}
