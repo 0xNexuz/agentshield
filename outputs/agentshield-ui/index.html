@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#050606" />
-  <meta name="description" content="AgentShield is a security lab for bounded AI agent payments. Explore the simulation and independently verified NEAR Testnet evidence." />
+  <meta name="description" content="Trust, but verify. AgentShield enforces spending limits for AI agents in a NEAR smart contract, and every claim can be rechecked against public Testnet RPC." />
   <title>AgentShield — Power, Bounded</title>
   <link rel="icon" href="./favicon.ico" sizes="32x32" />
   <link rel="icon" href="./assets/icons/favicon.svg" type="image/svg+xml" />
@@ -58,7 +58,7 @@
           <div class="hero-art"><img src="./assets/agentshield-near-composite-v2-1672.webp" srcset="./assets/agentshield-near-composite-v2-1024.webp 1024w, ./assets/agentshield-near-composite-v2-1672.webp 1672w" sizes="100vw" width="1672" height="941" fetchpriority="high" alt="A crowned guardian and winged figure beside a robotic hand reaching toward a radiant NEAR Protocol mark" /><div class="art-vignette"></div><div class="scene-mark scene-mark-a">A / OWNER</div><div class="scene-mark scene-mark-b">B / AGENT</div><div class="scene-coordinates">51° / THE BOUNDARY / 2026</div></div>
           <div class="hero-copy">
             <div class="meta-row"><span>AGENTSHIELD / AN ONCHAIN MANDATE</span><span>NEAR TESTNET / VAULT 001</span></div>
-            <div class="hero-title-wrap"><div class="overline"><span class="overline-rule"></span> CAN YOUR AI AGENT SPEND MONEY YOU DIDN'T AUTHORIZE?</div><h1 id="overview-title">Power to act.<br /><em>Authority to stop.</em></h1><p class="hero-description">AgentShield is a NEAR Testnet vault that limits what an AI agent can pay. Watch a replay of a real settled payment and three attacks the contract refused, try your own in the simulator, and recheck every claim against public RPC.</p><div class="hero-actions"><button type="button" class="button button-light" data-open-view="judge">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button><button type="button" class="button button-outline hero-attack" data-open-view="attack">ATTACK THE VAULT <span aria-hidden="true">↗</span></button><a href="#mechanism" class="under-link">HOW THE BOUNDARY WORKS <span aria-hidden="true">↓</span></a></div></div>
+            <div class="hero-title-wrap"><div class="overline"><span class="overline-rule"></span> TRUST, BUT VERIFY</div><h1 id="overview-title">Power to act.<br /><em>Authority to stop.</em></h1><p class="hero-description">Your AI agent can be fooled. AgentShield is a NEAR Testnet vault that limits what it can pay, and you don't have to take our word for any of it: replay a real settled payment and three attacks the contract refused, then recheck every claim against public RPC yourself.</p><div class="hero-actions"><button type="button" class="button button-light" data-open-view="judge">WATCH AGENTSHIELD IN ACTION <span aria-hidden="true">▶</span></button><button type="button" class="button button-outline hero-attack" data-open-view="attack">ATTACK THE VAULT <span aria-hidden="true">↗</span></button><a href="#mechanism" class="under-link">HOW THE BOUNDARY WORKS <span aria-hidden="true">↓</span></a></div></div>
             <div class="hero-foot"><span>THE OWNER DEFINES IT.</span><span>THE CONTRACT ENFORCES IT.</span><span>THE AGENT REQUESTS IT.</span></div>
           </div>
         </div>
@@ -278,6 +278,24 @@
           </form>
         </div>
         <div class="testnet-results" id="testnet-results" aria-live="polite"><p>Enter your testnet account IDs, then run the live check. Blank roles are reported as unconfigured.</p></div>
+        <section class="counterparty" id="counterparty" aria-labelledby="counterparty-title">
+          <div class="counterparty-copy"><span class="eyebrow">COUNTERPARTY CHECK / LIVE</span><h2 id="counterparty-title">Check a receiver <em>before paying.</em></h2><p>Before the agent signs, its guard reads the receiver from finalized Testnet state and compares it with the live mandate: the allowlist, look-alike names, a blocklist with evidence, and whether the account's code changed since the owner approved it. The guard warns and refuses. The vault contract still enforces every rule.</p><p class="counterparty-mcp">The same check runs in the AgentShield MCP server, so Claude, Codex or any MCP client calls it before it can request a payment. <a class="inline-link" href="https://github.com/0xNexuz/agentshield#use-it-from-an-ai-agent-mcp" target="_blank" rel="noopener noreferrer">How to connect ↗</a></p></div>
+          <div class="counterparty-tool">
+            <form id="counterparty-form" class="counterparty-form" novalidate>
+              <label>RECEIVER ACCOUNT<input name="account" type="text" value="agentshield-recipient-7bb4a0df1077.testnet" spellcheck="false" autocomplete="off" maxlength="80" /></label>
+              <button class="button button-light" type="submit">CHECK RECEIVER <span aria-hidden="true">↗</span></button>
+            </form>
+            <div class="counterparty-examples" role="group" aria-labelledby="counterparty-examples-label"><span id="counterparty-examples-label">TRY A REDIRECT FROM THE RECORDED ATTACKS</span>
+              <button type="button" data-account="agentshield-recipient-7bb4a0df1077.testnet">The real recipient</button>
+              <button type="button" data-account="agentshield-recipient-7bb4a0df1o77.testnet">Letter o for zero</button>
+              <button type="button" data-account="agentshіeld-recipient-7bb4a0df1077.testnet">Cyrillic і</button>
+              <button type="button" data-account="agentshield-recipient-7bb4a0df1077.testnet.attacker.testnet">Real name, other owner</button>
+              <button type="button" data-account="agentshield-recipient-7bb4a0df1077.near">Mainnet twin</button>
+              <button type="button" data-account="attacker.testnet">Named in an injection</button>
+            </div>
+            <div class="counterparty-result" id="counterparty-result" aria-live="polite"><p>Pick an example or enter any receiver, then check it against live Testnet state.</p></div>
+          </div>
+        </section>
         <div class="testnet-next"><span class="eyebrow">WHAT THIS CHECK CANNOT PROVE</span><p>This account check cannot prove a payment or rejection by itself. Open Evidence for the finalized payment, overspend, unauthorized-recipient, and replay proofs. Revocation passes in NEAR Sandbox but is not yet shown on Testnet.</p></div>
       </section>
 

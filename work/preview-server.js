@@ -5,10 +5,18 @@ import { fileURLToPath } from 'node:url';
 import { isTestnetAccountId, testnetStatus, testnetAccount } from './near-testnet-rpc.mjs';
 import { verifyLivePayment } from './verify-testnet-live-payment.mjs';
 import { verifyNegativeScenarios } from './verify-testnet-negative-scenarios.mjs';
+import counterpartyRoute from '../api/testnet/counterparty.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../outputs/agentshield-ui');
 const mime = {'.webp':'image/webp','.svg':'image/svg+xml','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.md':'text/markdown; charset=utf-8','.png':'image/png','.ico':'image/x-icon','.webmanifest':'application/manifest+json'};
 http.createServer(async (req,res)=>{
   const name = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (name === '/api/testnet/counterparty') {
+    const query = Object.fromEntries(new URL(req.url, 'http://127.0.0.1').searchParams);
+    const reply = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; return this; },
+      status(code) { this.statusCode = code; return this; },
+      json(body) { res.writeHead(this.statusCode, { ...this.headers, 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(body)); return this; } };
+    return counterpartyRoute({ method: req.method, query }, reply);
+  }
   if (name === '/api/testnet/status' || name === '/api/testnet/account' || name === '/api/testnet/proof' || name === '/api/testnet/gallery') {
     if (req.method !== 'GET') {res.writeHead(405);return res.end('Method not allowed');}
     const accountId = name.endsWith('/account') ? new URL(req.url, 'http://127.0.0.1').searchParams.get('id') : null;

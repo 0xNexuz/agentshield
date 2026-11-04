@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { KeyPair } from '@near-js/crypto';
+import { KeyPair } from 'near-api-js';
 import { testnetAccount, testnetStatus, testnetStorageCost } from './near-testnet-rpc.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

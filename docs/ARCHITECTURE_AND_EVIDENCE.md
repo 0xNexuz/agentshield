@@ -6,10 +6,11 @@
 flowchart LR
   Human[Owner, signing on own machine] -->|owner-only set_mandate / pause / revoke| Vault[NEAR Testnet vault]
   Instruction[Untrusted payment instruction] --> Model[NEAR AI Cloud proposal]
-  Model -->|strict JSON, unsigned| Preflight[Offchain policy preflight]
+  MCP[MCP client: Claude, Codex] -->|tool call| Preflight
+  Model -->|strict JSON, unsigned| Preflight[Offchain guard: vault preflight + counterparty check]
   RPC[Finalized public NEAR RPC] --> Preflight
   Preflight -->|ALLOW only; exact future authorization required| Agent[Restricted agent key]
-  Preflight -->|WARN| HumanApproval[Human review]
+  Preflight -->|WARN| HumanApproval[Human review via MCP elicitation]
   Preflight -->|BLOCK| Stop[No signature]
   Agent -->|zero deposit, request_payment only| Vault
   Vault -->|contract policy permits| Recipient[Allowlisted recipient]
@@ -27,6 +28,8 @@ The site has no wallet connection: owner actions are signed on the owner's own m
 | --- | --- | --- |
 | Simulator decision | Deterministic local run | Seven local simulator tests pass; **simulation only** |
 | Offchain AI preflight | Genuine model response plus finalized policy read | Mocked AI tests pass; read-only ALLOW/WARN/BLOCK policy check passed; Run 1: 24 signed replies, 22 cut off and blocked. Run 2: 22 signed complete replies, model resisted the demo injection, 0 of 20 red-team cases escaped |
+| Counterparty check | Live finalized account state plus the live mandate allowlist | Read-only API live; `tests/counterparty.test.mjs` blocks every redirect target from the 19 recorded injections; offchain and advisory |
+| MCP payment tool | Official MCP client, guarded signing, then a finalized Testnet call | Protocol, refusals, human approval and the exact signed request tested with the official SDK client and a stand-in signer; **no Testnet transaction yet** |
 | Contract rejection | Finalized signed call, contract rejection, zero payout receipts | Three public Testnet transactions independently checked |
 | Authorized call | Finalized `request_payment` and decision log | One public Testnet transaction independently checked |
 | Completed settlement | Exact successful recipient transfer receipt, callback log, `SETTLED` request record | One public Testnet transaction independently checked |

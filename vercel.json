@@ -10,6 +10,10 @@
     "api/testnet/gallery.js": {
       "maxDuration": 60,
       "includeFiles": "{deployment/testnet-negative-scenarios-proposal.json,outputs/testnet-negative-*-evidence.json}"
+    },
+    "api/testnet/counterparty.js": {
+      "maxDuration": 30,
+      "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/agentshield-ui/counterparty.mjs,outputs/agentshield-ui/counterparty-policy.mjs}"
     }
   }
 }

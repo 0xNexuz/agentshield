@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { connect, keyStores, transactions, utils } from 'near-api-js';
-import { KeyPair } from '@near-js/crypto';
+import { KeyPair } from 'near-api-js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const proposal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-live-demo-proposal.json'), 'utf8'));

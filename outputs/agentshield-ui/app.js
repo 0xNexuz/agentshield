@@ -277,4 +277,51 @@ import { setupCinematic } from "./cinematic.mjs";
       button.disabled = false;
     }
   });
+  // Counterparty check: asks the read-only API to assess a receiver against live Testnet state.
+  const counterpartyForm = document.getElementById("counterparty-form");
+  const counterpartyResult = document.getElementById("counterparty-result");
+  if (counterpartyForm && counterpartyResult) {
+    const el = (tag, props = {}, ...children) => { const node = Object.assign(document.createElement(tag), props); node.append(...children); return node; };
+    const exampleButtons = [...document.querySelectorAll(".counterparty-examples button[data-account]")];
+    const renderAssessment = result => {
+      const verdict = el("div", { className: `counterparty-verdict is-${result.decision.toLowerCase()}` },
+        el("strong", { textContent: result.decision }),
+        el("code", {}, ...[...result.account].map(ch => /[^\x00-\x7f]/.test(ch)
+          ? el("mark", { textContent: ch, title: `U+${ch.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}: not a Latin letter` })
+          : ch)));
+      const signals = el("ul", { className: "counterparty-signals" });
+      for (const signal of result.signals) {
+        signals.append(el("li", { className: `is-${signal.level.toLowerCase()}` },
+          el("span", { textContent: `${signal.level} / ${signal.code}` }), el("p", { textContent: signal.message })));
+      }
+      const notChecked = el("small", { textContent: `Not checked: ${result.notChecked.map(item => item.message.split(":")[0].toLowerCase()).join(" and ")} (public RPC can't show them; they need an indexer).` });
+      const source = el("small", { textContent: `Checked live against ${result.rpc} at ${new Date(result.checkedAt).toLocaleTimeString()}. Allowlist from mandate version ${result.mandateVersion}. This check warns; the vault contract enforces.` });
+      const json = el("a", { className: "inline-link", href: `/api/testnet/counterparty?account=${encodeURIComponent(result.account)}`, target: "_blank", rel: "noopener noreferrer", textContent: "VIEW LIVE JSON ↗" });
+      counterpartyResult.replaceChildren(verdict, signals, notChecked, source, json);
+    };
+    counterpartyForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const account = counterpartyForm.elements.namedItem("account").value.trim();
+      const button = counterpartyForm.querySelector('button[type="submit"]');
+      for (const example of exampleButtons) example.setAttribute("aria-pressed", String(example.dataset.account === account));
+      if (!account) { counterpartyResult.replaceChildren(el("p", { className: "is-error", textContent: "Enter a receiver account ID to check." })); return; }
+      button.disabled = true;
+      counterpartyResult.replaceChildren(el("p", { textContent: "Checking the receiver against finalized Testnet state…" }));
+      try {
+        const response = await fetch(`/api/testnet/counterparty?account=${encodeURIComponent(account)}`, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+        const result = await response.json();
+        if (!response.ok || !["ALLOW", "WARN", "BLOCK"].includes(result.decision)) throw new Error(result.error || `HTTP ${response.status}`);
+        renderAssessment(result);
+      } catch (error) {
+        counterpartyResult.replaceChildren(el("p", { className: "is-error", textContent: `CHECK UNAVAILABLE / ${error.message}. No conclusion is drawn.` }));
+      } finally { button.disabled = false; }
+    });
+    for (const example of exampleButtons) {
+      example.setAttribute("aria-pressed", "false");
+      example.addEventListener("click", () => {
+        counterpartyForm.elements.namedItem("account").value = example.dataset.account;
+        counterpartyForm.requestSubmit();
+      });
+    }
+  }
 })();
