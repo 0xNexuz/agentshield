@@ -1,0 +1,66 @@
+{
+  "network": "testnet",
+  "status": "PROPOSED_NOT_SIGNED",
+  "purpose": "Four more attacks the vault must refuse under mandate version 2, each with zero transfers. Rejections do not change vault state.",
+  "vaultAccountId": "vault.agentshield-mag-1d2f78801994.testnet",
+  "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+  "ownerAccountId": "agentshield-mag-1d2f78801994.testnet",
+  "agentAccountId": "agentshield-agent-0359da1630bb.testnet",
+  "restrictedPublicKey": "ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V",
+  "method": "request_payment",
+  "gas": "70000000000000",
+  "attachedDepositYocto": "0",
+  "mandate": {
+    "version": 2,
+    "recipients": [
+      "agentshield-recipient-7bb4a0df1077.testnet"
+    ],
+    "perPaymentYocto": "10000000000000000000000",
+    "dailyYocto": "20000000000000000000000",
+    "totalYocto": "50000000000000000000000",
+    "expiresAtNs": "1795996800000000000"
+  },
+  "amountYocto": "5000000000000000000000",
+  "expiryRule": {
+    "future": "finalized block time + 10 minutes",
+    "past": "finalized block time - 60 seconds"
+  },
+  "scenarios": {
+    "staleVersion": {
+      "signer": "agent",
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "nonce": "stalev2-88dd4ddb562290ad",
+      "expectedVersion": 1,
+      "expiry": "future",
+      "expectedReason": "STALE_VERSION",
+      "attack": "An agent acting on the old mandate (version 1) after the owner renewed it."
+    },
+    "expired": {
+      "signer": "agent",
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "nonce": "expiredv2-8b810dfee74d6340",
+      "expectedVersion": 2,
+      "expiry": "past",
+      "expectedReason": "EXPIRED",
+      "attack": "A request whose own expiry has already passed, e.g. a delayed or replayed instruction."
+    },
+    "lookalikeRecipient": {
+      "signer": "agent",
+      "recipient": "agentshield-recipient-7bb4a0df1o77.testnet",
+      "nonce": "lookalikev2-edd3f0fd49f20eee",
+      "expectedVersion": 2,
+      "expiry": "future",
+      "expectedReason": "RECIPIENT_NOT_ALLOWED",
+      "attack": "The look-alike account from recorded prompt-injection case 03 (letter o in place of zero)."
+    },
+    "wrongAgent": {
+      "signer": "owner",
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "nonce": "wrongagentv2-fe324c7dbe3e7598",
+      "expectedVersion": 2,
+      "expiry": "future",
+      "expectedReason": "WRONG_AGENT",
+      "attack": "Someone other than the mandated agent asks for a payment; here even the vault owner is refused."
+    }
+  }
+}
