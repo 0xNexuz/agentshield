@@ -8,12 +8,11 @@ From this directory, run:
 
 ```powershell
 npm ci
-npm run build:wallet
 $env:NODE_TLS_REJECT_UNAUTHORIZED='1'
 node --use-system-ca work/preview-server.js
 ```
 
-Open `http://127.0.0.1:4321/`. The preview server binds to localhost. To reproduce the browser bundle after editing `frontend/wallet-entry.mjs`, rerun `npm run build:wallet`.
+Open `http://127.0.0.1:4321/`. The preview server binds to localhost. The site has no build step and no wallet code.
 
 ## Verify locally
 
@@ -41,11 +40,11 @@ bash work/run-sandbox-tests.sh
 
 The setup scripts install no system packages and verify downloaded archive hashes. The 2.13.4 Sandbox binary is local and ignored by Git. Sandbox transaction IDs are confined to this disposable local chain; they are **not** Testnet evidence.
 
-On 2026-11-01, `npm run build:wallet` succeeded with workspace access. The preview returned HTTP 200 and its browser dialog loaded Meteor and HOT. Selecting Meteor without a vault ID showed the expected local validation error. This checks bundling and the pre-sign-in path only; no wallet sign-in or testnet transaction was performed.
+Historical: from 2026-11-01 to 2026-11-04 the site bundled a wallet selector (Meteor, then HOT only). No browser sign-in was ever performed with it, and it was removed on 2026-11-04 because HOT does not support Testnet.
 
 ## Testnet setup boundary
 
-- Enter `vault.agentshield-mag-1d2f78801994.testnet` in the Lab before connecting a NEAR **testnet** wallet. The wallet connection request is scoped to that vault's owner methods. The wallet selector currently opens Meteor and HOT in the real browser; no wallet sign-in has been performed.
+- Owner actions (mandate, pause, revoke) are signed on the owner's machine with the `work/execute-*.mjs` scripts and the owner credential outside the repository. The site cannot sign.
 - The agent must use a separate testnet account. The recipient should also be an account under your control for a later small payment test.
 - The vault account was created, funded with 5 test NEAR, deployed, and initialized **atomically** with the owner as transaction predecessor. The finalized transaction is `7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ`.
 - The contract has a 64 accepted-request lifetime cap and reserves 0.2 NEAR, plus storage cost, from spendable balance. These are prototype limits.
@@ -86,8 +85,8 @@ The local NEAR AI module and CLI prepare unsigned proposals only. `npm run test:
 
 ## Vercel deployment
 
-The production site is [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/), under Vercel project `xreyys-projects/agentshield`. `vercel.json` builds the existing wallet bundle and publishes `outputs/agentshield-ui`; `api/testnet/` contains read-only functions for status, account, payment proof, and negative-proof gallery. The functions include only public proposal and evidence records and recheck finalized public RPC before returning success. The NEAR AI key and testnet signing keys are not deployed. Vercel project linking created ignored `.vercel/` and `.env.local` files; do not commit or print their contents.
+The production site is [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/), under Vercel project `xreyys-projects/agentshield`. `vercel.json` has no build step and publishes `outputs/agentshield-ui`; `api/testnet/` contains read-only functions for status, account, payment proof, and negative-proof gallery. The functions include only public proposal and evidence records and recheck finalized public RPC before returning success. Transaction lookups use public archival nodes (`archival-rpc.testnet.fastnear.com`, `archival-rpc.testnet.near.org`) because `rpc.testnet.near.org` keeps only about 2.5 days of history; state reads use `rpc.testnet.near.org`. The NEAR AI key and testnet signing keys are not deployed. Vercel project linking created ignored `.vercel/` and `.env.local` files; do not commit or print their contents.
 
-The final Vercel production deployment `dpl_9uurMdDz7wEx6pQaBzohkDzZfXb9` returned READY. Public checks of the short domain confirmed the corrected Lab copy and footer, `/api/testnet/proof` PASS with SETTLED and the expected code hash, and `/api/testnet/gallery` 3/3 PASS. The first deployment's authenticated `/api/testnet/status` check returned healthy Testnet state; the public production domain returned HTTP 200 without an authentication bypass. Local Vercel route tests passed 2/2; simulator 7/7, key-scope 2/2, and NEAR AI mocked tests 5/5 were rerun. Wallet choices loaded Meteor and HOT in the local browser, but no sign-in was attempted.
+The final Vercel production deployment `dpl_9uurMdDz7wEx6pQaBzohkDzZfXb9` returned READY. Public checks of the short domain confirmed the corrected Lab copy and footer, `/api/testnet/proof` PASS with SETTLED and the expected code hash, and `/api/testnet/gallery` 3/3 PASS. The first deployment's authenticated `/api/testnet/status` check returned healthy Testnet state; the public production domain returned HTTP 200 without an authentication bypass. Local Vercel route tests passed 2/2; simulator 7/7, key-scope 2/2, and NEAR AI mocked tests 5/5 were rerun. (At that time the site still bundled a wallet selector; no sign-in was attempted, and it was removed on 2026-11-04.)
 
 For local NEAR AI inference later, use the ignored `.env` with `NEAR_AI_KEY` and run Node with `--env-file=.env`. Alternatively, save the key in the private sibling `AgentShield-Secrets` folder outside the repository and set `$env:NEAR_AI_KEY_FILE` to that path. The deployed site does not call NEAR AI and does not need an environment variable. If a server-side inference route is added later, configure `NEAR_AI_KEY` as an encrypted server-side Vercel environment variable; never add a `VITE_`, `NEXT_PUBLIC_`, or other browser-exposed prefix.

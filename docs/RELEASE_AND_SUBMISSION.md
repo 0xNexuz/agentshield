@@ -8,9 +8,10 @@
 - [x] Read-only Testnet payment and three rejection proof APIs returned PASS on 2026-11-02.
 - [x] Rust 11/11, Sandbox 8/8, simulator 7/7, key scope 2/2, mocked AI 5/5, route 2/2, historical proof regression 2/2 passed locally on 2026-11-02.
 - [x] On 2026-11-03, `npm test` passed 31/31 and the Rust unit tests passed 12/12, including a new total-budget test.
-- [x] [Private GitHub Actions run `41586354770`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed secret scanning, Node tests, wallet build, Rust units, and Sandbox for commit `cea8871` on 2026-11-03. Earlier CI runs exposed a missing cross-platform lockfile entry, an ignored local WASM path, and a concurrent signer race in the test harness. All were fixed and the complete suite reran successfully.
+- [x] [Private GitHub Actions run `41586354770`](https://github.com/0xNexuz/agentshield/actions/runs/41586354770) passed secret scanning, Node tests, the then-present wallet build, Rust units, and Sandbox for commit `cea8871` on 2026-11-03. Earlier CI runs exposed a missing cross-platform lockfile entry, an ignored local WASM path, and a concurrent signer race in the test harness. All were fixed and the complete suite reran successfully.
 - [x] Production dependency advisories triaged on 2026-11-03. The 5 high advisories all came through the Meteor wallet (`@meteorwallet/sdk`, `nanoid`, `query-string`, `decode-uri-component`), so Meteor was removed from the wallet selector. `npm audit --omit=dev` now reports 0 critical, 0 high, 6 moderate (HOT wallet chain; npm only offers a breaking downgrade) and 15 low. The wallet bundle shrank from 3.0 MB to 1.1 MB.
-- [ ] Verify a real owner browser wallet sign-in. No transaction approval is needed for this check.
+- [x] Wallet connection removed from the site on 2026-11-04 (HOT Wallet, the only remaining option, does not support Testnet). The site is read-only; owner actions are signed on the owner's machine. `npm audit --omit=dev`: 12 low, nothing moderate or higher.
+- [x] On 2026-11-04 the live proof APIs failed (HTTP 408) because `rpc.testnet.near.org` had dropped the 1–2 Nov transactions. Transaction lookups now go to public archival nodes; `npm test` passed 46/46.
 - [x] NEAR AI Cloud credits added and a bounded run approved: 24 signed completions recorded on 2026-11-04 (`outputs/near-ai-*.json`), every signature rechecked by `tests/near-ai-evidence.test.mjs`, zero escapes.
 - [x] Run 2 on 2026-11-04 with a 1,024-token limit: complete answers, 0 escaped, and the official verifier passed the Intel TDX and NVIDIA GPU attestation (`outputs/near-ai-*-run2.json`).
 - [x] The owner renewed the mandate on 2026-11-03: [`EuUUbL…vJXw`](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) set version 2, same agent, recipient and limits, expiry 2026-11-30 00:00 UTC. Evidence: `outputs/testnet-mandate-renewal-evidence.json`; the production proof API reports version 2.
@@ -23,7 +24,6 @@
 ```sh
 npm ci
 node --test tests/*.test.mjs
-npm run build:wallet
 cargo test --manifest-path contracts/vault/Cargo.toml --locked
 bash work/setup-linux-node.sh
 bash work/setup-near-sandbox.sh

@@ -9,22 +9,22 @@ An owner puts funds in a vault contract and signs a mandate. The mandate says wh
 The vault is deployed on **NEAR Testnet**, not mainnet. Built for NEAR HACKATHON 2026, track AI Security & Defense.
 
 - **Live site:** [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/) (start with [Judge mode](https://agentshield-lab.vercel.app/#judge))
-- **Live proof, rechecked against public RPC on every request:** [payment](https://agentshield-lab.vercel.app/api/testnet/proof) and [rejected attacks](https://agentshield-lab.vercel.app/api/testnet/gallery)
+- **Live proof, rechecked against public Testnet RPC on every request:** [payment](https://agentshield-lab.vercel.app/api/testnet/proof) and [rejected attacks](https://agentshield-lab.vercel.app/api/testnet/gallery)
 - **The contract:** [`contracts/vault/src/lib.rs`](contracts/vault/src/lib.rs)
 
 ![Judge mode, scene 3: the vault runs its checks on the settled request](docs/images/judge-mode.jpg)
 
 ## Try it in 3 minutes
 
-You don't need a wallet, an account or a key.
+You don't need a wallet, an account or a key. The site is read-only and has no wallet connection.
 
 | Do | You should see |
 | --- | --- |
 | Open [/#judge](https://agentshield-lab.vercel.app/#judge) and press **Watch AgentShield in action** | A six-scene replay, about 75 seconds. Every fact is labelled `SIMULATION`, `HISTORICAL ONCHAIN REPLAY`, `LIVE RPC VERIFIED` or `NOT YET VERIFIED`, and the proof scene turns `LIVE RPC VERIFIED` once the site has rechecked Testnet. |
 | Open [/api/testnet/proof](https://agentshield-lab.vercel.app/api/testnet/proof) | `"verification":"PASS"`, `"settlement":"SETTLED"`, `"codeHash":"2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN"`, `"currentKeyStillScoped":true` |
 | Open [/api/testnet/gallery](https://agentshield-lab.vercel.app/api/testnet/gallery) | Three results, each `"decision":"REJECTED"` with `"vaultTransferReceiptCount":0`: `PER_PAYMENT_LIMIT`, `RECIPIENT_NOT_ALLOWED`, `REPLAY` |
-| `npm ci && npm test` | `# pass 40`, `# fail 0`. Offline, with no keys and no chain access. |
-| Open [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json) and read `summary` | The real NEAR AI red-team run: `"escaped": 0` over 20 cases, each reply signed by the attested model key |
+| `npm ci && npm test` | `# pass 46`, `# fail 0`. Offline, with no keys and no chain access. |
+| Open [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json) and read `summary` | The real NEAR AI red-team run: `"escaped": 0` over 20 cases (19 prompt injections and one clean control), each reply signed by the attested model key |
 | `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 12 passed` |
 | Open the latest [CI run](https://github.com/0xNexuz/agentshield/actions/workflows/ci.yml), job **Rebuild the deployed WASM from source** | `MATCH`: the source rebuilds into the exact 324,708-byte WASM that is deployed |
 
@@ -101,19 +101,21 @@ All attacks were signed with the restricted agent key and sent to the deployed v
 | Instant Demo and custom attacks on the site | **Simulated** in the browser (`outputs/agentshield-ui/simulator.mjs`) |
 | NEAR AI proposal and ALLOW / WARN / BLOCK preflight | **Real, recorded.** On 2026-11-04, 22 completions from `z-ai/glm-5.3-flash` on NEAR AI Cloud (run 2, 1,024-token limit). The model ignored the injected supplier note and returned the original payment. Of 19 red-team attacks, 11 returned the original payment, 4 returned empty fields, 4 ran out of tokens, and **none proposed the attacker's account or amount; 0 payments escaped**. Every reply signature recovers to the attested model key; NEAR AI's official verifier passed the Intel TDX and NVIDIA GPU attestation (image provenance and TLS binding not checked). Run 1, with a 180-token limit, is kept: 22 of 24 replies were cut off and blocked. |
 | Prompt-injection challenge on the site | The model step is **simulated**. The contract result it points to is the real `RECIPIENT_NOT_ALLOWED` rejection. |
-| Owner wallet sign-in | **Not verified** end to end |
+| Owner actions (mandate, pause, revoke) | **Real, signed off-site.** The site has no wallet connection and never signs. The owner signs on their own machine, as with the [3 Nov renewal](https://testnet.nearblocks.io/txns/EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw) |
 | Mainnet | **Not implemented** |
 
 ## Run it yourself
 
 ```sh
 npm ci
-npm test                                                         # 40 Node tests, offline
+npm test                                                         # 46 Node tests, offline
 cargo test --manifest-path contracts/vault/Cargo.toml --locked   # 12 Rust unit tests
 node --use-system-ca work/preview-server.js                      # the site at http://127.0.0.1:4321
 ```
 
 Recheck the Testnet evidence from your own machine (read-only, needs network). The first command also rewrites `outputs/testnet-live-payment-independent-proof.json` with a fresh `checkedAt`.
+
+`rpc.testnet.near.org` is not an archival node: it keeps only about two and a half days of history, so it can no longer return the 1–2 Nov transactions. The verifiers (and the live proof API) fetch those transactions from public archival nodes, asking `archival-rpc.testnet.fastnear.com` and `archival-rpc.testnet.near.org` together and keeping the first finalized answer. Current vault state still comes from `rpc.testnet.near.org`. Each proof reports which node answered in its `rpc` field.
 
 ```sh
 node --use-system-ca work/verify-testnet-live-payment.mjs
@@ -149,7 +151,7 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 - The vault account has no access keys of its own, and no upgrade method was found in its interface. That is not a formal immutability claim.
 - Revocation is tested in NEAR Sandbox only. An isolated Testnet revocation vault was attempted, but the transaction finalized `FAILED` because the initializer was given an unsupported domain; that lab was then stopped. See `outputs/testnet-revocation-deploy-failure.json`.
 - NEAR AI: the recorded runs are in `outputs/near-ai-*.json`. Run 2 shows complete answers; run 1 is kept and shows the preflight failing closed when the model's replies were cut off. The attestation checks are the ones NEAR AI's official verifier reports; its raw output is not committed, only its SHA-256. The site's prompt-injection model step stays simulated, with the real result shown beside it. The key stays in a local `.env` and never reaches Git, Vercel or the browser.
-- Owner wallet sign-in has not been verified; the Lab offers HOT Wallet only. After the Meteor wallet was removed on 2026-11-03, `npm audit --omit=dev` reports no high or critical advisories (6 moderate, all in the HOT wallet chain, whose only offered fix is a major downgrade, and 15 low).
+- The site is read-only: no wallet connection, no signing endpoint, no key. Owner actions are transactions the owner signs on their own machine. `npm audit --omit=dev` on 2026-11-04 reports 12 low-severity advisories and nothing moderate, high or critical.
 - The mandate (version 2) expires 2026-11-30 00:00 UTC; after that the vault refuses new requests. The homepage shows the live state, and the payment and rejection proofs stay verifiable after expiry because they are tied to version 1.
 
 ## More

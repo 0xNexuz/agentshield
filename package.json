@@ -4,23 +4,15 @@
   "type": "module",
   "scripts": {
     "test": "node --test \"tests/*.test.mjs\"",
-    "build:wallet": "node work/build-wallet.mjs",
     "test:sim": "node --test tests/simulator.test.mjs",
     "test:key-scope": "node --test tests/agent-key-scope.test.mjs",
     "test:ai": "node --test tests/near-ai-agent.test.mjs",
     "test:cinematic": "node --test tests/cinematic-evidence.test.mjs"
   },
   "dependencies": {
-    "@near-wallet-selector/core": "10.1.4",
-    "@near-wallet-selector/hot-wallet": "10.1.4",
-    "@near-wallet-selector/modal-ui-js": "10.1.4",
-    "buffer": "^6.0.3",
-    "near-api-js": "5.1.1",
-    "process": "^0.11.10",
-    "util": "^0.12.5"
+    "near-api-js": "5.1.1"
   },
   "devDependencies": {
-    "esbuild": "0.28.2",
     "ethers": "6.17.0"
   },
   "license": "MIT"

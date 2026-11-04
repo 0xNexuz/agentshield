@@ -238,3 +238,12 @@ test('the committed renewal record matches the finalized Testnet renewal', () =>
   assert.deepEqual(result.recipients, [...MANDATE.recipients]);
   assert.equal(formatUtcNs(MANDATE_RENEWAL.expiresAtNs), '2026-11-30 00:00 UTC');
 });
+
+test('the site has no wallet connection: owner actions are signed off-site', () => {
+  const html = fs.readFileSync(path.join(ui, 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(ui, 'app.js'), 'utf8');
+  assert.ok(!fs.existsSync(path.join(ui, 'wallet-bundle.js')), 'no wallet bundle is served');
+  assert.doesNotMatch(html, /wallet-dialog|lab-wallet-open|CONNECT (OWNER )?WALLET/);
+  assert.doesNotMatch(app, /wallet-bundle|walletBridge|signIn/);
+  assert.match(html, /OWNER ACTIONS \/ OFF THIS SITE/);
+});

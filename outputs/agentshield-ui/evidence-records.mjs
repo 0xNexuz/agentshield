@@ -6,7 +6,7 @@
 export const TRUTH = Object.freeze({
   simulation: { label: "SIMULATION", detail: "Local model in your browser. No chain, no keys, no transfer." },
   historical: { label: "HISTORICAL ONCHAIN REPLAY", detail: "A replay of a transaction that already finalized on NEAR Testnet. Nothing is executing now." },
-  live: { label: "LIVE RPC VERIFIED", detail: "Rechecked against public NEAR Testnet RPC by the read-only proof API during this visit." },
+  live: { label: "LIVE RPC VERIFIED", detail: "Rechecked by the read-only proof API on this visit: current vault state from public NEAR Testnet RPC, the finalized transactions from a public archival Testnet node." },
   unverified: { label: "NOT YET VERIFIED", detail: "No genuine onchain evidence exists for this yet." },
 });
 

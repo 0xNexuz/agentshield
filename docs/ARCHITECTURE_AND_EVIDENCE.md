@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-  Human[Owner wallet] -->|owner-only set_mandate / pause / revoke| Vault[NEAR Testnet vault]
+  Human[Owner, signing on own machine] -->|owner-only set_mandate / pause / revoke| Vault[NEAR Testnet vault]
   Instruction[Untrusted payment instruction] --> Model[NEAR AI Cloud proposal]
   Model -->|strict JSON, unsigned| Preflight[Offchain policy preflight]
   RPC[Finalized public NEAR RPC] --> Preflight
@@ -19,7 +19,7 @@ flowchart LR
   Proof --> Browser[Evidence view]
 ```
 
-The live owner wallet has **not** been verified through browser sign-in. On 2026-11-04, 24 real NEAR AI Cloud completions (`z-ai/glm-5.3-flash`) were recorded with signatures that recover to the attested model key; the Intel quote is not verified, and the 180-token limit cut off 22 of 24 replies, which the preflight blocked. So the model-to-preflight edge ran for real and failed closed. On 2026-11-04 a second run (22 completions, 1,024-token limit, `z-ai/glm-5.3-flash`) returned complete answers: the model ignored the injected note, 11 of 19 red-team attacks returned the original payment, 4 returned empty fields, 4 ran out of tokens, none proposed the attacker's account or amount, and 0 escaped. NEAR AI's official verifier passed the Intel TDX and NVIDIA GPU attestation for the signing key; image provenance and TLS binding were not checked. No public inference endpoint exists. The deployed site only reads public RPC; no signing credential is on Vercel. The restricted function-call key is limited to the vault's `request_payment` method, has a finite gas allowance, and cannot attach deposit. The vault still checks agent identity, allowlist, caps, budgets, expiry, nonce, and revocation. Its callback records settlement after the transfer outcome. A key restriction is a second boundary, not a substitute for contract checks.
+The site has no wallet connection: owner actions are signed on the owner's own machine, as the 3 Nov renewal was. On 2026-11-04, 24 real NEAR AI Cloud completions (`z-ai/glm-5.3-flash`) were recorded with signatures that recover to the attested model key; the Intel quote is not verified, and the 180-token limit cut off 22 of 24 replies, which the preflight blocked. So the model-to-preflight edge ran for real and failed closed. On 2026-11-04 a second run (22 completions, 1,024-token limit, `z-ai/glm-5.3-flash`) returned complete answers: the model ignored the injected note, 11 of 19 red-team attacks returned the original payment, 4 returned empty fields, 4 ran out of tokens, none proposed the attacker's account or amount, and 0 escaped. NEAR AI's official verifier passed the Intel TDX and NVIDIA GPU attestation for the signing key; image provenance and TLS binding were not checked. No public inference endpoint exists. The deployed site only reads public RPC (archival nodes for transactions older than about 2.5 days); no signing credential is on Vercel. The restricted function-call key is limited to the vault's `request_payment` method, has a finite gas allowance, and cannot attach deposit. The vault still checks agent identity, allowlist, caps, budgets, expiry, nonce, and revocation. Its callback records settlement after the transfer outcome. A key restriction is a second boundary, not a substitute for contract checks.
 
 ## Evidence ladder
 

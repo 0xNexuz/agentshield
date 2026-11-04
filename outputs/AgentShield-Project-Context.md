@@ -269,3 +269,10 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 ### 2026-11-04 — Image rights confirmed
 
 - The owner confirmed they hold the usage rights to the three supplied reference images (`crowned-guardian.png`, `winged-statue.png`, `robotic-hand.png`) used in the homepage hero composite and the inner views. BRAND.md and the art-direction notes now record this instead of the earlier caution.
+
+### 2026-11-04 — Wallet connection removed; live proofs moved to archival RPC
+
+- The site no longer has a wallet connection. HOT Wallet, the only option left after Meteor was removed, does not support Testnet, so the Lab's connect button could never complete. Removed: `outputs/agentshield-ui/wallet-bundle.js`, `frontend/wallet-entry.mjs`, `work/build-wallet.mjs`, `work/browser-shims.mjs`, the `build:wallet` script and Vercel build command, and the wallet-selector, polyfill and esbuild dependencies. The Lab now says owner actions are signed on the owner's own machine and links the 3 Nov renewal as the example.
+- `npm audit --omit=dev`: 12 low, nothing moderate, high or critical.
+- The video maker reported `/api/testnet/proof` and `/api/testnet/gallery` returning HTTP 502 (`RPC HTTP 408`) while `/api/testnet/status` worked. Cause: `rpc.testnet.near.org` is not archival and had dropped the 1–2 Nov transactions, so `EXPERIMENTAL_tx_status` waited and timed out. Both verifiers now fetch transactions through `work/near-testnet-archival.mjs`, which asks `archival-rpc.testnet.fastnear.com` and `archival-rpc.testnet.near.org` together, keeps the first `FINAL` answer, and may reuse a finalized answer for 10 minutes in a warm function (reported as `transactionsFetchedAt`). State reads stay on `rpc.testnet.near.org`. Each proof reports the nodes used in `rpc`.
+- Checks: `npm test` 46/46 (new `tests/archival-rpc.test.mjs`), browser QA 94/94 and 71/71.

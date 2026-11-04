@@ -1,27 +1,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { archivalTxStatus } from './near-testnet-archival.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const proposal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-negative-scenarios-proposal.json'), 'utf8'));
-const endpoint = 'https://rpc.testnet.near.org';
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
-async function rpc(method, params) {
-  const response = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 'agentshield-negative-independent-proof', method, params }),
-    signal: AbortSignal.timeout(20000) });
-  assert(response.ok, `RPC HTTP ${response.status}`);
-  const data = await response.json();
-  assert(!data.error, `RPC ${method}: ${data.error?.message}`);
-  return data.result;
-}
 export async function verifyNegativeScenario(name) {
   assert(process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0', 'TLS verification must be enabled');
   const scenario = proposal.scenarios[name];
   assert(scenario, 'Unknown negative scenario');
   const evidence = JSON.parse(fs.readFileSync(path.join(root, `outputs/testnet-negative-${name}-evidence.json`), 'utf8'));
-  const tx = await rpc('EXPERIMENTAL_tx_status', { tx_hash: evidence.transactionHash,
-    sender_account_id: proposal.agentAccountId, wait_until: 'FINAL' });
+  // These transactions are older than the regular RPC keeps, so they come from an archival node.
+  const lookup = await archivalTxStatus(evidence.transactionHash, proposal.agentAccountId,
+    { id: 'agentshield-negative-independent-proof' });
+  const tx = lookup.result;
   assert(tx.final_execution_status === 'FINAL' && !tx.status?.Failure &&
     !tx.receipts_outcome.some(item => item.outcome?.status?.Failure), `${name}: transaction or receipt not finalized`);
   assert(tx.transaction?.signer_id === proposal.agentAccountId &&
@@ -53,6 +46,7 @@ export async function verifyNegativeScenario(name) {
     signer: proposal.agentAccountId, restrictedPublicKey: proposal.restrictedPublicKey,
     recipient: scenario.recipient, amountYocto: scenario.amountYocto, nonce: scenario.nonce,
     vaultTransferReceiptCount: 0, explorerUrl: evidence.explorerUrl,
+    rpc: lookup.endpoint, transactionFetchedAt: lookup.fetchedAt,
     checkedAt: new Date().toISOString() };
 }
 export async function verifyNegativeScenarios() {

@@ -2,26 +2,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertHistoricalPaymentState } from './live-payment-invariants.mjs';
+import { STATE_ENDPOINT, archivalTxStatus, postRpc } from './near-testnet-archival.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const proposal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-live-demo-proposal.json'), 'utf8'));
 const evidence = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-live-payment-evidence.json'), 'utf8'));
 const keyEvidence = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-live-key-evidence.json'), 'utf8'));
 const mandateEvidence = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-live-mandate-evidence.json'), 'utf8'));
-const endpoint = 'https://rpc.testnet.near.org';
 const check = (yes, why) => { if (!yes) throw new Error(why); };
+const id = 'agentshield-independent-payment-proof';
 
-async function rpc(method, params) {
-  const response = await fetch(endpoint, {
-    method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 'agentshield-independent-payment-proof', method, params }),
-    signal: AbortSignal.timeout(20000),
-  });
-  check(response.ok, `RPC HTTP ${response.status}`);
-  const result = await response.json();
-  check(!result.error, `RPC ${method}: ${result.error?.message}`);
-  return result.result;
-}
+// Current state comes from the regular public RPC; the old transactions come
+// from an archival node (see near-testnet-archival.mjs for why).
+const rpc = (method, params) => postRpc(STATE_ENDPOINT, id, method, params);
 async function view(method, args = {}) {
   const data = await rpc('query', { request_type: 'call_function', finality: 'final',
     account_id: proposal.vaultAccountId, method_name: method,
@@ -32,14 +25,12 @@ async function view(method, args = {}) {
 
 export async function verifyLivePayment() {
   check(process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0', 'TLS verification must be enabled');
-  const [tx, keyTx, mandateTx] = await Promise.all([
-    rpc('EXPERIMENTAL_tx_status', { tx_hash: evidence.transactionHash,
-      sender_account_id: proposal.agentAccountId, wait_until: 'FINAL' }),
-    rpc('EXPERIMENTAL_tx_status', { tx_hash: keyEvidence.transactionHash,
-      sender_account_id: proposal.agentAccountId, wait_until: 'FINAL' }),
-    rpc('EXPERIMENTAL_tx_status', { tx_hash: mandateEvidence.transactionHash,
-      sender_account_id: proposal.ownerAccountId, wait_until: 'FINAL' }),
+  const lookups = await Promise.all([
+    archivalTxStatus(evidence.transactionHash, proposal.agentAccountId, { id }),
+    archivalTxStatus(keyEvidence.transactionHash, proposal.agentAccountId, { id }),
+    archivalTxStatus(mandateEvidence.transactionHash, proposal.ownerAccountId, { id }),
   ]);
+  const [tx, keyTx, mandateTx] = lookups.map(lookup => lookup.result);
   check(keyTx.final_execution_status === 'FINAL' && !keyTx.status?.Failure &&
     keyTx.transaction?.signer_id === proposal.agentAccountId &&
     keyTx.transaction?.receiver_id === proposal.agentAccountId && keyTx.transaction?.actions?.length === 1,
@@ -121,6 +112,8 @@ export async function verifyLivePayment() {
     confirmedTotalYocto: status.confirmed_total_yocto, pendingTotalYocto: status.pending_total_yocto,
     currentRecipientBalanceYocto: recipient.amount,
     explorerUrl: `https://testnet.nearblocks.io/txns/${evidence.transactionHash}`,
+    rpc: { state: new URL(STATE_ENDPOINT).host, transactions: [...new Set(lookups.map(lookup => lookup.endpoint))] },
+    transactionsFetchedAt: lookups.map(lookup => lookup.fetchedAt).sort()[0],
     checkedAt: new Date().toISOString(),
   };
 }

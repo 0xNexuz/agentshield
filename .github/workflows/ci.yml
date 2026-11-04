@@ -26,8 +26,6 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Test simulator, key scope, AI preflight, routes, and historical proof
         run: node --test tests/*.test.mjs
-      - name: Build wallet bundle
-        run: npm run build:wallet
       - name: Test vault units
         run: cargo test --manifest-path contracts/vault/Cargo.toml --locked
       - name: Install local Sandbox and test actual WASM

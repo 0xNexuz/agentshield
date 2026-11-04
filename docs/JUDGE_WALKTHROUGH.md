@@ -7,8 +7,8 @@ For a guided version, open **Judge mode** (`/#judge`) and press **Watch AgentShi
 1. On **The Thesis**, read the contract-held vault summary and open **Instant Demo**. Run its five scenarios. The screen labels these as simulation; they are not five onchain transactions.
 2. Open **Evidence**. Wait for **“One payment. Independently verified.”** Open **VIEW LIVE JSON PROOF**. Expect `verification: PASS`, `settlement: SETTLED`, the deployed vault code hash, the restricted signer, transaction `3buDvB…53jm`, and transfer receipt `76hE3j…K2dS`. The initial `AUTHORIZED` decision alone is not the settlement claim.
 3. Continue down **Evidence** to the three rejection proofs. Expect `PER_PAYMENT_LIMIT`, `RECIPIENT_NOT_ALLOWED`, and `REPLAY`, each with a finalized Testnet transaction and zero vault transfer receipts. **Revocation** is marked not yet verified on Testnet; it passes in NEAR Sandbox against the deployed WASM.
-4. Open **Lab** to inspect public Testnet account and vault state. A wallet connection is optional; real owner sign-in has not yet been verified. Do not approve a transaction as part of this walkthrough.
-5. For independent reproduction, run the read-only verifier commands in [README](../README.md) or query `https://rpc.testnet.near.org` directly for the hashes in [the evidence table](ARCHITECTURE_AND_EVIDENCE.md). An explorer may block automated requests.
+4. Open **Lab** to inspect public Testnet account and vault state. The site has no wallet connection and never asks you to sign anything; owner actions are signed on the owner's own machine. Nothing to approve in this walkthrough.
+5. For independent reproduction, run the read-only verifier commands in [README](../README.md) or query the archival node `https://archival-rpc.testnet.near.org` directly for the hashes (the regular `rpc.testnet.near.org` keeps only about 2.5 days of history) in [the evidence table](ARCHITECTURE_AND_EVIDENCE.md). An explorer may block automated requests.
 
 ## Expected limits
 
