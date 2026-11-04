@@ -10,6 +10,14 @@ const secretPattern = [
   ['GITHUB_TOKEN', /(?:gh[pousr]_[A-Za-z0-9_]{25,}|github_pat_[A-Za-z0-9_]{25,})/g],
   ['API_TOKEN', /(?:sk-[A-Za-z0-9_-]{25,}|NEAR_AI_KEY\s*=\s*['"]?[A-Za-z0-9_-]{25,})/g],
 ];
+// Exact strings known to be fake. Commits 0b53cee and 537b905 used this made-up value as a stand-in
+// API key in tests/live-injection.test.mjs; it was never a credential. Nothing else is exempt: any
+// other match on a line still counts, and the list must stay this short and this exact.
+const KNOWN_FAKE = new Set(['sk-test-DO-NOT-LEAK-1234567890']);
+const onlyKnownFakes = (text, pattern) => {
+  const matches = text.match(new RegExp(pattern.source, 'g')) ?? [];
+  return matches.length > 0 && matches.every(m => KNOWN_FAKE.has(m));
+};
 const credentialPath = /(?:^|\/)(?:\.env(?:\.(?!example$)[^/]*)?|[^/]*(?:private[-_]?key|secret)[^/]*\.(?:json|pem|key))$/i;
 const credentialDirectory = /(?:^|\/)(?:\.near-credentials|AgentShield-Secrets)\//i;
 const ignorePath = /(?:^|\/)\.env\.example$/i;
@@ -33,6 +41,7 @@ for (const ref of refs) {
     }
     for (const line of output.split(/\r?\n/).filter(Boolean)) {
       const match = ref === 'WORKTREE' ? line.match(/^(.+?):(\d+):/) : line.match(/^[^:]+:(.+?):(\d+):/);
+      if (match && onlyKnownFakes(line.slice(match.index + match[0].length), pattern)) continue;
       findings.push({ ref: ref.slice(0, 12), file: match?.[1] ?? 'UNKNOWN',
         line: match ? Number(match[2]) : null, kind });
     }

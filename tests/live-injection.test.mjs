@@ -11,7 +11,7 @@ import liveRoute, { resetLimits } from '../api/live/injection.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const run2 = JSON.parse(fs.readFileSync(path.join(root, 'outputs/near-ai-redteam-evidence-run2.json'), 'utf8'));
-const KEY = 'sk-test-DO-NOT-LEAK-1234567890';
+const KEY = 'placeholder-test-key-not-real';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 test('EIP-191 recovery matches the attested model key on every recorded run 2 signature', () => {
