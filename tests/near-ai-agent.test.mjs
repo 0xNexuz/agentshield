@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { inferPaymentInstruction, preflightPayment } from '../work/near-ai-payment-agent.mjs';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1';
@@ -55,17 +56,30 @@ test('blocks overspend, exhausted budget, missing recipient account, and unverif
 
 test('uses NEAR AI chat API shape but treats its strict JSON result as unsigned', async () => {
   let observed;
+  const content = JSON.stringify({ recipient: allowed, amountNear: '0.005' });
+  const responseBody = JSON.stringify({ id: 'chat-mock-123', created: 1790000000,
+    model: 'mock-model', usage: { prompt_tokens: 41, completion_tokens: 19, total_tokens: 60 },
+    choices: [{ message: { content } }] });
+  const sha256 = text => createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex');
   const output = await inferPaymentInstruction(`Pay 0.005 NEAR to ${allowed}`, {
     apiKey: 'test-only-key',
     fetchImpl: async (url, request) => {
-      observed = { url, request: JSON.parse(request.body), auth: request.headers.authorization };
-      return { ok: true, headers: { get: () => 'mock-request-id' }, json: async () => ({ model: 'mock-model',
-        choices: [{ message: { content: JSON.stringify({ recipient: allowed, amountNear: '0.005' }) } }] }) };
+      observed = { url, request: JSON.parse(request.body), body: request.body,
+        auth: request.headers.authorization, encoding: request.headers['accept-encoding'] };
+      return new Response(responseBody, { status: 200, headers: { 'x-request-id': 'mock-request-id' } });
     },
   });
   assert.equal(observed.url, 'https://cloud-api.near.ai/v1/chat/completions');
   assert.equal(observed.request.messages[0].role, 'system');
   assert.equal(observed.request.messages[1].role, 'user');
+  assert.equal(observed.encoding, 'identity');
+  assert.equal(output.raw.id, 'chat-mock-123');
+  assert.equal(output.raw.created, 1790000000);
+  assert.equal(output.raw.model, 'mock-model');
+  assert.deepEqual(output.raw.usage, { prompt_tokens: 41, completion_tokens: 19, total_tokens: 60 });
+  assert.equal(output.raw.content, content);
+  assert.equal(output.raw.requestBodySha256, sha256(observed.body));
+  assert.equal(output.raw.responseBodySha256, sha256(responseBody));
   assert.equal(output.signed, false);
   assert.equal(output.onchainDecision, null);
   assert.equal(output.proposal.recipient, allowed);
