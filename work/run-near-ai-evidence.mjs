@@ -2,32 +2,38 @@
 // The output-file guard makes a second run an explicit error, even after a partial run.
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { verifyMessage } from 'ethers';
 import { inferPaymentInstruction, preflightPayment } from './near-ai-payment-agent.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = relative => JSON.parse(fs.readFileSync(path.join(root, relative), 'utf8'));
-const attestation = readJson('outputs/near-ai-attestation.json');
+const runLabel = process.argv[2] ?? null;
+const isRun2 = runLabel === 'run2';
+const suffix = isRun2 ? '-run2' : '';
+const attestationRelative = `outputs/near-ai-attestation${suffix}.json`;
+const attestationFile = path.join(root, attestationRelative);
+let attestation;
 const demoCases = readJson('work/near-ai-cases/demo.json');
 const redCases = readJson('work/near-ai-cases/redteam.json');
-const model = attestation.model;
+const model = 'z-ai/glm-5.3-flash';
 const allowedRecipient = 'agentshield-recipient-7bb4a0df1077.testnet';
 const legitimateLine = `Pay 0.005 NEAR to ${allowedRecipient} for invoice 42.`;
 const agentAccountId = 'agentshield-agent-0359da1630bb.testnet';
 const vaultAccountId = 'vault.agentshield-mag-1d2f78801994.testnet';
 const codeHash = '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN';
-const demoFile = path.join(root, 'outputs/near-ai-live-evidence.json');
-const redFile = path.join(root, 'outputs/near-ai-redteam-evidence.json');
+const demoFile = path.join(root, `outputs/near-ai-live-evidence${suffix}.json`);
+const redFile = path.join(root, `outputs/near-ai-redteam-evidence${suffix}.json`);
 const rpcEndpoint = 'https://rpc.testnet.near.org';
 const cloudEndpoint = 'https://cloud-api.near.ai';
-const maxCompletionCalls = 24;
+const maxCompletionCalls = isRun2 ? 22 : 24;
 const spendCapUsd = 0.25;
-const inputPrice = Number(attestation.inputCostPerToken.amount) /
-  10 ** Number(attestation.inputCostPerToken.scale);
-const outputPrice = Number(attestation.outputCostPerToken.amount) /
-  10 ** Number(attestation.outputCostPerToken.scale);
-const maxUnmeteredCallUsd = 4000 * inputPrice + 180 * outputPrice;
+const maxTokens = process.env.NEAR_AI_MAX_TOKENS === undefined ? 180 :
+  Number(process.env.NEAR_AI_MAX_TOKENS);
+let inputPrice;
+let outputPrice;
+let maxUnmeteredCallUsd;
 let completionCalls = 0;
 let successfulCompletions = 0;
 let estimatedSpendUsd = 0;
@@ -38,6 +44,38 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const safeError = error => String(error?.message ?? error)
   .replaceAll(process.env.NEAR_AI_KEY || '\0', '[redacted]');
 const amount = value => Number(value.toFixed(9));
+
+async function cloudJson(url, headers = {}) {
+  const response = await fetch(url, { headers: { authorization: `Bearer ${process.env.NEAR_AI_KEY}`,
+    ...headers }, signal: AbortSignal.timeout(30000) });
+  if (response.status === 401 || response.status === 402) {
+    throw Object.assign(new Error(`NEAR AI read-only request returned HTTP ${response.status}`),
+      { status: response.status });
+  }
+  requireTrue(response.ok, `NEAR AI read-only request returned HTTP ${response.status}`);
+  return response.json();
+}
+
+async function freshRun2Attestation() {
+  const list = await cloudJson(`${cloudEndpoint}/v1/model/list`);
+  const selected = list.models?.find(item => item.modelId === model);
+  requireTrue(selected?.metadata?.attestationSupported === true,
+    'Canonical model is missing or no longer supports attestation');
+  const nonce = randomBytes(32).toString('hex');
+  const params = new URLSearchParams({ model, provider: 'near', signing_algo: 'ecdsa',
+    include_tls_fingerprint: 'false', nonce });
+  const report = await cloudJson(`${cloudEndpoint}/v1/attestation/report?${params}`,
+    { 'x-no-aliasing': 'true' });
+  requireTrue(report.gateway_attestation?.request_nonce === nonce &&
+    report.model_attestations?.length > 0 &&
+    report.model_attestations.every(item => item.request_nonce === nonce),
+  'Fresh attestation nonce or model report differs');
+  return { model, alias: 'zai-org/GLM-5.1-FP8', nonce,
+    requestedAt: new Date().toISOString(),
+    selectionReason: 'Canonical attested model for the requested alias, retained for run2.',
+    inputCostPerToken: selected.inputCostPerToken,
+    outputCostPerToken: selected.outputCostPerToken, report };
+}
 
 function validateCases(cases, count) {
   requireTrue(Array.isArray(cases) && cases.length === count, `Expected ${count} cases`);
@@ -162,10 +200,8 @@ function summarizeRedTeam(entries) {
     estimatedSpendUsd: amount(estimatedSpendUsd), completionCalls, successfulCompletions };
 }
 
-const demoOutput = { model, attestationFile: 'outputs/near-ai-attestation.json',
-  createdAt: new Date().toISOString(), cases: [] };
-const redOutput = { model, attestationFile: 'outputs/near-ai-attestation.json',
-  createdAt: new Date().toISOString(), cases: [], summary: summarizeRedTeam([]) };
+let demoOutput;
+let redOutput;
 function persist() {
   redOutput.summary = summarizeRedTeam(redOutput.cases);
   if (stopped) { demoOutput.stopped = stopped; redOutput.stopped = stopped; }
@@ -181,9 +217,9 @@ async function runCase(item, group) {
   const target = group === 'demo' ? demoOutput.cases : redOutput.cases;
   target.push(entry);
   persist();
-  const maxAttempts = group === 'demo' ? 2 : 1;
+  const maxAttempts = isRun2 ? 1 : group === 'demo' ? 2 : 1;
   for (let number = 1; number <= maxAttempts; number++) {
-    requireTrue(completionCalls < maxCompletionCalls, '24-call limit reached');
+    requireTrue(completionCalls < maxCompletionCalls, `${maxCompletionCalls}-call limit reached`);
     requireTrue(estimatedSpendUsd + maxUnmeteredCallUsd <= spendCapUsd,
       'Projected spend exceeds $0.25 cap');
     completionCalls++;
@@ -281,17 +317,34 @@ async function runCase(item, group) {
 }
 
 async function main() {
-  requireTrue(process.argv.length === 2, 'No arguments are supported');
+  requireTrue(process.argv.length === 2 ||
+    (process.argv.length === 3 && runLabel === 'run2'), 'Only the run2 label is supported');
   requireTrue(process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0', 'TLS verification must be enabled');
   requireTrue(process.env.NEAR_AI_KEY, 'NEAR_AI_KEY is missing');
-  requireTrue(model === 'z-ai/glm-5.3-flash' &&
-    attestation.report.model_attestations?.length > 0, 'Selected canonical model/attestation differs');
+  requireTrue(Number.isSafeInteger(maxTokens) && maxTokens >= 1 && maxTokens <= 4096,
+    'NEAR_AI_MAX_TOKENS must be an integer from 1 to 4096');
+  if (isRun2) requireTrue(maxTokens === 1024, 'run2 requires NEAR_AI_MAX_TOKENS=1024');
+  requireTrue(!fs.existsSync(demoFile) && !fs.existsSync(redFile) &&
+    (!isRun2 || !fs.existsSync(attestationFile)),
+  'Evidence already exists; refusing a second run');
+  attestation = isRun2 ? await freshRun2Attestation() : readJson(attestationRelative);
+  requireTrue(attestation.model === model && attestation.report.model_attestations?.length > 0,
+    'Selected canonical model/attestation differs');
+  inputPrice = Number(attestation.inputCostPerToken.amount) /
+    10 ** Number(attestation.inputCostPerToken.scale);
+  outputPrice = Number(attestation.outputCostPerToken.amount) /
+    10 ** Number(attestation.outputCostPerToken.scale);
+  maxUnmeteredCallUsd = 4000 * inputPrice + maxTokens * outputPrice;
   requireTrue(Number.isFinite(inputPrice) && Number.isFinite(outputPrice) &&
     inputPrice > 0 && outputPrice > 0, 'Model pricing is unavailable');
   validateCases(demoCases, 2);
   validateCases(redCases, 20);
-  requireTrue(!fs.existsSync(demoFile) && !fs.existsSync(redFile),
-    'Evidence already exists; refusing a second run');
+  demoOutput = { model, runLabel, maxTokens, attestationFile: attestationRelative,
+    createdAt: new Date().toISOString(), cases: [] };
+  redOutput = { model, runLabel, maxTokens, attestationFile: attestationRelative,
+    createdAt: new Date().toISOString(), cases: [], summary: summarizeRedTeam([]) };
+  if (isRun2) fs.writeFileSync(attestationFile, JSON.stringify(attestation, null, 2) + '\n',
+    { flag: 'wx' });
   fs.writeFileSync(demoFile, JSON.stringify(demoOutput, null, 2) + '\n', { flag: 'wx' });
   fs.writeFileSync(redFile, JSON.stringify(redOutput, null, 2) + '\n', { flag: 'wx' });
   for (const item of demoCases) await runCase(item, 'demo');
