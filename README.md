@@ -176,7 +176,7 @@ node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 - **The WASM rebuild** runs on Windows with `pwsh work/reproduce-vault-wasm.ps1`. It creates folders under `C:\Users\USER\`, so use a throwaway machine or let CI run it.
 - **Windows setup, the NEAR AI command line and Vercel** are covered in [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md).
 
-Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, set it back to `1`. Don't run `work/execute-*.mjs` or `work/deploy-*.mjs`. They sign Testnet transactions with the owner's keys, which are not in this repository.
+Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, set it back to `1`. Don't run `work/execute-*.mjs`, `work/deploy-*.mjs` or `work/run-mcp-testnet-payment.mjs`. They sign Testnet transactions with the owner's or agent's keys, which are not in this repository.
 
 ## Where things are
 

@@ -160,12 +160,12 @@ import { setupCinematic } from "./cinematic.mjs";
     const intro = document.createElement("p");
     intro.textContent = "These are signed Testnet contract calls. A rejected request counts only when its final result is genuine and the vault issued no payout receipt.";
     const status = document.createElement("p");
-    status.textContent = "Checking three finalized rejection proofs…";
+    status.textContent = "Checking the finalized rejection proofs…";
     gallery.append(heading, intro, status);
     try {
       const response = await fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const proofs = await response.json();
-      if (!response.ok || !Array.isArray(proofs) || proofs.length !== 3 ||
+      if (!response.ok || !Array.isArray(proofs) || proofs.length < 3 ||
         proofs.some(item => item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0)) {
         throw new Error(proofs.error || "The scenario proofs did not all pass.");
       }
@@ -174,6 +174,8 @@ import { setupCinematic } from "./cinematic.mjs";
       grid.className = "live-gallery-grid";
       const titles = {
         overspend: "Spending limit", unauthorizedRecipient: "Recipient allowlist", replay: "Replay protection",
+        staleVersion: "Stale mandate version", expired: "Expired request", lookalikeRecipient: "Look-alike recipient",
+        wrongAgent: "Only the agent may ask",
       };
       for (const proof of proofs) {
         const card = document.createElement("article");

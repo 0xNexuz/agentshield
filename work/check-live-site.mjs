@@ -23,9 +23,9 @@ export const checks = [
       body.transactionHash === PAYMENT && body.codeHash === CODE_HASH && body.currentKeyStillScoped === true
       ? [true, `PASS, SETTLED, mandate v${body.currentMandateVersion}, transactions from ${body.rpc?.transactions?.join(', ')}`] : [false, `HTTP ${status}: ${JSON.stringify(body).slice(0, 300)}`];
   }],
-  ['three rejection proofs pass', async () => {
+  ['every rejection proof passes', async () => {
     const { status, body } = await get('/api/testnet/gallery');
-    const ok = status === 200 && Array.isArray(body) && body.length === 3 &&
+    const ok = status === 200 && Array.isArray(body) && body.length >= 3 &&
       body.every(p => p.verification === 'PASS' && p.decision === 'REJECTED' && p.vaultTransferReceiptCount === 0);
     return ok ? [true, body.map(p => p.reason).join(', ')] : [false, `HTTP ${status}: ${JSON.stringify(body).slice(0, 300)}`];
   }],

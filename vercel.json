@@ -9,7 +9,7 @@
     },
     "api/testnet/gallery.js": {
       "maxDuration": 60,
-      "includeFiles": "{deployment/testnet-negative-scenarios-proposal.json,outputs/testnet-negative-*-evidence.json}"
+      "includeFiles": "{deployment/testnet-negative-scenarios-proposal.json,deployment/testnet-rejection-probes-v2-proposal.json,outputs/testnet-negative-*-evidence.json,outputs/testnet-rejection-*-evidence.json}"
     },
     "api/testnet/counterparty.js": {
       "maxDuration": 30,

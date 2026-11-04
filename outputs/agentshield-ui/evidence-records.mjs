@@ -190,9 +190,13 @@ export function fetchLiveGallery({ force = false } = {}) {
   liveGallery ??= fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) })
     .then(async response => {
       const proofs = await response.json();
-      if (!response.ok || !Array.isArray(proofs) || proofs.length !== 3 || proofs.some(item =>
+      // Every listed proof must pass, and the three original rejections must be among them with their
+      // committed hashes. Later probes (mandate version 2) may follow them.
+      const known = Object.keys(REJECTIONS);
+      if (!response.ok || !Array.isArray(proofs) || proofs.some(item =>
         item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0 ||
-        REJECTIONS[item.scenario]?.transactionHash !== item.transactionHash)) {
+        (REJECTIONS[item.scenario] && REJECTIONS[item.scenario].transactionHash !== item.transactionHash)) ||
+        !known.every(name => proofs.some(item => item.scenario === name))) {
         throw new Error(proofs.error || "The live rejection proofs did not all pass.");
       }
       return Object.fromEntries(proofs.map(item => [item.scenario, item]));

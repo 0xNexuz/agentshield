@@ -42,6 +42,6 @@ test('a broken endpoint, a wrong answer or a network error each fail their check
     '/api/testnet/status': new Error('socket hang up'),
   }, () => runChecks());
   assert.deepEqual(results.filter(r => !r.ok).map(r => r.name),
-    ['three rejection proofs pass', 'counterparty check blocks the recorded look-alike', 'Testnet RPC is healthy']);
+    ['every rejection proof passes', 'counterparty check blocks the recorded look-alike', 'Testnet RPC is healthy']);
   assert.match(results.find(r => r.name === 'Testnet RPC is healthy').detail, /socket hang up/);
 });
