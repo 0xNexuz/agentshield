@@ -25,7 +25,7 @@ The vault is deployed on NEAR Testnet. One restricted-agent payment has settled 
 
 ## Assets and permissions
 
-The supplied source images live in `assets/crowned-guardian.png`, `assets/winged-statue.png`, and `assets/robotic-hand.png`. The active generated composite is `assets/agentshield-near-composite-v2.png`; its central mark was refined against the NEAR organization's logo. These are user-provided references and a derived design study. Confirm usage rights before public release or submission.
+The supplied source images live in `assets/crowned-guardian.png`, `assets/winged-statue.png`, and `assets/robotic-hand.png`. The active generated composite is `assets/agentshield-near-composite-v2.png`; its central mark was refined against the NEAR organization's logo. These are user-provided references and a derived design study. On 2026-11-04 the owner confirmed they hold the usage rights to the three supplied images.
 
 ## Cinematic layer (2026-11-02)
 

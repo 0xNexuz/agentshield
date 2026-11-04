@@ -266,3 +266,6 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Attestation (as recorded from `nearai/nearai-cloud-verifier` at `94554726`, run in WSL2 on the owner's machine; output SHA-256 recorded, raw output not committed): gateway and model Intel TDX quotes, nonce and signing-address bindings, compose hashes and NVIDIA GPU attestation VERIFIED. Compose-manager quote, Sigstore provenance, TLS fingerprint binding and OHTTP were NOT VERIFIED. This session could not rerun the quote check independently.
 - The prompt-injection challenge now shows "What the real model did" from `NEAR_AI_RUN` in `evidence-records.mjs`; `tests/near-ai-evidence.test.mjs` recomputes those numbers from the evidence. `npm test` 40/40.
 
+### 2026-11-04 — Image rights confirmed
+
+- The owner confirmed they hold the usage rights to the three supplied reference images (`crowned-guardian.png`, `winged-statue.png`, `robotic-hand.png`) used in the homepage hero composite and the inner views. BRAND.md and the art-direction notes now record this instead of the earlier caution.

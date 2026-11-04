@@ -56,7 +56,7 @@ Each plate ships as WebP at 1920×1080, 1280×720, and 768×432 (about 15–106 
 | Sticker agent | Hand-drawn SVG paths, written for this build | Ink on paper with a white die-cut border. The limbs, head, visor and star are separate groups, so the run cycle is pure CSS. No image model or third-party file was used. It borrows the sticker-cutout style of the owner's fourth reference image but not that character. |
 | Backdrop | `agentshield-near-composite-v2-1672.webp` / `-1024.webp` | The existing hero, desaturated and darkened while loading, then brightened as the sticker dashes off. |
 
-**Rights caution (unchanged from `BRAND.md`, now more specific):** the three user-supplied reference images and the composites derived from them have unconfirmed usage rights. `crowned-guardian.png` looks like a still from a feature film and may show a real actor. Before public submission, confirm permission or swap the overview hero for an original plate (plate C or a new hero generated from §5). The eight new plates were generated from text prompts only. No third-party image was given to the model, and the only reference images were AgentShield's own new plates.
+**Rights:** on 2026-11-04 the owner confirmed they hold the usage rights to the three user-supplied reference images, and therefore to the composites derived from them. The eight new plates were generated from text prompts only. No third-party image was given to the model, and the only reference images were AgentShield's own new plates.
 
 ## 4. Provenance
 
