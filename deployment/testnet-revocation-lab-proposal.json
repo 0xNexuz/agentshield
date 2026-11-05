@@ -24,7 +24,8 @@
     "amount_yocto": "5000000000000000000000",
     "nonce": "revocationprobe5cbb311d1a",
     "expires_at_ns": "1794216105339870776",
-    "expected_version": 1,
+    "expected_version": 2,
+    "expectedVersionNote": "revoke bumps the mandate from version 1 to 2; the probe names version 2 so that revocation is the only thing wrong with it. Changed on 2026-11-05, after the revoke and before the probe was signed.",
     "expectedReason": "REVOKED"
   },
   "actions": [

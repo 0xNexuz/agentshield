@@ -43,7 +43,7 @@ async function main() {
   check(proposal.rejectedRequest.recipient === proposal.recipient &&
     proposal.rejectedRequest.amount_yocto === '5000000000000000000000' &&
     proposal.rejectedRequest.expectedReason === 'REVOKED' &&
-    proposal.rejectedRequest.expected_version === 1 &&
+    proposal.rejectedRequest.expected_version === 2 &&
     proposal.rejectedRequest.expires_at_ns === proposal.mandate.expires_at_ns, 'Probe changed');
   const [network, owner, agent, recipient, isolated, existing, storage, block, gas] = await Promise.all([
     testnetStatus(), testnetAccount(proposal.owner), testnetAccount(proposal.agent),

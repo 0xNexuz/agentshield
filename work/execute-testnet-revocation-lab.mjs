@@ -16,7 +16,8 @@ const secrets = 'C:\\Users\\USER\\Documents\\Codex\\AgentShield-Secrets';
 const restrictedFile = path.join(secrets, 'testnet', `${p.agent}.revocation-request-payment.json`);
 const rpcUrl = 'https://rpc.testnet.near.org';
 const flags = { deploy: '--execute-approved-deploy', deployCorrected: '--execute-approved-deploy-corrected', key: '--execute-approved-key',
-  mandate: '--execute-approved-mandate', revoke: '--execute-approved-revoke', probe: '--execute-approved-probe' };
+  mandate: '--execute-approved-mandate', revoke: '--execute-approved-revoke', probe: '--execute-approved-probe',
+  recordRevoke: '--record-approved-revoke' };
 function check(ok, why) { if (!ok) throw new Error(why); }
 async function rpc(method, params) {
   const response = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -198,20 +199,39 @@ async function executeRevoke() {
   const sent = await sendOnce('revoke', p.owner, p.isolatedVault,
     [transactions.functionCall('revoke', {}, 30000000000000n, 0n)]);
   const observed = await view('get_mandate');
-  check(observed?.version === 1 && observed.revoked && observed.paused, 'Isolated mandate was not revoked');
+  // revoke bumps the version, like pause and resume: version 1 becomes 2.
+  check(observed?.version === 2 && observed.revoked && observed.paused, 'Isolated mandate was not revoked');
   save('revoke', sent, { observed });
+}
+// Records a revoke that already finalized but stopped before its evidence was written. Signs nothing.
+async function recordRevoke() {
+  await common(); previous('mandate');
+  const intentFile = path.join(root, 'outputs/testnet-revocation-revoke-intent.json');
+  check(fs.existsSync(intentFile), 'No revoke intent: nothing to record');
+  check(!fs.existsSync(path.join(root, 'outputs/testnet-revocation-revoke-evidence.json')), 'Revoke evidence already exists');
+  const intent = JSON.parse(fs.readFileSync(intentFile, 'utf8'));
+  check(intent.stage === 'revoke' && intent.signer === p.owner && intent.receiver === p.isolatedVault, 'Revoke intent parties differ');
+  const tx = await finalized(intent.hash, p.owner)
+    .catch(() => archivalTxStatus(intent.hash, p.owner, { id: 'agentshield-revocation-lab', timeoutMs: 90000 }).then(r => r.result));
+  const call = tx.transaction?.actions?.length === 1 ? tx.transaction.actions[0].FunctionCall : null;
+  check(tx.transaction?.signer_id === p.owner && tx.transaction?.receiver_id === p.isolatedVault && call?.method_name === 'revoke' &&
+    !tx.status?.Failure && !tx.receipts_outcome?.some(item => item.outcome?.status?.Failure), `Revoke ${intent.hash} did not succeed`);
+  check(tx.receipts_outcome.some(item => item.outcome?.logs?.includes('AGENTSHIELD_POLICY version=2 action=REVOKE')), 'Revoke log missing');
+  const observed = await view('get_mandate');
+  check(observed?.version === 2 && observed.revoked && observed.paused, 'Isolated mandate is not revoked at version 2');
+  save('revoke', { hash: intent.hash, tx }, { observed, recordedAfterStop: true });
 }
 async function executeProbe() {
   await common(); previous('revoke'); await restrictedStore();
   const status = await view('get_vault_status');
-  check(status.mandate?.version === 1 && status.mandate.revoked &&
+  check(status.mandate?.version === p.rejectedRequest.expected_version && status.mandate.revoked &&
     status.confirmed_total_yocto === '0' && status.pending_total_yocto === '0',
     'Isolated revocation state changed');
   const block = await rpc('block', { finality: 'final' });
   check(BigInt(p.rejectedRequest.expires_at_ns) > BigInt(block.header.timestamp_nanosec) + 60000000000n,
     'Probe expiry too close');
   const args = { recipient: p.rejectedRequest.recipient, amount_yocto: p.rejectedRequest.amount_yocto,
-    nonce: p.rejectedRequest.nonce, expires_at_ns: p.rejectedRequest.expires_at_ns, expected_version: 1 };
+    nonce: p.rejectedRequest.nonce, expires_at_ns: p.rejectedRequest.expires_at_ns, expected_version: p.rejectedRequest.expected_version };
   const sent = await sendOnce('probe', p.agent, p.isolatedVault,
     [transactions.functionCall('request_payment', args, 70000000000000n, 0n)], true);
   const tx = sent.tx;
@@ -237,6 +257,7 @@ async function main() {
   else if (stage === 'key') await executeKey();
   else if (stage === 'mandate') await executeMandate();
   else if (stage === 'revoke') await executeRevoke();
+  else if (stage === 'recordRevoke') await recordRevoke();
   else await executeProbe();
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });
