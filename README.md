@@ -29,7 +29,7 @@ You don't need a wallet, an account or a key. The site is read-only and has no w
 | Open [/api/testnet/mcp-payment](https://agentshield-lab.vercel.app/api/testnet/mcp-payment) | `"via":"AgentShield MCP server"`, `"verification":"PASS"`, `"settlement":"SETTLED"`: the payment an AI agent made with the MCP server's payment tool |
 | On [/#attack](https://agentshield-lab.vercel.app/#attack), scroll to **Now try the real model** and send a note | The real model's proposal, its TEE signature checked against today's attestation, the guard's `ALLOW` / `WARN` / `BLOCK`, and what the vault would do. Nothing is signed. |
 | Open [/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1o77.testnet](https://agentshield-lab.vercel.app/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1o77.testnet) | `"decision":"BLOCK"` with `LOOKALIKE`: an `o` in place of a `0`, the redirect from recorded attack 03. The vault refused that account on Testnet too, in [`2dBDby…ojgX`](https://testnet.nearblocks.io/txns/2dBDbyg296vJv17SJ2xHP3aymFqDcGCHFCDdzRViojgX). Try it with any account in the site's **Lab**. |
-| `npm ci && npm test` | `# pass 84`, `# fail 0`. Offline, with no keys and no chain access. |
+| `npm ci && npm test` | `# pass 86`, `# fail 0`. Offline, with no keys and no chain access. |
 | Open [`outputs/near-ai-redteam-evidence-run2.json`](outputs/near-ai-redteam-evidence-run2.json) and read `summary` | The real NEAR AI red-team run: `"escaped": 0` over 20 cases (19 prompt injections and one clean control), each reply signed by the attested model key |
 | `cargo test --manifest-path contracts/vault/Cargo.toml --locked` | `test result: ok. 13 passed`, including the randomized rule test: 24,000 random operations, each checked against an independent model |
 | Open the [Live evidence](https://github.com/0xNexuz/agentshield/actions/workflows/live-evidence.yml) workflow | A daily run on GitHub's own machines that rechecks every Testnet proof straight from public RPC, then checks the production site |
@@ -164,7 +164,7 @@ Every attack except the last was signed with the restricted agent key; the last 
 
 ```sh
 npm ci
-npm test                                                         # 84 Node tests, offline
+npm test                                                         # 86 Node tests, offline
 cargo test --manifest-path contracts/vault/Cargo.toml --locked   # 13 Rust tests, including the randomized rule test
 node --use-system-ca work/preview-server.js                      # the site at http://127.0.0.1:4321
 npm run mcp                                                      # the MCP server on stdio, read-only
@@ -178,6 +178,7 @@ Recheck the Testnet evidence from your own machine (read-only, needs network). T
 node --use-system-ca work/verify-testnet-live-payment.mjs
 node --use-system-ca work/verify-testnet-negative-scenarios.mjs
 node --use-system-ca work/verify-testnet-mcp-payment.mjs
+node --use-system-ca work/verify-testnet-revocation-lab.mjs   # the failed first revocation lab deploy
 ```
 
 - **NEAR Sandbox tests** of the deployed WASM run on Linux or WSL2: the setup steps are in [docs/RELEASE_AND_SUBMISSION.md](docs/RELEASE_AND_SUBMISSION.md#reproduce-from-a-clone), then `bash work/run-sandbox-tests.sh`.

@@ -1,0 +1,25 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "stage": "deploy",
+  "status": "FAILED",
+  "transactionHash": "EvLkrsDS7XuYGpZ9knasYVGRMQEnK4sc2jrPi7hzqNdi",
+  "failedActionIndex": 3,
+  "failureKind": "FunctionCallError",
+  "isolatedVaultExistsNow": false,
+  "archivalAnswers": [
+    {
+      "endpoint": "archival-rpc.testnet.fastnear.com",
+      "ok": true,
+      "failedActionIndex": 3,
+      "kind": "FunctionCallError"
+    },
+    {
+      "endpoint": "archival-rpc.testnet.near.org",
+      "ok": true,
+      "failedActionIndex": 3,
+      "kind": "FunctionCallError"
+    }
+  ],
+  "checkedAt": "2026-11-05T08:50:16.775Z"
+}

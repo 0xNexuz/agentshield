@@ -119,10 +119,22 @@ async function executeDeploy(corrected = false) {
   if (corrected) {
     const firstIntent = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-revocation-deploy-intent.json'), 'utf8'));
     // The failed attempt is from 2 Nov, older than rpc.testnet.near.org keeps, so ask the archival nodes.
-    const { result: first } = await archivalTxStatus(firstIntent.hash, p.owner, { id: 'agentshield-revocation-lab' });
-    check(first.status?.Failure?.ActionError?.index === 3 &&
-      first.transaction?.receiver_id === p.isolatedVault && first.transaction?.actions?.length === 4,
-      'Original atomic deployment is not a finalized initializer failure');
+    // Its reply carries the whole WASM (about 430 KB), so allow a slow connection 90 seconds.
+    const first = await archivalTxStatus(firstIntent.hash, p.owner, { id: 'agentshield-revocation-lab', timeoutMs: 90000 })
+      .then(r => r.result, error => { console.error(`Archival lookup from this machine failed: ${error.message}`); return null; });
+    if (first) {
+      check(first.status?.Failure?.ActionError?.index === 3 &&
+        first.transaction?.receiver_id === p.isolatedVault && first.transaction?.actions?.length === 4,
+        'Original atomic deployment is not a finalized initializer failure');
+    } else {
+      // Fallback: GitHub's runners confirmed the failure from both archival nodes (committed record), and the
+      // check below confirms the isolated account still does not exist, so the first attempt created nothing.
+      const recheck = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-revocation-deploy-failure-independent-proof.json'), 'utf8'));
+      check(recheck.verification === 'PASS' && recheck.status === 'FAILED' && recheck.transactionHash === firstIntent.hash &&
+        recheck.failedActionIndex === 3 && recheck.isolatedVaultExistsNow === false,
+        'No archival answer here and no committed independent recheck of the failed deployment');
+      console.log(`Using the committed independent recheck of ${firstIntent.hash} (checked ${recheck.checkedAt}); the isolated account is checked again below.`);
+    }
   }
   const [owner, existing] = await Promise.all([testnetAccount(p.owner), testnetAccount(p.isolatedVault)]);
   check(!existing.found && BigInt(owner.balanceYocto) > BigInt(p.fundingYocto) + 500000000000000000000000n,
