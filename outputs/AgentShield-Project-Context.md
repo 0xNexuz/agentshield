@@ -322,4 +322,5 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Independent recheck: Live evidence run `42021427249` verified every lab stage from archival nodes (`outputs/testnet-revocation-lab-independent-proof.json`). The gallery now returns eight rejections, `REVOKED` last; the daily job runs `work/verify-testnet-revocation-lab.mjs`.
 - Site: Attack the vault's Revocation card is now a historical onchain replay with a live recheck, Judge mode's proof scene lists eight live rejections, and Evidence lists "Revocation (lab vault)". No `NOT YET VERIFIED` label remains in Attack the vault.
 - Checks: `npm test` 86/86; browser QA 21/21 (desktop, 1280×720 and phone).
+- Shipped: commit `951716f`; CI run `42022623403` passed (Rust 13/13, WASM `MATCH`). Preview `dpl_EubpBt2GoBi1PPk2adMtYkufc4K3` returned eight PASS rejections, `REVOKED` last; production deployment `dpl_7FS2Lci4YE4CQ6HeJr5ZUSQuVX1P`. Live evidence run `42023061411` against production: all four chain verifiers and all 7 site checks passed.
 
