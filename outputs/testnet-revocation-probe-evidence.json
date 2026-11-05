@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "stage": "probe",
+  "transactionHash": "Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "details": {
+    "decision": {
+      "decision": "REJECTED",
+      "reason": "REVOKED"
+    },
+    "request": {
+      "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+      "amount_yocto": "5000000000000000000000",
+      "nonce": "revocationprobe5cbb311d1a",
+      "expires_at_ns": "1794216105339870776",
+      "expected_version": 2
+    },
+    "vaultTransferReceipts": 0,
+    "confirmedTotalYocto": "0",
+    "pendingTotalYocto": "0",
+    "supersedes": [
+      "EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG",
+      "4vQdLeZww68gJxexcuN6GcuigATqKPY2NfCoFw9XGfVy"
+    ],
+    "supersededBecause": "both asked for 70 Tgas, which the 0.02 test NEAR key allowance cannot cover, so the network refused them before they ran"
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF"
+}

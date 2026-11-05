@@ -1,0 +1,8 @@
+{
+  "network": "testnet",
+  "stage": "probe-retry",
+  "hash": "4vQdLeZww68gJxexcuN6GcuigATqKPY2NfCoFw9XGfVy",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "createdAt": "2026-11-05T11:04:01.133Z"
+}
