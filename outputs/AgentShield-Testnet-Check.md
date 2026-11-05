@@ -1,6 +1,6 @@
 # AgentShield — NEAR testnet setup check
 
-> **Historical note, written 2026-10-26.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server) and seven contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
+> **Historical note, written 2026-10-26.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server), eight contract rejections and a revocation, all independently verified. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
 
 **Date:** 2026-10-26. **Status:** read-only testnet check implemented and RPC paths verified. No AgentShield vault, wallet session, testnet transaction, or deployment exists.
 

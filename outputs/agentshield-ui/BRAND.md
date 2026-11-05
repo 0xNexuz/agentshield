@@ -12,7 +12,7 @@ This artwork is the hero image, rather than a row of separate reference panels. 
 
 The lead line is **“Power to act. Authority to stop.”** The owner specifies identity, recipient, amount, daily and total budget, and expiry. The agent requests payment under that mandate. The NEAR contract vault enforces it. It is deployed on NEAR Testnet; this is not a mainnet or audited security claim.
 
-The vault is deployed on NEAR Testnet. Two restricted-agent payments have settled (one made through the MCP server) and seven contract rejections are independently verified, and the site rechecks them against public RPC. The Mandate form is a browser-only draft. The site has no wallet connection; owner actions are signed on the owner's machine. Revocation is tested in NEAR Sandbox only. NEAR AI inference runs are recorded, and the live model box is real but never signs. Keep authorization, chain submission, and settlement confirmation distinct. Never fill product screens with invented balances or receipts.
+The vault is deployed on NEAR Testnet. Two restricted-agent payments have settled (one made through the MCP server) and eight contract rejections, revocation included, are independently verified, and the site rechecks them against public RPC. The Mandate form is a browser-only draft. The site has no wallet connection; owner actions are signed on the owner's machine. Revocation is shown on a separate lab vault; pause alone is tested in NEAR Sandbox only. NEAR AI inference runs are recorded, and the live model box is real but never signs. Keep authorization, chain submission, and settlement confirmation distinct. Never fill product screens with invented balances or receipts.
 
 ## Interaction rules
 

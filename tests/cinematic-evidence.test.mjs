@@ -123,12 +123,37 @@ test('mandate and restricted key records match the committed evidence', () => {
   assert.deepEqual([...RESTRICTED_KEY.methods], key.details.methods);
 });
 
-test('revocation stays unverified while only a failed deployment exists', () => {
-  const failure = json('outputs/testnet-revocation-deploy-failure.json');
-  assert.equal(REVOCATION.status, 'NOT_YET_VERIFIED');
-  assert.doesNotMatch(JSON.stringify(failure), /"REVOKED"/);
-  assert.ok(!fs.readdirSync(path.join(root, 'outputs')).some(f => /revocation.*(proof|evidence)\.json$/.test(f) && !/failure/.test(f)),
-    'if a revocation proof file appears, update REVOCATION and this test');
+test('the revocation record matches the lab declaration, its evidence and the independent recheck', () => {
+  const lab = json('deployment/testnet-revocation-lab-proposal.json');
+  const probe = json('outputs/testnet-revocation-probe-evidence.json');
+  const revoke = json('outputs/testnet-revocation-revoke-evidence.json');
+  const recheck = json('outputs/testnet-revocation-lab-independent-proof.json');
+  assert.equal(REVOCATION.status, 'VERIFIED');
+  assert.equal(REVOCATION.vault, lab.isolatedVault);
+  assert.notEqual(REVOCATION.vault, ACCOUNTS.vault, 'the main vault was not revoked');
+  assert.equal(REVOCATION.reason, lab.rejectedRequest.expectedReason);
+  assert.equal(REVOCATION.nonce, lab.rejectedRequest.nonce);
+  assert.equal(REVOCATION.expectedVersion, lab.rejectedRequest.expected_version);
+  assert.equal(REVOCATION.transactionHash, probe.transactionHash);
+  assert.equal(REVOCATION.checkedAt, json('outputs/testnet-revocation-probe-low-gas-intent.json').createdAt);
+  assert.deepEqual(probe.details.decision, { decision: 'REJECTED', reason: 'REVOKED' });
+  assert.equal(probe.details.vaultTransferReceipts, 0);
+  assert.equal(probe.details.confirmedTotalYocto, '0');
+  assert.equal(revoke.transactionHash, REVOCATION.revokeTransactionHash);
+  assert.ok(revoke.details.observed.revoked && revoke.details.observed.version === 2);
+  for (const [stage, hash] of [['deploy-corrected', REVOCATION.deployTransactionHash], ['key', REVOCATION.keyTransactionHash],
+    ['mandate', REVOCATION.mandateTransactionHash], ['revoke', REVOCATION.revokeTransactionHash], ['probe-low-gas', REVOCATION.transactionHash]]) {
+    assert.equal(json(`outputs/testnet-revocation-${stage}-intent.json`).hash, hash, stage);
+    assert.ok(recheck.stages.some(s => s.stage === stage && s.ok && s.transactionHash === hash), `${stage} rechecked`);
+  }
+  const final = recheck.stages.find(s => s.stage === 'probe-low-gas');
+  assert.equal(final.reason, 'REVOKED'); assert.equal(final.vaultTransferReceiptCount, 0);
+  assert.ok(recheck.stages.filter(s => s.neverLanded).length === 2, 'both refused attempts are recorded as never landed');
+  assert.equal(recheck.labStateNow.mandate.revoked, true);
+  assert.equal(recheck.labStateNow.confirmedTotalYocto, '0');
+  assert.equal(BigInt(recheck.labStateNow.restrictedKey.nonce), 276321226000001n, 'the refused request was the lab key\'s first landed transaction');
+  // The first lab deploy failed and is kept on record.
+  assert.equal(json('outputs/testnet-revocation-deploy-failure.json').status, 'FAILED');
 });
 
 test('every hash-like identifier in the cinematic layer exists in a committed evidence file', () => {

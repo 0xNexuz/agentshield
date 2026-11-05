@@ -1,6 +1,6 @@
 # AgentShield — implementation plan and evidence gates
 
-> **Historical note, written 2026-10-23.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server) and seven contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
+> **Historical note, written 2026-10-23.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server), eight contract rejections and a revocation, all independently verified. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
 
 **Prepared 2026-10-23. Status: PLANNED.** Start submission-specific code no earlier than 2026-11-01 00:00 UTC unless the organizer expressly permits earlier work. Repository creation under `0xNexuz` needs the user's explicit approval.
 

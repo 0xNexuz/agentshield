@@ -10,7 +10,7 @@ const base = (process.argv.slice(2).find(arg => !arg.startsWith('--')) || 'https
 const RECIPIENT = 'agentshield-recipient-7bb4a0df1077.testnet';
 const PAYMENT = '3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm';
 const MCP_PAYMENT = 'HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk';
-const REJECTION_COUNT = 7;
+const REJECTION_COUNT = 8;
 const CODE_HASH = '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN';
 
 async function get(route, { json = true } = {}) {

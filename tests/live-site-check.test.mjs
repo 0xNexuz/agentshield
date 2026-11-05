@@ -7,7 +7,7 @@ const healthy = {
   '/api/testnet/proof': { verification: 'PASS', settlement: 'SETTLED', transactionHash: '3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm',
     codeHash: '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN', currentKeyStillScoped: true, currentMandateVersion: 2,
     rpc: { transactions: ['archival-rpc.testnet.fastnear.com'] } },
-  '/api/testnet/gallery': ['PER_PAYMENT_LIMIT', 'RECIPIENT_NOT_ALLOWED', 'REPLAY', 'STALE_VERSION', 'EXPIRED', 'RECIPIENT_NOT_ALLOWED', 'WRONG_AGENT'].map(reason =>
+  '/api/testnet/gallery': ['PER_PAYMENT_LIMIT', 'RECIPIENT_NOT_ALLOWED', 'REPLAY', 'STALE_VERSION', 'EXPIRED', 'RECIPIENT_NOT_ALLOWED', 'WRONG_AGENT', 'REVOKED'].map(reason =>
     ({ verification: 'PASS', decision: 'REJECTED', vaultTransferReceiptCount: 0, reason })),
   '/api/testnet/mcp-payment': { verification: 'PASS', settlement: 'SETTLED', transactionHash: 'HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk', mandateVersion: 2 },
   '/api/testnet/counterparty?account=agentshield-recipient-7bb4a0df1077.testnet': { decision: 'ALLOW', mandateVersion: 2 },
@@ -39,8 +39,8 @@ test('every live check passes against a healthy site', async () => {
   assert.deepEqual(results.filter(r => !r.ok), []);
 });
 
-test('a gallery missing any of the seven rejections fails', async () => {
-  const short = healthy['/api/testnet/gallery'].slice(0, 6);
+test('a gallery missing any of the eight rejections fails', async () => {
+  const short = healthy['/api/testnet/gallery'].slice(0, 7);
   const results = await withSite({ '/api/testnet/gallery': short }, () => runChecks());
   assert.deepEqual(results.filter(r => !r.ok).map(r => r.name), ['every rejection proof passes']);
 });

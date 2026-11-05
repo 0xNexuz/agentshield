@@ -148,11 +148,30 @@ export const MCP_PAYMENT = Object.freeze({
   sources: Object.freeze(["outputs/testnet-mcp-payment-evidence.json", "outputs/testnet-mcp-payment-independent-proof.json"]),
 });
 
+// Revocation, shown on a separate lab vault on 5 Nov 2026, because revoking the main vault would stop it for good
+// (set_mandate refuses once a mandate is revoked). The owner set a mandate, revoked it, and the agent's next request,
+// valid in every other way, was refused. The first lab deploy (2 Nov) finalized FAILED and is kept on record; two
+// earlier probe signatures were refused by the network for gas and never landed (outputs/testnet-revocation-probe-not-landed.json).
 export const REVOCATION = Object.freeze({
-  status: "NOT_YET_VERIFIED",
-  note: "Not yet shown on NEAR Testnet. The NEAR Sandbox tests run the deployed contract code and confirm that a revoked mandate refuses new requests. A Testnet proof needs a separate vault, because revoking this one would stop it permanently, and the first isolated attempt finalized FAILED. Here revocation runs in the local simulator.",
+  status: "VERIFIED",
+  scenario: "revoked",
+  reason: "REVOKED",
+  transactionHash: "Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF",
+  revokeTransactionHash: "mLpEnEMYF5j3dpHNqdNshnaGDNJb44UBLCZjy6QhbJF",
+  mandateTransactionHash: "2kgPwVdrkSUMStnGaPcQNfuJBK9XMfySGdSyB9uULr9s",
+  keyTransactionHash: "AzacRXZCRySBy1FrbF9mQtrzMC7uisqwpMay1PRJ6nxf",
+  deployTransactionHash: "9tA4jGgVEJRznKZUNMVEUC37L6Vjaez9MSf59x7w8rYK",
+  vault: "revocation.agentshield-mag-1d2f78801994.testnet",
+  signer: ACCOUNTS.agent,
+  recipient: ACCOUNTS.recipient,
+  amountNear: "0.005",
+  nonce: "revocationprobe5cbb311d1a",
+  expectedVersion: 2,
+  vaultTransferReceiptCount: 0,
+  checkedAt: "2026-11-05T11:25:54.144Z",
   sandboxTest: "sandbox/vault.test.mjs: revocation prevents new payments after settlement",
-  source: "outputs/testnet-revocation-deploy-failure.json",
+  sources: Object.freeze(["deployment/testnet-revocation-lab-proposal.json", "outputs/testnet-revocation-*-evidence.json",
+    "outputs/testnet-revocation-lab-independent-proof.json"]),
 });
 
 // The recorded NEAR AI Cloud run (4 Nov 2026, 1,024-token limit). Offchain evidence, not onchain:
@@ -239,9 +258,9 @@ export function fetchLiveGallery({ force = false } = {}) {
   liveGallery ??= fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) })
     .then(async response => {
       const proofs = await response.json();
-      // Every listed proof must pass, and all seven committed rejections must be among them with their
+      // Every listed proof must pass, and all eight committed rejections must be among them with their
       // committed hashes.
-      const known = { ...REJECTIONS, ...PROBES };
+      const known = { ...REJECTIONS, ...PROBES, [REVOCATION.scenario]: REVOCATION };
       if (!response.ok || !Array.isArray(proofs) || proofs.some(item =>
         item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0 ||
         (known[item.scenario] && known[item.scenario].transactionHash !== item.transactionHash)) ||

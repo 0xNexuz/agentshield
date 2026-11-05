@@ -1,6 +1,6 @@
 # AgentShield portable project context
 
-**Updated:** 2026-11-05. **Status:** TESTNET VAULT, TWO SETTLED RESTRICTED-AGENT PAYMENTS (ONE THROUGH THE MCP SERVER) AND SEVEN CONTRACT REJECTIONS INDEPENDENTLY VERIFIED. **Current stage:** submission preparation (video, X post, form). The dated log below is the history.
+**Updated:** 2026-11-05. **Status:** TESTNET VAULT, TWO SETTLED RESTRICTED-AGENT PAYMENTS (ONE THROUGH THE MCP SERVER) SEVEN CONTRACT REJECTIONS AND A TESTNET REVOCATION, ALL INDEPENDENTLY VERIFIED. **Current stage:** submission preparation (video, X post, form). The dated log below is the history.
 
 ## Identity and Git
 
@@ -314,3 +314,12 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Site: Attack the vault has ten cards (two payments, seven attacks, revocation still simulated), each recorded one with its own `expected_version` and live recheck; Evidence shows the MCP payment under the first; Judge mode's proof scene lists all seven rejections. README claims table: `WRONG_AGENT`, `STALE_VERSION` and `EXPIRED` now have Testnet proofs, the MCP row is real for the `ALLOW` path.
 - Checks: `npm test` 84/84; browser QA 31/31 (Attack the vault at desktop, tablet and phone; Evidence; Judge mode's proof scene down to 1280×720).
 - Shipped: commit `ea1c9f1`; CI run `41991942938` passed (Rust 13/13, WASM `MATCH`). Preview `dpl_H8Uaz1tJFr9DdUn41jCWeVa1gS8L` returned seven PASS rejections and the MCP proof PASS / SETTLED; production deployment `dpl_4CMEDThaW8Su8e9QukosCV97djJK` on `agentshield-lab.vercel.app`. Live evidence run `41992377287` against production: the three chain verifiers and all 7 site checks passed.
+
+### 2026-11-05 — Revocation shown on Testnet
+
+- The owner approved the isolated revocation lab again. Signed on the owner's machine: deploy `9tA4jGgVEJRznKZUNMVEUC37L6Vjaez9MSf59x7w8rYK` (4 test NEAR, same WASM, domain `agentshield:testnet:v1`), agent key `AzacRXZCRySBy1FrbF9mQtrzMC7uisqwpMay1PRJ6nxf` (only `request_payment` on the lab vault, 0.02 test NEAR allowance), mandate `2kgPwVdrkSUMStnGaPcQNfuJBK9XMfySGdSyB9uULr9s` (version 1), revoke `mLpEnEMYF5j3dpHNqdNshnaGDNJb44UBLCZjy6QhbJF` (version 2), and the agent's request `Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF`: `REJECTED / REVOKED`, zero transfers, spend 0.
+- Three script defects found and fixed on the way: the corrected-deploy check read the 2 Nov failure from the non-archival node; the revoke stage expected version 1 after revoking (revoke bumps it to 2); and the probe asked for 70 Tgas, which the 0.02 allowance can't cover at NEAR's pessimistic gas price (about 0.071 test NEAR needed). The network refused two probe signatures (`EhxRt4r4…`, `4vQdLeZw…`) before they ran; the lab key's nonce stayed at its starting value until the 10 Tgas probe, so neither can ever land (`outputs/testnet-revocation-probe-not-landed.json`). A rejected request burns about 2.15 Tgas.
+- Independent recheck: Live evidence run `42021427249` verified every lab stage from archival nodes (`outputs/testnet-revocation-lab-independent-proof.json`). The gallery now returns eight rejections, `REVOKED` last; the daily job runs `work/verify-testnet-revocation-lab.mjs`.
+- Site: Attack the vault's Revocation card is now a historical onchain replay with a live recheck, Judge mode's proof scene lists eight live rejections, and Evidence lists "Revocation (lab vault)". No `NOT YET VERIFIED` label remains in Attack the vault.
+- Checks: `npm test` 86/86; browser QA 21/21 (desktop, 1280×720 and phone).
+

@@ -199,7 +199,7 @@ import { setupCinematic } from "./cinematic.mjs";
     try {
       const response = await fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const proofs = await response.json();
-      if (!response.ok || !Array.isArray(proofs) || proofs.length < 7 ||
+      if (!response.ok || !Array.isArray(proofs) || proofs.length < 8 ||
         proofs.some(item => item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0)) {
         throw new Error(proofs.error || "The scenario proofs did not all pass.");
       }
@@ -209,7 +209,7 @@ import { setupCinematic } from "./cinematic.mjs";
       const titles = {
         overspend: "Spending limit", unauthorizedRecipient: "Recipient allowlist", replay: "Replay protection",
         staleVersion: "Stale mandate version", expired: "Expired request", lookalikeRecipient: "Look-alike recipient",
-        wrongAgent: "Only the agent may ask",
+        wrongAgent: "Only the agent may ask", revoked: "Revocation (lab vault)",
       };
       for (const proof of proofs) {
         const card = document.createElement("article");
@@ -227,15 +227,6 @@ import { setupCinematic } from "./cinematic.mjs";
         card.append(label, title, reason, hash, link);
         grid.append(card);
       }
-      const pending = document.createElement("article");
-      const pendingLabel = document.createElement("span");
-      pendingLabel.textContent = "NOT VERIFIED / LIVE";
-      const pendingTitle = document.createElement("h3");
-      pendingTitle.textContent = "Revocation";
-      const pendingText = document.createElement("p");
-      pendingText.textContent = "No live revocation proof yet. Revoking the current mandate would permanently disable further requests on this vault.";
-      pending.append(pendingLabel, pendingTitle, pendingText);
-      grid.append(pending);
       const proofLink = document.createElement("a");
       proofLink.href = "/api/testnet/gallery"; proofLink.target = "_blank"; proofLink.rel = "noopener noreferrer";
       proofLink.textContent = "VIEW LIVE JSON SCENARIO PROOFS ↗";

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { archivalTxStatus } from './near-testnet-archival.mjs';
+import { RESTRICTED_KEY_INITIAL_NONCE, STAGE_CHECKS, succeeded } from './verify-testnet-revocation-lab.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const proposal = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-negative-scenarios-proposal.json'), 'utf8'));
@@ -88,15 +89,41 @@ export async function verifyRejectionProbe(name) {
     rpc: lookup.endpoint, checkedAt: new Date().toISOString() };
 }
 
+// The revoked request on the separate lab vault: the revoke and the refused request, both from archival nodes.
+// The full lab (deploy, key, mandate, superseded attempts) is rechecked by work/verify-testnet-revocation-lab.mjs.
+const revocationEvidence = path.join(root, 'outputs/testnet-revocation-probe-evidence.json');
+export async function verifyRevocationProbe() {
+  assert(process.env.NODE_TLS_REJECT_UNAUTHORIZED !== '0', 'TLS verification must be enabled');
+  const lab = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-revocation-lab-proposal.json'), 'utf8'));
+  const evidence = JSON.parse(fs.readFileSync(revocationEvidence, 'utf8'));
+  const revokeIntent = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-revocation-revoke-intent.json'), 'utf8'));
+  const [revoke, probe] = await Promise.all([
+    archivalTxStatus(revokeIntent.hash, revokeIntent.signer, { id: 'agentshield-revocation-proof' }),
+    archivalTxStatus(evidence.transactionHash, evidence.signer, { id: 'agentshield-revocation-proof' })]);
+  for (const [tx, signer] of [[revoke.result, lab.owner], [probe.result, lab.agent]]) {
+    assert(succeeded(tx) && tx.transaction.signer_id === signer && tx.transaction.receiver_id === lab.isolatedVault, 'revoked: transaction failed or has different parties');
+  }
+  STAGE_CHECKS.revoke(revoke.result, lab);
+  const decision = STAGE_CHECKS.probe(probe.result, lab);
+  assert(BigInt(probe.result.transaction.nonce) === RESTRICTED_KEY_INITIAL_NONCE + 1n, 'revoked: not the lab key\'s first landed transaction');
+  return { network: 'testnet', verification: 'PASS', scenario: 'revoked', decision: 'REJECTED', reason: decision.reason,
+    transactionHash: evidence.transactionHash, revokeTransactionHash: revokeIntent.hash, finality: 'FINAL', vaultAccountId: lab.isolatedVault,
+    signer: lab.agent, restrictedPublicKey: lab.restrictedPublicKey, recipient: lab.rejectedRequest.recipient,
+    amountYocto: lab.rejectedRequest.amount_yocto, nonce: lab.rejectedRequest.nonce, mandateVersion: decision.expectedVersion,
+    vaultTransferReceiptCount: 0, explorerUrl: `https://testnet.nearblocks.io/txns/${evidence.transactionHash}`,
+    rpc: probe.endpoint, checkedAt: new Date().toISOString() };
+}
+
 export async function verifyNegativeScenarios() {
   return Promise.all([...Object.keys(proposal.scenarios).map(name => verifyNegativeScenario(name)),
-    ...executedProbes().map(name => verifyRejectionProbe(name))]);
+    ...executedProbes().map(name => verifyRejectionProbe(name)),
+    ...(fs.existsSync(revocationEvidence) ? [verifyRevocationProbe()] : [])]);
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   verifyNegativeScenarios().then(proofs => {
     // Version 1 rejections and the version 2 probes keep separate records, so each file keeps one shape.
     const files = { 'outputs/testnet-negative-independent-proofs.json': proofs.filter(p => p.scenario in proposal.scenarios),
-      'outputs/testnet-rejection-probes-v2-independent-proofs.json': proofs.filter(p => !(p.scenario in proposal.scenarios)) };
+      'outputs/testnet-rejection-probes-v2-independent-proofs.json': proofs.filter(p => p.scenario in probes.scenarios) };
     for (const [file, list] of Object.entries(files)) if (list.length) fs.writeFileSync(path.join(root, file), JSON.stringify(list, null, 2) + '\n');
     console.log(JSON.stringify({ proofs, evidenceFiles: Object.keys(files) }, null, 2));
   }).catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });

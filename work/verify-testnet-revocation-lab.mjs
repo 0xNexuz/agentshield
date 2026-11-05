@@ -1,7 +1,7 @@
 // Rechecks the isolated revocation lab from the chain (read-only). Today that is the first attempt,
 // which finalized FAILED on 2 Nov (outputs/testnet-revocation-deploy-failure.json): the transaction must
 // be FINAL, fail at action 3 (initialize), and the isolated vault account must not exist because of it.
-//   node --use-system-ca work/verify-testnet-revocation-lab.mjs
+//   node --use-system-ca work/verify-testnet-revocation-lab.mjs   (writes outputs/testnet-revocation-lab-independent-proof.json)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,7 +45,7 @@ export async function verifyRevocationLab() {
 
 const decode = b64 => JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
 const logsOf = tx => tx.receipts_outcome.flatMap(item => item.outcome?.logs ?? []);
-const succeeded = tx => tx.final_execution_status === 'FINAL' && !tx.status?.Failure && !tx.receipts_outcome.some(item => item.outcome?.status?.Failure);
+export const succeeded = tx => tx.final_execution_status === 'FINAL' && !tx.status?.Failure && !tx.receipts_outcome.some(item => item.outcome?.status?.Failure);
 const onlyCall = (tx, method) => {
   const call = tx.transaction.actions?.length === 1 ? tx.transaction.actions[0].FunctionCall : null;
   if (call?.method_name !== method || call.deposit !== '0') fail(`Not a single zero-deposit ${method} call`);
@@ -157,7 +157,9 @@ export async function revocationLabState() {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   verifyRevocationLab().then(async proof => {
     const stages = await verifyRevocationLabStages();
-    console.log(JSON.stringify({ ...proof, stages, labStateNow: await revocationLabState() }, null, 2));
+    const full = { ...proof, stages, labStateNow: await revocationLabState() };
+    if (stages.every(s => s.ok)) fs.writeFileSync(path.join(root, 'outputs/testnet-revocation-lab-independent-proof.json'), JSON.stringify(full, null, 2) + '\n');
+    console.log(JSON.stringify(full, null, 2));
     if (stages.some(s => !s.ok)) { console.error(`VERIFICATION FAILED: ${stages.filter(s => !s.ok).map(s => `${s.stage}: ${s.error}`).join('; ')}`); process.exitCode = 1; }
   })
     .catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });

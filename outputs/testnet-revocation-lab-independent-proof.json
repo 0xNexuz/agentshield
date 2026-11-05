@@ -1,0 +1,126 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "stage": "deploy",
+  "status": "FAILED",
+  "transactionHash": "EvLkrsDS7XuYGpZ9knasYVGRMQEnK4sc2jrPi7hzqNdi",
+  "failedActionIndex": 3,
+  "failureKind": "FunctionCallError",
+  "isolatedVaultExistsNow": true,
+  "archivalAnswers": [
+    {
+      "endpoint": "archival-rpc.testnet.fastnear.com",
+      "ok": true,
+      "failedActionIndex": 3,
+      "kind": "FunctionCallError"
+    },
+    {
+      "endpoint": "archival-rpc.testnet.near.org",
+      "ok": true,
+      "failedActionIndex": 3,
+      "kind": "FunctionCallError"
+    }
+  ],
+  "checkedAt": "2026-11-05T11:45:05.749Z",
+  "stages": [
+    {
+      "stage": "deploy-corrected",
+      "ok": true,
+      "transactionHash": "9tA4jGgVEJRznKZUNMVEUC37L6Vjaez9MSf59x7w8rYK",
+      "signer": "agentshield-mag-1d2f78801994.testnet",
+      "rpc": "archival-rpc.testnet.fastnear.com",
+      "fundingYocto": "4000000000000000000000000",
+      "domain": "agentshield:testnet:v1"
+    },
+    {
+      "stage": "key",
+      "ok": true,
+      "transactionHash": "AzacRXZCRySBy1FrbF9mQtrzMC7uisqwpMay1PRJ6nxf",
+      "signer": "agentshield-agent-0359da1630bb.testnet",
+      "rpc": "archival-rpc.testnet.fastnear.com",
+      "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+      "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+      "methods": [
+        "request_payment"
+      ]
+    },
+    {
+      "stage": "mandate",
+      "ok": true,
+      "transactionHash": "2kgPwVdrkSUMStnGaPcQNfuJBK9XMfySGdSyB9uULr9s",
+      "signer": "agentshield-mag-1d2f78801994.testnet",
+      "rpc": "archival-rpc.testnet.fastnear.com",
+      "version": 1
+    },
+    {
+      "stage": "revoke",
+      "ok": true,
+      "transactionHash": "mLpEnEMYF5j3dpHNqdNshnaGDNJb44UBLCZjy6QhbJF",
+      "signer": "agentshield-mag-1d2f78801994.testnet",
+      "rpc": "archival-rpc.testnet.fastnear.com",
+      "version": 2
+    },
+    {
+      "stage": "probe",
+      "ok": true,
+      "transactionHash": "EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG",
+      "neverLanded": true,
+      "supersededBy": "Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF"
+    },
+    {
+      "stage": "probe-retry",
+      "ok": true,
+      "transactionHash": "4vQdLeZww68gJxexcuN6GcuigATqKPY2NfCoFw9XGfVy",
+      "neverLanded": true,
+      "supersededBy": "Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF"
+    },
+    {
+      "stage": "probe-low-gas",
+      "ok": true,
+      "transactionHash": "Gy4b3k2vwHEM9bqBuWxAX5pfsYRhFsNVJb5e9w8wo3gF",
+      "signer": "agentshield-agent-0359da1630bb.testnet",
+      "rpc": "archival-rpc.testnet.fastnear.com",
+      "decision": "REJECTED",
+      "reason": "REVOKED",
+      "expectedVersion": 2,
+      "vaultTransferReceiptCount": 0
+    }
+  ],
+  "labStateNow": {
+    "isolatedVault": "revocation.agentshield-mag-1d2f78801994.testnet",
+    "exists": true,
+    "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+    "codeMatches": true,
+    "vaultAccessKeys": 0,
+    "owner": "agentshield-mag-1d2f78801994.testnet",
+    "domain": "agentshield:testnet:v1",
+    "mandate": {
+      "agent": "agentshield-agent-0359da1630bb.testnet",
+      "recipients": [
+        "agentshield-recipient-7bb4a0df1077.testnet"
+      ],
+      "per_payment_yocto": "10000000000000000000000",
+      "daily_yocto": "20000000000000000000000",
+      "total_yocto": "20000000000000000000000",
+      "expires_at_ns": "1794216105339870776",
+      "version": 2,
+      "paused": true,
+      "revoked": true
+    },
+    "confirmedTotalYocto": "0",
+    "pendingTotalYocto": "0",
+    "restrictedKey": {
+      "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+      "nonce": 276321226000001,
+      "permission": {
+        "FunctionCall": {
+          "allowance": "19814371481927900000000",
+          "method_names": [
+            "request_payment"
+          ],
+          "receiver_id": "revocation.agentshield-mag-1d2f78801994.testnet"
+        }
+      }
+    }
+  }
+}

@@ -193,7 +193,7 @@ function proofPanel(ctx) {
     settlement: h("strong", { text: PAYMENT.settlement }), recipient: h("code", { text: PAYMENT.recipient }),
     amount: h("strong", { text: `${PAYMENT.amountNear} test NEAR` }), receipt: h("code", { text: PAYMENT.recipientReceiptId }),
   };
-  const rejections = [...Object.values(REJECTIONS), ...Object.values(PROBES)].map(item => {
+  const rejections = [...Object.values(REJECTIONS), ...Object.values(PROBES), REVOCATION].map(item => {
     const state = h("span", { class: "etch-badge" }, truth("historical"));
     const node = h("li", {}, h("code", { text: item.reason }), txLink(item.transactionHash), state);
     return { item, node, state };
@@ -212,8 +212,7 @@ function proofPanel(ctx) {
       beat(status, 3500)),
     h("div", { class: "proof-col" },
       beat(h("div", { class: "etch-subhead" }, h("strong", { text: "Rejected onchain" }), h("small", { text: "no vault transfer receipt for any of them" })), 4400),
-      beat(h("ul", { class: "etch-rejections" }, rejections.map(r => r.node),
-        h("li", {}, h("code", { text: "REVOKED" }), h("span", { class: "muted", text: "no live proof yet" }), h("span", { class: "etch-badge" }, truth("unverified")))), 4800)));
+      beat(h("ul", { class: "etch-rejections" }, rejections.map(r => r.node)), 4800)));
 
   fetchLiveProof().then(proof => {
     if (!panel.isConnected && ctx?.detached) return;
@@ -526,10 +525,10 @@ const ATTACKS = [
     attempt: "The vault owner's own account asked for the payment. Only the mandated agent may, so even the owner is refused.",
     request: { recipient: PROBES.wrongAgent.recipient, amountNear: PROBES.wrongAgent.amountNear, nonce: PROBES.wrongAgent.nonce, expectedVersion: PROBES.wrongAgent.expectedVersion, signer: PROBES.wrongAgent.signer },
     reason: PROBES.wrongAgent.reason, decision: `REJECTED · ${PROBES.wrongAgent.reason}`, record: PROBES.wrongAgent },
-  { id: "revoke", title: "Revocation", plate: "owner-mandate", focus: "75% 40%", truth: "unverified",
-    attempt: "The owner revokes the mandate, then the agent asks again. Not yet shown on Testnet, so this runs in the local simulator. The NEAR Sandbox tests get the same result from the deployed contract code.",
-    request: { recipient: ACCOUNTS.recipient, amountNear: PAYMENT.amountNear, nonce: "after-revoke-1" },
-    reason: "REVOKED", decision: null, record: null },
+  { id: "revoke", title: "Revocation", plate: "owner-mandate", focus: "75% 40%", truth: "historical",
+    attempt: "The owner revoked the mandate on a separate lab vault, then the agent asked to be paid again with a request that was valid in every other way.",
+    request: { recipient: REVOCATION.recipient, amountNear: REVOCATION.amountNear, nonce: REVOCATION.nonce, expectedVersion: REVOCATION.expectedVersion, vault: REVOCATION.vault },
+    reason: REVOCATION.reason, decision: `REJECTED · ${REVOCATION.reason}`, record: REVOCATION },
 ];
 const STEPS = ["Opening scene", "Attempted attack", "Agent request", "Security check", "Guardian response", "Decision", "Evidence"];
 
@@ -633,7 +632,7 @@ function setupAttack(root) {
   function reveal(sequence, { announce: say = false, message = "" } = {}) {
     clearTimers();
     announcement = say ? message : "";
-    runButton.firstChild.textContent = sequence === CUSTOM || sequence?.id === "revoke" ? "RUN AGAIN " : "REPLAY AGAIN ";
+    runButton.firstChild.textContent = sequence === CUSTOM ? "RUN AGAIN " : "REPLAY AGAIN ";
     const items = [...steps.children];
     items.forEach(item => item.classList.remove("is-on"));
     art.classList.remove("is-responding");
@@ -655,9 +654,6 @@ function setupAttack(root) {
   }
 
   function evidenceBody(attack) {
-    if (attack.id === "revoke") {
-      return [truth("unverified"), h("p", { text: REVOCATION.note })];
-    }
     const badge = h("span", { class: "evidence-badge" }, truth("historical", `record of ${utc(attack.record.checkedAt)}`));
     const status = h("p", { class: "evidence-status", role: "status" });
     const recheck = h("button", { type: "button", class: "button button-text" }, "Recheck live on Testnet ", h("span", { "aria-hidden": "true", text: "↗" }));
@@ -682,38 +678,36 @@ function setupAttack(root) {
     const rows = attack.id === "authorized" || attack.id === "mcpPayment"
       ? [row("Transaction", shortHash(attack.record.transactionHash)), row("Transfer receipt", shortHash(attack.record.recipientReceiptId)),
         attack.id === "mcpPayment" && row("MCP tool", attack.record.tool)].filter(Boolean)
-      : [row("Transaction", shortHash(attack.record.transactionHash)), row("Contract reason", attack.record.reason), row("Vault transfer receipts", String(attack.record.vaultTransferReceiptCount))];
+      : [row("Transaction", shortHash(attack.record.transactionHash)), row("Contract reason", attack.record.reason), row("Vault transfer receipts", String(attack.record.vaultTransferReceiptCount)),
+        attack.record.revokeTransactionHash && row("Revoked in", shortHash(attack.record.revokeTransactionHash))].filter(Boolean);
     return [badge, ...rows, h("p", { class: "evidence-links" }, txLink(attack.record.transactionHash, "Open the transaction"), " ", recheck), status];
   }
 
   function run(attack, { announce: say = false } = {}) {
     cards.forEach(card => card.setAttribute("aria-pressed", String(card.dataset.attack === attack.id)));
     heading.textContent = attack.title;
-    const simulated = attack.id === "revoke";
-    let decision = attack.decision;
-    if (simulated) {
-      const engine = seededSimulator();
-      engine.revoke();
-      const result = simulateRequest(engine, { amount: attack.request.amountNear, nonce: attack.request.nonce });
-      decision = `${result.decision} · ${result.reason}`;
-    }
-    badgeSlot.replaceChildren(...[truth(simulated ? "simulation" : "historical"), simulated && truth("unverified", "onchain")].filter(Boolean));
+    const decision = attack.decision;
+    badgeSlot.replaceChildren(truth("historical"));
     const outcome = attack.reason ? "rejected" : "authorized";
     stage(attack, { plateStem: attack.reason ? (attack.id === "revoke" ? "owner-mandate" : "barrier-activation") : "settlement-verified",
       focus: attack.reason ? (attack.id === "revoke" ? "75% 40%" : "55% 45%") : "58% 50%", outcome });
     const openingImg = plate(attack.plate, { sizes: "120px" }); openingImg.style.objectPosition = attack.focus;
+    const opening = attack.id === "revoke" ? "A replay of a recorded request on the lab vault, sent after the owner broke the seal."
+      : attack.request.signer ? "A replay of a recorded request, sealed this time by the owner's account instead of the agent's."
+      : "A replay of a recorded request: the agent held it sealed while the vault waited.";
     steps.replaceChildren(
-      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: simulated ? "The owner holds the seal. In this simulation she breaks it." : attack.request.signer ? "A replay of a recorded request, sealed this time by the owner's account instead of the agent's." : "A replay of a recorded request: the agent held it sealed while the vault waited." })),
+      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: opening })),
       stepItem(1, STEPS[1], h("p", { text: attack.attempt })),
       stepItem(2, STEPS[2], h("code", { class: "step-code", text: `request_payment(recipient: ${attack.request.recipient}, amount: ${attack.request.amountNear} NEAR, nonce: ${attack.request.nonce}, expected_version: ${attack.request.expectedVersion ?? MANDATE.version})` }),
-        attack.request.signer ? h("small", { text: `Signed by ${attack.request.signer}, not the mandated agent ${ACCOUNTS.agent}.` }) : null),
+        attack.request.signer ? h("small", { text: `Signed by ${attack.request.signer}, not the mandated agent ${ACCOUNTS.agent}.` }) : null,
+        attack.request.vault ? h("small", { text: `Sent to the lab vault ${attack.request.vault}, whose mandate the owner had revoked.` }) : null),
       stepItem(3, STEPS[3], checksList(attack.reason)),
-      stepItem(4, STEPS[4], h("p", { text: simulated ? "The simulated guardian refuses: a revoked mandate stops every new request." : attack.reason ? "The guardian raised the wall. The request stopped at the contract and no transfer was constructed." : "The gate opened a slit. The vault itself sent the transfer and recorded settlement after the callback." })),
-      stepItem(5, STEPS[5], h("p", { class: "step-decision", "data-outcome": outcome, text: decision }), simulated ? h("small", { text: "Result from the local simulator, seeded with the live mandate's limits." }) : null),
+      stepItem(4, STEPS[4], h("p", { text: attack.id === "revoke" ? "The guardian kept the wall up: a revoked mandate refuses every new request, even one that is valid in every other way." : attack.reason ? "The guardian raised the wall. The request stopped at the contract and no transfer was constructed." : "The gate opened a slit. The vault itself sent the transfer and recorded settlement after the callback." })),
+      stepItem(5, STEPS[5], h("p", { class: "step-decision", "data-outcome": outcome, text: decision })),
       stepItem(6, STEPS[6], ...evidenceBody(attack)),
     );
     theatre.hidden = false;
-    reveal(attack, { announce: say, message: `${attack.title}: ${decision}. ${simulated ? "Simulation; not yet verified onchain" : "Historical onchain replay"}.` });
+    reveal(attack, { announce: say, message: `${attack.title}: ${decision}. Historical onchain replay.` });
   }
 
   /* custom attack: local simulator, clearly labelled */
