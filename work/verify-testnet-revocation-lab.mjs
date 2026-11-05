@@ -43,6 +43,79 @@ export async function verifyRevocationLab() {
     archivalAnswers: answers, checkedAt: new Date().toISOString() };
 }
 
+const decode = b64 => JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+const logsOf = tx => tx.receipts_outcome.flatMap(item => item.outcome?.logs ?? []);
+const succeeded = tx => tx.final_execution_status === 'FINAL' && !tx.status?.Failure && !tx.receipts_outcome.some(item => item.outcome?.status?.Failure);
+const onlyCall = (tx, method) => {
+  const call = tx.transaction.actions?.length === 1 ? tx.transaction.actions[0].FunctionCall : null;
+  if (call?.method_name !== method || call.deposit !== '0') fail(`Not a single zero-deposit ${method} call`);
+  return decode(call.args);
+};
+
+// Pure checks of each finalized lab transaction against the committed proposal.
+export const STAGE_CHECKS = Object.freeze({
+  'deploy-corrected': (tx, lab) => {
+    const a = tx.transaction.actions;
+    const init = a?.[3]?.FunctionCall;
+    if (a?.length !== 4 || a[0] !== 'CreateAccount' || a[1]?.Transfer?.deposit !== lab.fundingYocto || !a[2]?.DeployContract ||
+      init?.method_name !== 'initialize') fail('Not the atomic create, fund, deploy and initialize');
+    const args = decode(init.args);
+    if (args.owner !== lab.owner || args.domain !== lab.domain) fail('Initialized with a different owner or domain');
+    return { fundingYocto: a[1].Transfer.deposit, domain: args.domain };
+  },
+  key: (tx, lab) => {
+    const add = tx.transaction.actions?.length === 1 ? tx.transaction.actions[0].AddKey : null;
+    const fc = add?.access_key?.permission?.FunctionCall;
+    if (add?.public_key !== lab.restrictedPublicKey || fc?.receiver_id !== lab.isolatedVault || fc.allowance !== lab.gasAllowanceYocto ||
+      fc.method_names?.length !== 1 || fc.method_names[0] !== 'request_payment') fail('The added key is not limited to the lab vault\'s request_payment');
+    return { publicKey: add.public_key, receiver: fc.receiver_id, methods: fc.method_names };
+  },
+  mandate: (tx, lab) => {
+    const args = onlyCall(tx, 'set_mandate');
+    for (const [k, v] of Object.entries(lab.mandate)) if (args[k] !== v) fail(`Mandate ${k} differs from the proposal`);
+    if (args.agent !== lab.agent || args.recipients?.length !== 1 || args.recipients[0] !== lab.recipient) fail('Mandate agent or recipient differs');
+    if (!logsOf(tx).includes('AGENTSHIELD_POLICY version=1 action=SET')) fail('Version 1 SET log missing');
+    return { version: 1 };
+  },
+  revoke: tx => {
+    onlyCall(tx, 'revoke');
+    if (!logsOf(tx).includes('AGENTSHIELD_POLICY version=2 action=REVOKE')) fail('REVOKE log missing');
+    return { version: 2 };
+  },
+  probe: (tx, lab) => {
+    if (tx.transaction.public_key !== lab.restrictedPublicKey) fail('Probe not signed with the lab\'s restricted agent key');
+    const args = onlyCall(tx, 'request_payment');
+    const r = lab.rejectedRequest;
+    if (args.recipient !== r.recipient || args.amount_yocto !== r.amount_yocto || args.nonce !== r.nonce ||
+      args.expires_at_ns !== r.expires_at_ns || args.expected_version !== r.expected_version) fail('Probe arguments differ from the proposal');
+    const rejected = tx.receipts_outcome.find(item => item.outcome?.executor_id === lab.isolatedVault &&
+      item.outcome?.logs?.includes(`AGENTSHIELD_DECISION decision=REJECTED reason=${r.expectedReason}`));
+    if (rejected?.outcome?.status?.SuccessValue === undefined) fail('No REVOKED contract decision');
+    const decision = decode(rejected.outcome.status.SuccessValue);
+    if (decision.decision !== 'REJECTED' || decision.reason !== r.expectedReason) fail(`Contract decided ${JSON.stringify(decision)}`);
+    const transfers = tx.receipts.filter(item => item.predecessor_id === lab.isolatedVault && item.receipt?.Action?.actions?.some(x => x.Transfer));
+    if (transfers.length) fail('The revoked vault issued a transfer');
+    return { decision: decision.decision, reason: decision.reason, expectedVersion: args.expected_version, vaultTransferReceiptCount: 0 };
+  },
+});
+export const LAB_STAGES = Object.freeze(Object.keys(STAGE_CHECKS));
+
+// Rechecks every lab stage that has a committed intent, from the chain, in order.
+export async function verifyRevocationLabStages() {
+  const lab = read('deployment/testnet-revocation-lab-proposal.json');
+  const results = [];
+  for (const stage of LAB_STAGES) {
+    const file = `outputs/testnet-revocation-${stage}-intent.json`;
+    if (!fs.existsSync(path.join(root, file))) break;
+    const intent = read(file);
+    const { result: tx, endpoint } = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 });
+    if (!succeeded(tx)) fail(`${stage} ${intent.hash} did not succeed`);
+    if (tx.transaction.signer_id !== intent.signer || tx.transaction.receiver_id !== intent.receiver) fail(`${stage}: parties differ from the intent`);
+    results.push({ stage, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
+  }
+  return results;
+}
+
 // Current state of the isolated lab vault, read-only: code, mandate, revocation, accounting, and the agent's
 // restricted key for it. Reports what exists; it does not decide what should.
 export async function revocationLabState() {
@@ -64,6 +137,7 @@ export async function revocationLabState() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  verifyRevocationLab().then(async proof => console.log(JSON.stringify({ ...proof, labStateNow: await revocationLabState() }, null, 2)))
+  verifyRevocationLab().then(async proof => console.log(JSON.stringify({ ...proof, stages: await verifyRevocationLabStages(),
+    labStateNow: await revocationLabState() }, null, 2)))
     .catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });
 }
