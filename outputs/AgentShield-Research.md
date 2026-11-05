@@ -1,6 +1,6 @@
 # AgentShield — pre-event research and eligibility
 
-> **Historical note, written 2026-10-23.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with one settled payment and three contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
+> **Historical note, written 2026-10-23.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server) and seven contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
 
 **Date:** 2026-10-23. **Status:** research verified where linked; implementation not started.
 

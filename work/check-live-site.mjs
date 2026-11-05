@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 const base = (process.argv.slice(2).find(arg => !arg.startsWith('--')) || 'https://agentshield-lab.vercel.app').replace(/\/$/, '');
 const RECIPIENT = 'agentshield-recipient-7bb4a0df1077.testnet';
 const PAYMENT = '3buDvBXKDHcCe9VBNtLSSp4H7LLjLfGk7K4XT2jh53jm';
+const MCP_PAYMENT = 'HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk';
+const REJECTION_COUNT = 7;
 const CODE_HASH = '2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN';
 
 async function get(route, { json = true } = {}) {
@@ -27,9 +29,14 @@ export const checks = [
   }],
   ['every rejection proof passes', async () => {
     const { status, body } = await get('/api/testnet/gallery');
-    const ok = status === 200 && Array.isArray(body) && body.length >= 3 &&
+    const ok = status === 200 && Array.isArray(body) && body.length === REJECTION_COUNT &&
       body.every(p => p.verification === 'PASS' && p.decision === 'REJECTED' && p.vaultTransferReceiptCount === 0);
     return ok ? [true, body.map(p => p.reason).join(', ')] : [false, `HTTP ${status}: ${JSON.stringify(body).slice(0, 300)}`];
+  }],
+  ['MCP payment proof passes', async () => {
+    const { status, body } = await get('/api/testnet/mcp-payment');
+    return status === 200 && body?.verification === 'PASS' && body.settlement === 'SETTLED' && body.transactionHash === MCP_PAYMENT
+      ? [true, `PASS, SETTLED, mandate v${body.mandateVersion}`] : [false, `HTTP ${status}: ${JSON.stringify(body).slice(0, 300)}`];
   }],
   ['counterparty check allows the real recipient', async () => {
     const { status, body } = await get(`/api/testnet/counterparty?account=${RECIPIENT}`);

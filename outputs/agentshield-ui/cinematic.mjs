@@ -4,7 +4,7 @@
 import {
   TRUTH, ACCOUNTS, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, NEAR_AI_RUN,
   explorerUrl, shortHash, checkIndexFor, fetchLiveProof, fetchLiveGallery, mandateState, formatUtcNs, currentMandate,
-  MANDATE_RENEWAL,
+  MANDATE_RENEWAL, PROBES, MCP_PAYMENT, fetchLiveMcpPayment,
 } from "./evidence-records.mjs";
 import { createSimulator, fromYocto } from "./simulator.mjs";
 import { preflightPayment } from "./preflight.mjs";
@@ -193,7 +193,7 @@ function proofPanel(ctx) {
     settlement: h("strong", { text: PAYMENT.settlement }), recipient: h("code", { text: PAYMENT.recipient }),
     amount: h("strong", { text: `${PAYMENT.amountNear} test NEAR` }), receipt: h("code", { text: PAYMENT.recipientReceiptId }),
   };
-  const rejections = Object.values(REJECTIONS).map(item => {
+  const rejections = [...Object.values(REJECTIONS), ...Object.values(PROBES)].map(item => {
     const state = h("span", { class: "etch-badge" }, truth("historical"));
     const node = h("li", {}, h("code", { text: item.reason }), txLink(item.transactionHash), state);
     return { item, node, state };
@@ -208,12 +208,12 @@ function proofPanel(ctx) {
       beat(row("Amount", "", { node: values.amount }), 2500),
       beat(row("Transfer receipt", "", { node: values.receipt }), 2900),
       beat(h("p", { class: "etch-foot" }, txLink(PAYMENT.transactionHash, "Open on the NEAR explorer"), " · ",
-        h("a", { href: "/api/testnet/proof", target: "_blank", rel: "noopener noreferrer", class: "tx-link", text: "Live JSON proof ↗" })), 3300)),
+        h("a", { href: "/api/testnet/proof", target: "_blank", rel: "noopener noreferrer", class: "tx-link", text: "Live JSON proof ↗" })), 3300),
+      beat(status, 3500)),
     h("div", { class: "proof-col" },
       beat(h("div", { class: "etch-subhead" }, h("strong", { text: "Rejected onchain" }), h("small", { text: "no vault transfer receipt for any of them" })), 4400),
       beat(h("ul", { class: "etch-rejections" }, rejections.map(r => r.node),
-        h("li", {}, h("code", { text: "REVOKED" }), h("span", { class: "muted", text: "no live proof yet" }), h("span", { class: "etch-badge" }, truth("unverified")))), 4800),
-      beat(status, 3500)));
+        h("li", {}, h("code", { text: "REVOKED" }), h("span", { class: "muted", text: "no live proof yet" }), h("span", { class: "etch-badge" }, truth("unverified")))), 4800)));
 
   fetchLiveProof().then(proof => {
     if (!panel.isConnected && ctx?.detached) return;
@@ -494,18 +494,38 @@ const ATTACKS = [
     attempt: "No attack. A legitimate request for 0.005 NEAR to the one allowed recipient, inside every limit.",
     request: { recipient: PAYMENT.recipient, amountNear: PAYMENT.amountNear, nonce: PAYMENT.nonce },
     reason: null, decision: "AUTHORIZED, then SETTLED", record: PAYMENT },
+  { id: "mcpPayment", title: "Paid through MCP", plate: "agent-request", focus: "50% 45%", truth: "historical",
+    attempt: "No attack. An AI agent called the AgentShield MCP server's payment tool: a dry run against the live vault, then the restricted key signed.",
+    request: { recipient: MCP_PAYMENT.recipient, amountNear: MCP_PAYMENT.amountNear, nonce: MCP_PAYMENT.nonce, expectedVersion: MCP_PAYMENT.expectedVersion },
+    reason: null, decision: "AUTHORIZED, then SETTLED", record: MCP_PAYMENT },
   { id: "overspend", title: "Overspending", plate: "attack-manipulation", focus: "52% 55%", truth: "historical",
     attempt: "The attacker inflated the amount to 0.011 NEAR, above the 0.01 cap.",
     request: { recipient: REJECTIONS.overspend.recipient, amountNear: REJECTIONS.overspend.amountNear, nonce: REJECTIONS.overspend.nonce },
     reason: REJECTIONS.overspend.reason, decision: `REJECTED · ${REJECTIONS.overspend.reason}`, record: REJECTIONS.overspend },
-  { id: "unauthorizedRecipient", title: "Unauthorized recipient", plate: "attack-manipulation", focus: "70% 35%", truth: "historical",
+  { id: "unauthorizedRecipient", title: "Unauthorized recipient", plate: "injection-confrontation", focus: "50% 45%", truth: "historical",
     attempt: "The attacker redirected 0.005 NEAR to the owner's own account, which is not on the allowlist.",
     request: { recipient: REJECTIONS.unauthorizedRecipient.recipient, amountNear: REJECTIONS.unauthorizedRecipient.amountNear, nonce: REJECTIONS.unauthorizedRecipient.nonce },
     reason: REJECTIONS.unauthorizedRecipient.reason, decision: `REJECTED · ${REJECTIONS.unauthorizedRecipient.reason}`, record: REJECTIONS.unauthorizedRecipient },
+  { id: "lookalikeRecipient", title: "Look-alike recipient", plate: "guardian-boundary", focus: "50% 45%", truth: "historical",
+    attempt: "The attacker swapped one character of the real recipient: 1077 became 1o77, a lower-case o for a zero.",
+    request: { recipient: PROBES.lookalikeRecipient.recipient, amountNear: PROBES.lookalikeRecipient.amountNear, nonce: PROBES.lookalikeRecipient.nonce, expectedVersion: PROBES.lookalikeRecipient.expectedVersion },
+    reason: PROBES.lookalikeRecipient.reason, decision: `REJECTED · ${PROBES.lookalikeRecipient.reason}`, record: PROBES.lookalikeRecipient },
   { id: "replay", title: "Replay attack", plate: "barrier-activation", focus: "55% 45%", truth: "historical",
     attempt: "The attacker resubmitted the exact nonce of the payment that had already settled, hoping to be paid twice.",
     request: { recipient: REJECTIONS.replay.recipient, amountNear: REJECTIONS.replay.amountNear, nonce: REJECTIONS.replay.nonce },
     reason: REJECTIONS.replay.reason, decision: `REJECTED · ${REJECTIONS.replay.reason}`, record: REJECTIONS.replay },
+  { id: "staleVersion", title: "Outdated policy", plate: "treasury-vault", focus: "60% 50%", truth: "historical",
+    attempt: "The agent signed against mandate version 1 after the owner had renewed it as version 2.",
+    request: { recipient: PROBES.staleVersion.recipient, amountNear: PROBES.staleVersion.amountNear, nonce: PROBES.staleVersion.nonce, expectedVersion: PROBES.staleVersion.expectedVersion },
+    reason: PROBES.staleVersion.reason, decision: `REJECTED · ${PROBES.staleVersion.reason}`, record: PROBES.staleVersion },
+  { id: "expired", title: "Expired request", plate: "injection-confrontation", focus: "25% 50%", truth: "historical",
+    attempt: "The agent sent a request whose own deadline had already passed when it reached the vault.",
+    request: { recipient: PROBES.expired.recipient, amountNear: PROBES.expired.amountNear, nonce: PROBES.expired.nonce, expectedVersion: PROBES.expired.expectedVersion },
+    reason: PROBES.expired.reason, decision: `REJECTED · ${PROBES.expired.reason}`, record: PROBES.expired },
+  { id: "wrongAgent", title: "Wrong signer", plate: "guardian-boundary", focus: "20% 50%", truth: "historical",
+    attempt: "The vault owner's own account asked for the payment. Only the mandated agent may, so even the owner is refused.",
+    request: { recipient: PROBES.wrongAgent.recipient, amountNear: PROBES.wrongAgent.amountNear, nonce: PROBES.wrongAgent.nonce, expectedVersion: PROBES.wrongAgent.expectedVersion, signer: PROBES.wrongAgent.signer },
+    reason: PROBES.wrongAgent.reason, decision: `REJECTED · ${PROBES.wrongAgent.reason}`, record: PROBES.wrongAgent },
   { id: "revoke", title: "Revocation", plate: "owner-mandate", focus: "75% 40%", truth: "unverified",
     attempt: "The owner revokes the mandate, then the agent asks again. Not yet shown on Testnet, so this runs in the local simulator. The NEAR Sandbox tests get the same result from the deployed contract code.",
     request: { recipient: ACCOUNTS.recipient, amountNear: PAYMENT.amountNear, nonce: "after-revoke-1" },
@@ -579,7 +599,7 @@ function setupAttack(root) {
   const updateExpiredNote = () => {
     expiredNote.hidden = !mandateExpired();
     expiredNote.replaceChildren(h("strong", { text: "The live mandate has expired." }),
-      ` It ran until ${formatUtcNs(currentMandate().expiresAtNs)}; new requests to this vault are now rejected as EXPIRED. The four onchain records below were made on 2 Nov 2026, while it was active.`);
+      ` It ran until ${formatUtcNs(currentMandate().expiresAtNs)}; new requests to this vault are now rejected as EXPIRED. The onchain records below were made on 2 and 4 Nov 2026, while it was active.`);
   };
   updateExpiredNote();
   fetchLiveProof().then(updateExpiredNote, updateExpiredNote);
@@ -644,13 +664,14 @@ function setupAttack(root) {
     recheck.addEventListener("click", async () => {
       recheck.disabled = true; status.textContent = "Rechecking public NEAR Testnet RPC…";
       try {
-        if (attack.id === "authorized") {
-          const proof = await fetchLiveProof({ force: true });
+        if (attack.id === "authorized" || attack.id === "mcpPayment") {
+          const proof = await (attack.id === "authorized" ? fetchLiveProof : fetchLiveMcpPayment)({ force: true });
           badge.replaceChildren(truth("live", `checked ${utc(proof.checkedAt)}`));
           status.textContent = `Passed: ${proof.decision} and ${proof.settlement}; the recipient's transfer receipt is present.`;
         } else {
           const gallery = await fetchLiveGallery({ force: true });
           const proof = gallery[attack.record.scenario];
+          if (!proof) throw new Error("this proof is missing from the live gallery");
           badge.replaceChildren(truth("live", `checked ${utc(proof.checkedAt)}`));
           status.textContent = `Passed: ${proof.decision} · ${proof.reason}; vault transfer receipts: ${proof.vaultTransferReceiptCount}.`;
         }
@@ -658,8 +679,9 @@ function setupAttack(root) {
         status.textContent = `Live recheck unavailable (${error.message}). The historical record and explorer link still stand; no new conclusion is drawn.`;
       } finally { recheck.disabled = false; }
     });
-    const rows = attack.id === "authorized"
-      ? [row("Transaction", shortHash(PAYMENT.transactionHash)), row("Transfer receipt", shortHash(PAYMENT.recipientReceiptId))]
+    const rows = attack.id === "authorized" || attack.id === "mcpPayment"
+      ? [row("Transaction", shortHash(attack.record.transactionHash)), row("Transfer receipt", shortHash(attack.record.recipientReceiptId)),
+        attack.id === "mcpPayment" && row("MCP tool", attack.record.tool)].filter(Boolean)
       : [row("Transaction", shortHash(attack.record.transactionHash)), row("Contract reason", attack.record.reason), row("Vault transfer receipts", String(attack.record.vaultTransferReceiptCount))];
     return [badge, ...rows, h("p", { class: "evidence-links" }, txLink(attack.record.transactionHash, "Open the transaction"), " ", recheck), status];
   }
@@ -681,9 +703,10 @@ function setupAttack(root) {
       focus: attack.reason ? (attack.id === "revoke" ? "75% 40%" : "55% 45%") : "58% 50%", outcome });
     const openingImg = plate(attack.plate, { sizes: "120px" }); openingImg.style.objectPosition = attack.focus;
     steps.replaceChildren(
-      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: simulated ? "The owner holds the seal. In this simulation she breaks it." : "A replay of a recorded request: the agent held it sealed while the vault waited." })),
+      stepItem(0, STEPS[0], h("div", { class: "step-thumb" }, openingImg), h("p", { text: simulated ? "The owner holds the seal. In this simulation she breaks it." : attack.request.signer ? "A replay of a recorded request, sealed this time by the owner's account instead of the agent's." : "A replay of a recorded request: the agent held it sealed while the vault waited." })),
       stepItem(1, STEPS[1], h("p", { text: attack.attempt })),
-      stepItem(2, STEPS[2], h("code", { class: "step-code", text: `request_payment(recipient: ${attack.request.recipient}, amount: ${attack.request.amountNear} NEAR, nonce: ${attack.request.nonce}, expected_version: ${MANDATE.version})` })),
+      stepItem(2, STEPS[2], h("code", { class: "step-code", text: `request_payment(recipient: ${attack.request.recipient}, amount: ${attack.request.amountNear} NEAR, nonce: ${attack.request.nonce}, expected_version: ${attack.request.expectedVersion ?? MANDATE.version})` }),
+        attack.request.signer ? h("small", { text: `Signed by ${attack.request.signer}, not the mandated agent ${ACCOUNTS.agent}.` }) : null),
       stepItem(3, STEPS[3], checksList(attack.reason)),
       stepItem(4, STEPS[4], h("p", { text: simulated ? "The simulated guardian refuses: a revoked mandate stops every new request." : attack.reason ? "The guardian raised the wall. The request stopped at the contract and no transfer was constructed." : "The gate opened a slit. The vault itself sent the transfer and recorded settlement after the callback." })),
       stepItem(5, STEPS[5], h("p", { class: "step-decision", "data-outcome": outcome, text: decision }), simulated ? h("small", { text: "Result from the local simulator, seeded with the live mandate's limits." }) : null),
@@ -722,7 +745,7 @@ function setupAttack(root) {
       stepItem(4, STEPS[4], h("p", { text: authorized ? "Inside every limit: the simulated vault reserves the budget and settles." : "The simulated guardian refuses before any transfer exists." })),
       stepItem(5, STEPS[5], h("p", { class: "step-decision", "data-outcome": authorized ? "authorized" : "rejected", text: authorized ? `AUTHORIZED · SETTLED (simulated)` : `${result.decision} · ${result.reason}` }),
         h("small", { text: `Simulated spend after this request: ${fromYocto(snapshot.confirmed)} NEAR confirmed of ${MANDATE.totalNear}.` })),
-      stepItem(6, STEPS[6], truth("simulation"), h("p", { text: "This result is local. It proves nothing about the deployed contract. The four proven scenarios above carry the onchain evidence." })),
+      stepItem(6, STEPS[6], truth("simulation"), h("p", { text: "This result is local. It proves nothing about the deployed contract. The recorded scenarios above carry the onchain evidence." })),
     );
     theatre.hidden = false;
     formNote.textContent = `Simulation complete: ${authorized ? "authorized" : `rejected (${result.reason})`}. No chain call was made.`;
@@ -735,7 +758,7 @@ function setupAttack(root) {
     if (current === CUSTOM) { form.requestSubmit(); return; }
     run(ATTACKS.find(a => a.id === current?.id) || ATTACKS[0], { announce: true });
   });
-  document.addEventListener("agentshield:view", event => { if (event.detail.name === "attack" && !current) run(ATTACKS[2]); });
+  document.addEventListener("agentshield:view", event => { if (event.detail.name === "attack" && !current) run(ATTACKS.find(a => a.id === "unauthorizedRecipient")); });
 }
 
 /* ---------- Prompt-injection challenge ---------- */

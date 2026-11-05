@@ -75,6 +75,7 @@ body{background:#030404}
 #live-proof a{display:inline-block;font:.68rem var(--mono);color:var(--paper);border-bottom:1px solid var(--sage);padding:8px 0;margin:0 28px 20px 0;transition:color .25s,border-color .25s,transform .25s}
 #live-proof a:hover{color:var(--sage);border-color:var(--paper);transform:translateY(-2px)}
 #live-proof small{display:block;font:.64rem var(--mono);color:var(--ash)}
+#live-proof h3{font:clamp(1.8rem,3vw,2.8rem)/1.1 var(--gothic);margin:56px 0 18px;color:var(--paper)}
 #live-proof .is-error{color:#e6aaa2}
 #live-gallery{margin:65px clamp(24px,4vw,70px) 0;padding-bottom:45px}
 #live-gallery h2{font:clamp(2.8rem,5vw,5rem)/1.05 var(--gothic);margin:0 0 18px;color:var(--paper)}

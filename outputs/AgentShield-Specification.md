@@ -1,6 +1,6 @@
 # AgentShield — proposed build specification
 
-> **Historical note, written before the event.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with one settled payment and three contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
+> **Historical note, written before the event.** Kept for the record; it describes plans or checks from before the vault was deployed. Current, verified state: the vault is live on NEAR Testnet with two settled payments (one made through the MCP server) and seven contract rejections. See [README.md](../README.md) and [docs/ARCHITECTURE_AND_EVIDENCE.md](../docs/ARCHITECTURE_AND_EVIDENCE.md).
 
 **Status:** PROPOSED / PLANNED. A pre-event standalone frontend design preview exists; no contract, wallet integration, production application or deployment exists in this workspace.
 

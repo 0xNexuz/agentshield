@@ -44,7 +44,8 @@ export const MANDATE = Object.freeze({
 });
 
 // On 2026-11-03 the owner renewed the mandate as version 2: same agent, recipient and limits, later expiry.
-// The settled payment and the three rejections stay tied to version 1.
+// The first payment and the first three rejections stay tied to version 1; the four later probes and the
+// MCP payment ran under version 2.
 export const MANDATE_RENEWAL = Object.freeze({
   transactionHash: "EuUUbLWvPUVVB2q7AiEVGe54giZaarzBy2hikX74vJXw",
   signer: ACCOUNTS.owner,
@@ -99,6 +100,53 @@ export const REJECTIONS = Object.freeze({
   }),
 });
 export const REJECTIONS_SOURCE = "outputs/testnet-negative-independent-proofs.json";
+
+// Four more rejections, under mandate version 2 on 4 Nov 2026. Each probe was declared, with its
+// expected reason, in deployment/testnet-rejection-probes-v2-proposal.json before it was signed.
+// wrongAgent is signed by the vault owner, so even the owner cannot spend as the agent.
+export const PROBES = Object.freeze({
+  staleVersion: Object.freeze({
+    scenario: "staleVersion", reason: "STALE_VERSION", transactionHash: "8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A",
+    signer: ACCOUNTS.agent, recipient: ACCOUNTS.recipient, amountNear: "0.005", nonce: "stalev2-88dd4ddb562290ad",
+    expectedVersion: 1, vaultTransferReceiptCount: 0, checkedAt: "2026-11-04T20:37:44.164Z",
+  }),
+  expired: Object.freeze({
+    scenario: "expired", reason: "EXPIRED", transactionHash: "EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d",
+    signer: ACCOUNTS.agent, recipient: ACCOUNTS.recipient, amountNear: "0.005", nonce: "expiredv2-8b810dfee74d6340",
+    expectedVersion: 2, vaultTransferReceiptCount: 0, checkedAt: "2026-11-04T20:40:06.335Z",
+  }),
+  lookalikeRecipient: Object.freeze({
+    scenario: "lookalikeRecipient", reason: "RECIPIENT_NOT_ALLOWED", transactionHash: "2dBDbyg296vJv17SJ2xHP3aymFqDcGCHFCDdzRViojgX",
+    signer: ACCOUNTS.agent, recipient: "agentshield-recipient-7bb4a0df1o77.testnet", amountNear: "0.005", nonce: "lookalikev2-edd3f0fd49f20eee",
+    expectedVersion: 2, vaultTransferReceiptCount: 0, checkedAt: "2026-11-04T20:42:01.589Z",
+  }),
+  wrongAgent: Object.freeze({
+    scenario: "wrongAgent", reason: "WRONG_AGENT", transactionHash: "8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE",
+    signer: ACCOUNTS.owner, recipient: ACCOUNTS.recipient, amountNear: "0.005", nonce: "wrongagentv2-fe324c7dbe3e7598",
+    expectedVersion: 2, vaultTransferReceiptCount: 0, checkedAt: "2026-11-04T20:43:45.714Z",
+  }),
+});
+export const PROBES_SOURCES = Object.freeze(["deployment/testnet-rejection-probes-v2-proposal.json",
+  "outputs/testnet-rejection-<name>-evidence.json", "outputs/testnet-rejection-probes-v2-independent-proofs.json"]);
+
+// A second settled payment, made by an AI agent through the AgentShield MCP server's request tool
+// (dry run first, then the restricted key signs). Mandate version 2, 4 Nov 2026.
+export const MCP_PAYMENT = Object.freeze({
+  transactionHash: "HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  requestId: "3422d39c4f91fafb560110c408a334bc919cc294638d453765e8e44b176d0f8e",
+  recipientReceiptId: "FjDMy7kQhdhsTKPsUhJrqDFBf4TqW2mx8m8McqMqREUe",
+  tool: "agentshield_request_payment",
+  decision: "AUTHORIZED",
+  settlement: "SETTLED",
+  recipient: ACCOUNTS.recipient,
+  amountYocto: "5000000000000000000000",
+  amountNear: "0.005",
+  nonce: "mcp-14147d08b4ba7ccd6155618d",
+  expectedVersion: 2,
+  signer: ACCOUNTS.agent,
+  checkedAt: "2026-11-04T20:47:43.452Z",
+  sources: Object.freeze(["outputs/testnet-mcp-payment-evidence.json", "outputs/testnet-mcp-payment-independent-proof.json"]),
+});
 
 export const REVOCATION = Object.freeze({
   status: "NOT_YET_VERIFIED",
@@ -191,17 +239,30 @@ export function fetchLiveGallery({ force = false } = {}) {
   liveGallery ??= fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) })
     .then(async response => {
       const proofs = await response.json();
-      // Every listed proof must pass, and the three original rejections must be among them with their
-      // committed hashes. Later probes (mandate version 2) may follow them.
-      const known = Object.keys(REJECTIONS);
+      // Every listed proof must pass, and all seven committed rejections must be among them with their
+      // committed hashes.
+      const known = { ...REJECTIONS, ...PROBES };
       if (!response.ok || !Array.isArray(proofs) || proofs.some(item =>
         item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0 ||
-        (REJECTIONS[item.scenario] && REJECTIONS[item.scenario].transactionHash !== item.transactionHash)) ||
-        !known.every(name => proofs.some(item => item.scenario === name))) {
+        (known[item.scenario] && known[item.scenario].transactionHash !== item.transactionHash)) ||
+        !Object.keys(known).every(name => proofs.some(item => item.scenario === name))) {
         throw new Error(proofs.error || "The live rejection proofs did not all pass.");
       }
       return Object.fromEntries(proofs.map(item => [item.scenario, item]));
     })
     .catch(error => { liveGallery = undefined; throw error; });
   return liveGallery;
+}
+let liveMcpPayment;
+export function fetchLiveMcpPayment({ force = false } = {}) {
+  if (force) liveMcpPayment = undefined;
+  liveMcpPayment ??= fetch("/api/testnet/mcp-payment", { cache: "no-store", signal: AbortSignal.timeout(60000) })
+    .then(async response => {
+      const proof = await response.json();
+      if (!response.ok || proof.verification !== "PASS" || proof.settlement !== "SETTLED" ||
+        proof.transactionHash !== MCP_PAYMENT.transactionHash) throw new Error(proof.error || "The live MCP payment proof did not pass every check.");
+      return proof;
+    })
+    .catch(error => { liveMcpPayment = undefined; throw error; });
+  return liveMcpPayment;
 }

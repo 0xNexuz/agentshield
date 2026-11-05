@@ -134,6 +134,7 @@ h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
 .etch-proof .etch-subhead{margin-top:0;padding-bottom:10px;border-bottom-color:rgba(231,232,223,.3)}
 .etch-proof .etch-row{grid-template-columns:118px minmax(0,1fr)}
 .etch-proof .etch-status{margin-top:14px}
+@media (min-width:901px) and (max-height:800px){.etch-rejections li{padding:4px 0}.etch-proof .etch-subhead{padding-bottom:6px}}
 .etch-badge .truth{font-size:.64rem}
 .etch .truth{flex-wrap:wrap;white-space:normal;row-gap:3px}
 .muted{color:#8b938b;font-size:.72rem}
@@ -230,7 +231,8 @@ svg .beat{transform:none}
 .inj-related{display:grid;gap:8px;justify-items:start}
 .attack-picker{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid #46504a}
 .attack-card{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:0 0 24px;border:0;border-right:1px solid #2c332f;background:transparent;color:#e2e7dd;text-align:left;cursor:pointer;transition:background .3s}
-.attack-card:last-child{border-right:0}
+.attack-card:nth-child(5n){border-right:0}
+.attack-card:nth-child(-n+5){border-bottom:1px solid #2c332f}
 .attack-card-art{display:block;width:100%;aspect-ratio:16/10;overflow:hidden;position:relative;background:#050606}
 .attack-card-art img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.72) grayscale(.15);transition:filter .6s,transform 1.2s cubic-bezier(.2,.8,.2,1)}
 .attack-card .truth,.attack-card strong,.attack-card small{margin:0 20px}
@@ -367,8 +369,10 @@ svg .beat{transform:none}
   .truth-legend p:nth-of-type(n+3){border-top:1px solid #252b28}
   .explore-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cast-band{grid-template-columns:1fr}
-  .attack-picker{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .attack-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
   .attack-card{border-bottom:1px solid #2c332f}
+  .attack-card:nth-child(5n){border-right:1px solid #2c332f}
+  .attack-card:nth-child(2n){border-right:0}
   .theatre-body{grid-template-columns:1fr}
   .theatre-art{position:relative;top:0}
   .injection-result{grid-template-columns:repeat(2,minmax(0,1fr))}

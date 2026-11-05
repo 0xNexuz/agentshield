@@ -1,7 +1,7 @@
 // Independently rechecks the payment made through the MCP server, from the chain rather than the file:
 // the finalized transaction (archival node), its arguments, the vault's decision and settlement logs,
 // the exact transfer receipt, and the vault's current request record.
-//   node --use-system-ca work/verify-testnet-mcp-payment.mjs
+//   node --use-system-ca work/verify-testnet-mcp-payment.mjs   (writes outputs/testnet-mcp-payment-independent-proof.json)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -57,6 +57,9 @@ export async function verifyMcpPayment() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  verifyMcpPayment().then(proof => console.log(JSON.stringify(proof, null, 2)))
+  verifyMcpPayment().then(proof => {
+    fs.writeFileSync(path.join(root, 'outputs/testnet-mcp-payment-independent-proof.json'), JSON.stringify(proof, null, 2) + '\n');
+    console.log(JSON.stringify(proof, null, 2));
+  })
     .catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });
 }

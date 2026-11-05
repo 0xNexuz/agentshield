@@ -94,8 +94,10 @@ export async function verifyNegativeScenarios() {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   verifyNegativeScenarios().then(proofs => {
-    const file = path.join(root, 'outputs/testnet-negative-independent-proofs.json');
-    fs.writeFileSync(file, JSON.stringify(proofs, null, 2) + '\n');
-    console.log(JSON.stringify({ proofs, evidenceFile: file }, null, 2));
+    // Version 1 rejections and the version 2 probes keep separate records, so each file keeps one shape.
+    const files = { 'outputs/testnet-negative-independent-proofs.json': proofs.filter(p => p.scenario in proposal.scenarios),
+      'outputs/testnet-rejection-probes-v2-independent-proofs.json': proofs.filter(p => !(p.scenario in proposal.scenarios)) };
+    for (const [file, list] of Object.entries(files)) if (list.length) fs.writeFileSync(path.join(root, file), JSON.stringify(list, null, 2) + '\n');
+    console.log(JSON.stringify({ proofs, evidenceFiles: Object.keys(files) }, null, 2));
   }).catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });
 }

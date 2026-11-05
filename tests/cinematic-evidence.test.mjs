@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   TRUTH, ACCOUNTS, VAULT, MANDATE, RESTRICTED_KEY, PAYMENT, REJECTIONS, REVOCATION, CONTRACT_CHECKS, checkIndexFor,
-  mandateState, formatUtcNs, MANDATE_RENEWAL, currentMandate, fetchLiveProof,
+  mandateState, formatUtcNs, MANDATE_RENEWAL, currentMandate, fetchLiveProof, PROBES, MCP_PAYMENT,
 } from '../outputs/agentshield-ui/evidence-records.mjs';
 import { preflightPayment as browserPreflight } from '../outputs/agentshield-ui/preflight.mjs';
 import { preflightPayment as serverPreflight } from '../work/near-ai-payment-agent.mjs';
@@ -56,6 +56,47 @@ test('rejection records match the committed negative proofs and intents', () => 
   }
   assert.equal(REJECTIONS.replay.nonce, PAYMENT.nonce, 'the replay probe reused the settled payment nonce');
   assert.equal(REJECTIONS.unauthorizedRecipient.recipient, ACCOUNTS.owner);
+});
+
+test('the version 2 probes match their declaration, their evidence and the independent recheck', () => {
+  const declared = json('deployment/testnet-rejection-probes-v2-proposal.json');
+  const rechecked = json('outputs/testnet-rejection-probes-v2-independent-proofs.json');
+  assert.deepEqual(Object.keys(PROBES).sort(), Object.keys(declared.scenarios).sort());
+  assert.deepEqual(rechecked.map(p => p.scenario).sort(), Object.keys(PROBES).sort());
+  for (const [name, record] of Object.entries(PROBES)) {
+    const plan = declared.scenarios[name];
+    const evidence = json(`outputs/testnet-rejection-${name}-evidence.json`);
+    const intent = json(`outputs/testnet-rejection-${name}-intent.json`);
+    const proof = rechecked.find(p => p.scenario === name);
+    assert.equal(record.reason, plan.expectedReason, `${name} was rejected for the reason declared in advance`);
+    assert.equal(record.nonce, plan.nonce); assert.equal(record.recipient, plan.recipient); assert.equal(record.expectedVersion, plan.expectedVersion);
+    assert.equal(record.signer, plan.signer === 'owner' ? ACCOUNTS.owner : ACCOUNTS.agent);
+    assert.equal(record.transactionHash, evidence.transactionHash); assert.equal(record.transactionHash, intent.hash);
+    assert.equal(record.checkedAt, evidence.recordedAt);
+    assert.equal(record.signer, evidence.signer);
+    assert.equal(evidence.decision.reason, record.reason); assert.equal(evidence.vaultTransferReceipts, 0);
+    assert.equal(evidence.confirmedTotalBeforeYocto, evidence.confirmedTotalAfterYocto, `${name} moved no budget`);
+    assert.equal(near(evidence.args.amount_yocto), record.amountNear);
+    for (const key of ['reason', 'transactionHash', 'recipient', 'nonce', 'vaultTransferReceiptCount']) assert.equal(proof[key], record[key], `${name}.${key}`);
+    assert.equal(proof.verification, 'PASS');
+  }
+  assert.equal(PROBES.lookalikeRecipient.recipient.replace('1o77', '1077'), ACCOUNTS.recipient, 'one character from the real recipient');
+});
+
+test('the MCP payment record matches its evidence and the independent recheck', () => {
+  const evidence = json('outputs/testnet-mcp-payment-evidence.json');
+  const proof = json('outputs/testnet-mcp-payment-independent-proof.json');
+  for (const key of ['transactionHash', 'requestId', 'decision', 'settlement', 'recipient', 'amountYocto', 'recipientReceiptId']) assert.equal(MCP_PAYMENT[key], proof[key], key);
+  assert.equal(MCP_PAYMENT.transactionHash, evidence.transactionHash);
+  assert.equal(MCP_PAYMENT.tool, evidence.tool);
+  assert.equal(MCP_PAYMENT.nonce, evidence.request.nonce);
+  assert.equal(MCP_PAYMENT.expectedVersion, evidence.request.expectedVersion);
+  assert.equal(MCP_PAYMENT.checkedAt, evidence.recordedAt);
+  assert.equal(evidence.contractDecision.decision, 'AUTHORIZED'); assert.equal(evidence.settlement, 'SETTLED');
+  assert.equal(evidence.dryRun.decision, 'ALLOW', 'the agent dry-ran the request before signing');
+  assert.equal(near(MCP_PAYMENT.amountYocto), MCP_PAYMENT.amountNear);
+  assert.equal(proof.mandateVersion, 2);
+  assert.notEqual(MCP_PAYMENT.nonce, PAYMENT.nonce);
 });
 
 test('mandate and restricted key records match the committed evidence', () => {
@@ -172,7 +213,7 @@ test('every referenced cinematic plate exists in all three sizes and stays light
 test('the cinematic layer never signs or sends transactions', () => {
   const code = ['cinematic.mjs', 'evidence-records.mjs', 'preflight.mjs', 'preloader.js'].map(f => fs.readFileSync(path.join(ui, f), 'utf8')).join('\n');
   assert.doesNotMatch(code, /wallet-bundle|signAndSend|signTransaction|functionCall\(|privateKey|NEAR_AI_KEY/);
-  for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/(testnet\/(proof|gallery)|live\/injection)"/);
+  for (const url of code.match(/fetch\("([^"]+)"/g) || []) assert.match(url, /fetch\("\/api\/(testnet\/(proof|gallery|mcp-payment)|live\/injection)"/);
   // The only POST goes to the live model route, which cannot sign (tests/live-injection.test.mjs checks that).
   const posts = [...code.matchAll(/fetch\("([^"]+)",\s*\{[^}]*method:\s*["']POST/g)].map(m => m[1]);
   assert.deepEqual(posts, ['/api/live/injection']);

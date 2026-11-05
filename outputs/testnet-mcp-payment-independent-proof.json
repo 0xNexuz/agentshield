@@ -1,0 +1,18 @@
+{
+  "network": "testnet",
+  "verification": "PASS",
+  "via": "AgentShield MCP server",
+  "decision": "AUTHORIZED",
+  "settlement": "SETTLED",
+  "transactionHash": "HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  "requestId": "3422d39c4f91fafb560110c408a334bc919cc294638d453765e8e44b176d0f8e",
+  "recipientReceiptId": "FjDMy7kQhdhsTKPsUhJrqDFBf4TqW2mx8m8McqMqREUe",
+  "recipient": "agentshield-recipient-7bb4a0df1077.testnet",
+  "amountYocto": "5000000000000000000000",
+  "mandateVersion": 2,
+  "explorerUrl": "https://testnet.nearblocks.io/txns/HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk",
+  "rpc": {
+    "transactions": "archival-rpc.testnet.fastnear.com"
+  },
+  "checkedAt": "2026-11-05T07:52:23.498Z"
+}

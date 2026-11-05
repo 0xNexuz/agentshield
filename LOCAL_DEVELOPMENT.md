@@ -54,7 +54,7 @@ Use `deployment/testnet.example.json` to prepare `deployment/testnet.local.json`
 
 As of 2026-11-02, `deployment/testnet.local.json` contains three faucet-created role accounts and the deployed vault subaccount. The owner, agent, and recipient lifecycle keys and the separate restricted agent key are in the private sibling `AgentShield-Secrets/testnet` folder outside this project. The vault received **5 test NEAR**; the active 0.01 per-payment, 0.02 daily, and 0.05 total mandate has settled one 0.005 payment. The deployment `--check-live` command checks for an **unused** account and now rejects this already deployed vault as expected. Use `node --use-system-ca work/verify-testnet-vault-deployment.mjs`, `work/verify-testnet-live-payment.mjs`, and `work/verify-testnet-negative-scenarios.mjs` for read-only verification. Back up keys privately; never copy them into the project or frontend.
 
-The deployed code hash is `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`; the vault has zero direct access keys and an active mandate. The payment and three rejection transactions provide four genuine live scenarios; revocation remains unverified. The official hackathon announcement was 2026-10-19, and the event site counts code written since announcement; the documented project timeline begins 2026-10-23. Git was initialized only after those initial milestones, so earlier Git provenance is unavailable.
+The deployed code hash is `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`; the vault has zero direct access keys and an active mandate. Two payments (one made through the MCP server) and seven rejection transactions provide nine genuine live scenarios; revocation remains unverified. The official hackathon announcement was 2026-10-19, and the event site counts code written since announcement; the documented project timeline begins 2026-10-23. Git was initialized only after those initial milestones, so earlier Git provenance is unavailable.
 
 ## Restricted demonstration-agent key
 
@@ -75,7 +75,7 @@ The checker is read-only and fails if the key has full access, names a different
 - **EXECUTED / PENDING** means the request reached the vault but settlement is not independently verified. The vault's initial `AUTHORIZED` result is insufficient.
 - **SETTLED** requires finalized transfer and callback receipts plus matching `get_request` and `get_vault_status` accounting. If any evidence is missing or inconsistent, show **INCONCLUSIVE**.
 
-The current interface has the Instant Demo, read-only testnet account checks, and live Evidence view. The Evidence view rechecks one settled payment and three contract rejections against public Testnet RPC; revocation is labeled unverified. No NEAR AI inference has run.
+The current interface has the Instant Demo, read-only testnet account checks, and live Evidence view. The Evidence view rechecks two settled payments and seven contract rejections against public Testnet RPC; revocation is labeled unverified. NEAR AI inference runs are recorded in `outputs/near-ai-*.json`.
 
 ## Later checkpoint: revocation and NEAR AI
 

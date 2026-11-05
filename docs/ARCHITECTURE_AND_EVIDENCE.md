@@ -29,10 +29,10 @@ The site has no wallet connection: owner actions are signed on the owner's own m
 | Simulator decision | Deterministic local run | Seven local simulator tests pass; **simulation only** |
 | Offchain AI preflight | Genuine model response plus finalized policy read | Mocked AI tests pass; read-only ALLOW/WARN/BLOCK policy check passed; Run 1: 24 signed replies, 22 cut off and blocked. Run 2: 22 signed complete replies, model resisted the demo injection, 0 of 20 red-team cases escaped |
 | Counterparty check | Live finalized account state plus the live mandate allowlist | Read-only API live; `tests/counterparty.test.mjs` blocks every redirect target from the 19 recorded injections; offchain and advisory |
-| MCP payment tool | Official MCP client, guarded signing, then a finalized Testnet call | Protocol, refusals, human approval and the exact signed request tested with the official SDK client and a stand-in signer; **no Testnet transaction yet** |
-| Contract rejection | Finalized signed call, contract rejection, zero payout receipts | Three public Testnet transactions independently checked |
-| Authorized call | Finalized `request_payment` and decision log | One public Testnet transaction independently checked |
-| Completed settlement | Exact successful recipient transfer receipt, callback log, `SETTLED` request record | One public Testnet transaction independently checked |
+| MCP payment tool | Official MCP client, guarded signing, then a finalized Testnet call | Protocol, refusals, human approval and the exact signed request tested with the official SDK client and a stand-in signer. One finalized, settled Testnet payment through the tool ([`HP3Bfd…uGuRk`](https://testnet.nearblocks.io/txns/HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk), the `ALLOW` path) independently checked |
+| Contract rejection | Finalized signed call, contract rejection, zero payout receipts | Seven public Testnet transactions independently checked: three under mandate version 1, four probes under version 2 declared with their expected reasons before signing |
+| Authorized call | Finalized `request_payment` and decision log | Two public Testnet transactions independently checked |
+| Completed settlement | Exact successful recipient transfer receipt, callback log, `SETTLED` request record | Two public Testnet transactions independently checked |
 | Live revocation | Separate approved owner revoke and post-revoke agent probe | **Not yet on Testnet; isolated experiment stopped.** NEAR Sandbox test `revocation prevents new payments after settlement` passes against `deployment/agentshield_vault.wasm` |
 
 ## Public Testnet references
@@ -48,6 +48,11 @@ The site has no wallet connection: owner actions are signed on the owner's own m
 | Per-payment cap | [`FEfj7K…L8A`](https://testnet.nearblocks.io/txns/FEfj7KyY5Cr7NTrhDZdXt8Hi1rQqqMwznvK1KhL1ZL8A) | `PER_PAYMENT_LIMIT`; zero vault transfer receipts |
 | Unauthorized recipient | [`GvMLEq…gDX9`](https://testnet.nearblocks.io/txns/GvMLEqPTLZfnN4cTVVBS6mKghD7LuTpXgH7ZSAQvgDX9) | `RECIPIENT_NOT_ALLOWED`; zero vault transfer receipts |
 | Replay | [`8ktDr3…yjY`](https://testnet.nearblocks.io/txns/8ktDr3AFxE8kVQP1KNkvGBY44oMWWvRCY6tXUqWyvyjY) | `REPLAY`; zero vault transfer receipts |
+| Payment through the MCP server | [`HP3Bfd…uGuRk`](https://testnet.nearblocks.io/txns/HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk) | .005 test NEAR, version 2, restricted signer; transfer receipt `FjDMy7kQhdhsTKPsUhJrqDFBf4TqW2mx8m8McqMqREUe`; callback `SETTLED` |
+| Stale mandate version | [`8Gdi8i…781A`](https://testnet.nearblocks.io/txns/8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A) | `STALE_VERSION` (named version 1 after the renewal); zero vault transfer receipts |
+| Expired request | [`EMe28N…2m9d`](https://testnet.nearblocks.io/txns/EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d) | `EXPIRED`; zero vault transfer receipts |
+| Look-alike recipient | [`2dBDby…ojgX`](https://testnet.nearblocks.io/txns/2dBDbyg296vJv17SJ2xHP3aymFqDcGCHFCDdzRViojgX) | `RECIPIENT_NOT_ALLOWED` for `…1o77`; zero vault transfer receipts |
+| Wrong signer | [`8VzQjR…NXrE`](https://testnet.nearblocks.io/txns/8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE) | `WRONG_AGENT`, signed by the owner's account; zero vault transfer receipts |
 
 The explorer blocked automated HEAD requests with HTTP 403 on 2026-11-02, so its page availability is not claimed. The [production payment proof](https://agentshield-lab.vercel.app/api/testnet/proof) and [rejection gallery](https://agentshield-lab.vercel.app/api/testnet/gallery) returned PASS against public RPC. The local verifier scripts recheck final execution, exact actions, receipts and contract records without relying on explorer rendering. Historical payment proof remains tied to mandate version 1 after any later renewal.
 

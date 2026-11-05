@@ -1,6 +1,6 @@
 # AgentShield portable project context
 
-**Updated:** 2026-11-02. **Status:** TESTNET VAULT, SETTLED RESTRICTED-AGENT PAYMENT, AND THREE CONTRACT REJECTIONS INDEPENDENTLY VERIFIED. **Current stage:** Live Lab revocation plan, NEAR AI integration, and QA.
+**Updated:** 2026-11-05. **Status:** TESTNET VAULT, TWO SETTLED RESTRICTED-AGENT PAYMENTS (ONE THROUGH THE MCP SERVER) AND SEVEN CONTRACT REJECTIONS INDEPENDENTLY VERIFIED. **Current stage:** submission preparation (video, X post, form). The dated log below is the history.
 
 ## Identity and Git
 
@@ -305,3 +305,11 @@ Keep the private repo and public site as-is until reviewed. Confirm NEAR AI Clou
 - Checks: `npm test` 81/81 (with the opt-in live-model check in `work/check-live-site.mjs --with-live-model`); browser QA for the live box 12/12 (desktop and phone, on and off). Not yet run against the real model: it needs `NEAR_AI_KEY` in Vercel.
 - Shipped: commit `b1d3d4b` (also fixes a fake test key, `sk-test-…`, that the history secret scan flagged; it was never a credential, and the scanner now exempts exactly that string). Production deployment `dpl_47XSJ1guUBCJdhcgbqWNHGbGSQJL`. `NEAR_AI_KEY` is set for Production only.
 - First live check, Live evidence run `41904764626` (manual, `live_model=true`): all 7 checks passed. The real model returned the real invoice despite the injected note; the reply signature verified from `0x3b753b4406613c5e70ae640508632b600424fa0c`, the key that passed NEAR AI's official verifier on 2026-11-04; guard `ALLOW`; cost about $0.000322.
+
+### 2026-11-05 — Four more rejections and a payment through MCP, rechecked
+
+- On 2026-11-04 the owner ran the declared probes from `deployment/testnet-rejection-probes-v2-proposal.json` on their own machine: `STALE_VERSION` [`8Gdi8i…781A`](https://testnet.nearblocks.io/txns/8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A), `EXPIRED` [`EMe28N…2m9d`](https://testnet.nearblocks.io/txns/EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d), look-alike `RECIPIENT_NOT_ALLOWED` [`2dBDby…ojgX`](https://testnet.nearblocks.io/txns/2dBDbyg296vJv17SJ2xHP3aymFqDcGCHFCDdzRViojgX) and `WRONG_AGENT` [`8VzQjR…NXrE`](https://testnet.nearblocks.io/txns/8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE) (signed by the owner). Each got the reason declared before signing; budgets and the recipient balance were unchanged. Then an agent paid 0.005 test NEAR through `agentshield_request_payment`: dry run `ALLOW`, `AUTHORIZED`, `SETTLED` ([`HP3Bfd…uGuRk`](https://testnet.nearblocks.io/txns/HP3BfdWLDaACqKV9fZb4WKmTyKp5vfa5fEs7bncuGuRk)). Commit `e06f082`.
+- Independent recheck: Live evidence run `41990228656` on GitHub's runners verified all nine transactions through `archival-rpc.testnet.fastnear.com`, plus the vault's `SETTLED` request record for the MCP payment. Output committed as `outputs/testnet-rejection-probes-v2-independent-proofs.json` and `outputs/testnet-mcp-payment-independent-proof.json`.
+- New read-only route `GET /api/testnet/mcp-payment`; the gallery now returns seven proofs; the daily workflow also runs `work/verify-testnet-mcp-payment.mjs`, and `work/check-live-site.mjs` now requires exactly seven rejections and the MCP proof.
+- Site: Attack the vault has ten cards (two payments, seven attacks, revocation still simulated), each recorded one with its own `expected_version` and live recheck; Evidence shows the MCP payment under the first; Judge mode's proof scene lists all seven rejections. README claims table: `WRONG_AGENT`, `STALE_VERSION` and `EXPIRED` now have Testnet proofs, the MCP row is real for the `ALLOW` path.
+- Checks: `npm test` 84/84.

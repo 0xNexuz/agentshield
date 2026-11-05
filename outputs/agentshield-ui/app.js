@@ -143,6 +143,40 @@ import { setupCinematic } from "./cinematic.mjs";
       status.textContent = `VERIFICATION UNAVAILABLE / ${error.message}. No settlement conclusion is drawn from this check.`;
       status.classList.add("is-error");
     }
+    await appendMcpPayment(panel);
+  }
+
+  // The second settled payment, sent by an AI agent through the AgentShield MCP server.
+  async function appendMcpPayment(panel) {
+    const title = document.createElement("h3");
+    title.textContent = "A second payment, sent by an agent through the MCP server.";
+    const status = document.createElement("p");
+    status.textContent = "Checking the MCP payment against public Testnet RPC…";
+    panel.append(title, status);
+    try {
+      const response = await fetch("/api/testnet/mcp-payment", { cache: "no-store", signal: AbortSignal.timeout(60000) });
+      const proof = await response.json();
+      if (!response.ok || proof.verification !== "PASS" || proof.settlement !== "SETTLED") {
+        throw new Error(proof.error || "The MCP payment proof did not pass every check.");
+      }
+      status.textContent = `The agent called the agentshield_request_payment tool. The vault decided ${proof.decision}, settled it, and recorded the request under mandate version ${proof.mandateVersion}.`;
+      const details = document.createElement("dl");
+      for (const [label, value] of [["TRANSACTION", proof.transactionHash], ["TRANSFER RECEIPT", proof.recipientReceiptId], ["REQUEST ID", proof.requestId]]) {
+        const dt = document.createElement("dt"); dt.textContent = label;
+        const dd = document.createElement("dd"); dd.textContent = value;
+        details.append(dt, dd);
+      }
+      const link = document.createElement("a");
+      link.href = proof.explorerUrl; link.target = "_blank"; link.rel = "noopener noreferrer";
+      link.textContent = "OPEN PUBLIC TRANSACTION ↗";
+      const record = document.createElement("a");
+      record.href = "/api/testnet/mcp-payment"; record.target = "_blank"; record.rel = "noopener noreferrer";
+      record.textContent = "VIEW LIVE JSON PROOF ↗";
+      panel.append(details, link, record);
+    } catch (error) {
+      status.textContent = `VERIFICATION UNAVAILABLE / ${error.message}. No settlement conclusion is drawn from this check.`;
+      status.classList.add("is-error");
+    }
   }
 
   async function loadNegativeGallery() {
@@ -165,7 +199,7 @@ import { setupCinematic } from "./cinematic.mjs";
     try {
       const response = await fetch("/api/testnet/gallery", { cache: "no-store", signal: AbortSignal.timeout(60000) });
       const proofs = await response.json();
-      if (!response.ok || !Array.isArray(proofs) || proofs.length < 3 ||
+      if (!response.ok || !Array.isArray(proofs) || proofs.length < 7 ||
         proofs.some(item => item.verification !== "PASS" || item.decision !== "REJECTED" || item.vaultTransferReceiptCount !== 0)) {
         throw new Error(proofs.error || "The scenario proofs did not all pass.");
       }
