@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { connect, keyStores, transactions, utils } from 'near-api-js';
 import { KeyPair } from 'near-api-js';
 import { testnetAccount, testnetStatus } from './near-testnet-rpc.mjs';
+import { archivalTxStatus } from './near-testnet-archival.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const p = JSON.parse(fs.readFileSync(path.join(root, 'deployment/testnet-revocation-lab-proposal.json'), 'utf8'));
@@ -117,7 +118,8 @@ async function executeDeploy(corrected = false) {
   await common();
   if (corrected) {
     const firstIntent = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-revocation-deploy-intent.json'), 'utf8'));
-    const first = await finalized(firstIntent.hash, p.owner);
+    // The failed attempt is from 2 Nov, older than rpc.testnet.near.org keeps, so ask the archival nodes.
+    const { result: first } = await archivalTxStatus(firstIntent.hash, p.owner, { id: 'agentshield-revocation-lab' });
     check(first.status?.Failure?.ActionError?.index === 3 &&
       first.transaction?.receiver_id === p.isolatedVault && first.transaction?.actions?.length === 4,
       'Original atomic deployment is not a finalized initializer failure');
