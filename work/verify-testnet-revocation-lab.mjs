@@ -108,10 +108,14 @@ export async function verifyRevocationLabStages() {
     const file = `outputs/testnet-revocation-${stage}-intent.json`;
     if (!fs.existsSync(path.join(root, file))) break;
     const intent = read(file);
-    const { result: tx, endpoint } = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 });
-    if (!succeeded(tx)) fail(`${stage} ${intent.hash} did not succeed`);
-    if (tx.transaction.signer_id !== intent.signer || tx.transaction.receiver_id !== intent.receiver) fail(`${stage}: parties differ from the intent`);
-    results.push({ stage, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
+    try {
+      const { result: tx, endpoint } = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 });
+      if (!succeeded(tx)) fail(`${stage} ${intent.hash} did not succeed`);
+      if (tx.transaction.signer_id !== intent.signer || tx.transaction.receiver_id !== intent.receiver) fail(`${stage}: parties differ from the intent`);
+      results.push({ stage, ok: true, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
+    } catch (error) {
+      results.push({ stage, ok: false, transactionHash: intent.hash, error: error.message });
+    }
   }
   return results;
 }
@@ -133,11 +137,14 @@ export async function revocationLabState() {
   return { isolatedVault: lab.isolatedVault, exists: true, codeHash: account.code_hash, codeMatches: account.code_hash === lab.codeHash,
     vaultAccessKeys: keys.keys.length, owner: status.owner, domain: status.domain, mandate: status.mandate,
     confirmedTotalYocto: status.confirmed_total_yocto, pendingTotalYocto: status.pending_total_yocto,
-    restrictedKey: key ? { publicKey: key.public_key, permission: key.access_key.permission } : null };
+    restrictedKey: key ? { publicKey: key.public_key, nonce: key.access_key.nonce, permission: key.access_key.permission } : null };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  verifyRevocationLab().then(async proof => console.log(JSON.stringify({ ...proof, stages: await verifyRevocationLabStages(),
-    labStateNow: await revocationLabState() }, null, 2)))
+  verifyRevocationLab().then(async proof => {
+    const stages = await verifyRevocationLabStages();
+    console.log(JSON.stringify({ ...proof, stages, labStateNow: await revocationLabState() }, null, 2));
+    if (stages.some(s => !s.ok)) { console.error(`VERIFICATION FAILED: ${stages.filter(s => !s.ok).map(s => `${s.stage}: ${s.error}`).join('; ')}`); process.exitCode = 1; }
+  })
     .catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });
 }
