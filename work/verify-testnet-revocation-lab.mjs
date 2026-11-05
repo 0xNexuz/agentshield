@@ -106,24 +106,26 @@ export const RESTRICTED_KEY_INITIAL_NONCE = 276321226000000n;
 export async function verifyRevocationLabStages() {
   const lab = read('deployment/testnet-revocation-lab-proposal.json');
   const results = [];
-  const retried = fs.existsSync(path.join(root, 'outputs/testnet-revocation-probe-retry-intent.json'));
-  for (const name of [...LAB_STAGES, 'probe-retry']) {
+  // Probe attempts in order. Each later attempt supersedes the earlier ones, which must never have landed: the network
+  // refused them before they ran, and the attempt that landed took the key's first nonce, so they never can.
+  const attempts = ['probe', 'probe-retry', 'probe-low-gas'].filter(name => fs.existsSync(path.join(root, `outputs/testnet-revocation-${name}-intent.json`)));
+  const finalAttempt = attempts.at(-1);
+  for (const name of [...LAB_STAGES.filter(s => s !== 'probe'), ...attempts]) {
     const file = `outputs/testnet-revocation-${name}-intent.json`;
     if (!fs.existsSync(path.join(root, file))) break;
     const intent = read(file);
-    if (name === 'probe' && retried) {
-      // The first probe never reached the chain; the retry took its key nonce, so it never can.
+    if (attempts.includes(name) && name !== finalAttempt) {
       const found = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 }).then(() => true, () => false);
-      results.push({ stage: name, ok: !found, transactionHash: intent.hash, neverLanded: !found, supersededBy: read('outputs/testnet-revocation-probe-retry-intent.json').hash,
-        ...(found ? { error: 'The superseded probe is on chain after all' } : {}) });
+      results.push({ stage: name, ok: !found, transactionHash: intent.hash, neverLanded: !found,
+        supersededBy: read(`outputs/testnet-revocation-${finalAttempt}-intent.json`).hash, ...(found ? { error: 'A superseded probe is on chain after all' } : {}) });
       continue;
     }
-    const stage = name === 'probe-retry' ? 'probe' : name;
+    const stage = attempts.includes(name) ? 'probe' : name;
     try {
       const { result: tx, endpoint } = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 });
       if (!succeeded(tx)) fail(`${stage} ${intent.hash} did not succeed`);
       if (tx.transaction.signer_id !== intent.signer || tx.transaction.receiver_id !== intent.receiver) fail(`${stage}: parties differ from the intent`);
-      if (name === 'probe-retry' && BigInt(tx.transaction.nonce) !== RESTRICTED_KEY_INITIAL_NONCE + 1n) fail('The retry is not the restricted key\'s first landed transaction');
+      if (attempts.includes(name) && BigInt(tx.transaction.nonce) !== RESTRICTED_KEY_INITIAL_NONCE + 1n) fail('The probe is not the restricted key\'s first landed transaction');
       results.push({ stage: name, ok: true, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
     } catch (error) {
       results.push({ stage: name, ok: false, transactionHash: intent.hash, error: error.message });

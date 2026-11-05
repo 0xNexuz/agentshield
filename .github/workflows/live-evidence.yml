@@ -35,21 +35,5 @@ jobs:
         run: node work/verify-testnet-mcp-payment.mjs
       - name: Recheck the isolated revocation lab
         run: node work/verify-testnet-revocation-lab.mjs
-      - name: Measure the gas a rejected request burns (temporary)
-        if: always()
-        run: |
-          node --input-type=module -e "
-          import { archivalTxStatus, postRpc } from './work/near-testnet-archival.mjs';
-          const price = await postRpc('https://rpc.testnet.near.org', 'g', 'gas_price', [null]);
-          console.log('gas_price', price.gas_price);
-          for (const [h, s] of [['8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A','agentshield-agent-0359da1630bb.testnet'],['8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE','agentshield-mag-1d2f78801994.testnet'],['EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d','agentshield-agent-0359da1630bb.testnet']]) {
-            const { result: t } = await archivalTxStatus(h, s);
-            const burnt = [t.transaction_outcome.outcome.gas_burnt, ...t.receipts_outcome.map(r => r.outcome.gas_burnt)];
-            const fc = t.receipts_outcome.find(r => r.outcome.executor_id.startsWith('vault.'));
-            console.log(h.slice(0, 8), 'attached', t.transaction.actions[0].FunctionCall.gas, 'burnt', burnt.join('+'), '=', burnt.reduce((a, b) => a + b, 0), 'vault receipt', fc?.outcome.gas_burnt);
-          }
-          for (const h of ['EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG', '4vQdLeZww68gJxexcuN6GcuigATqKPY2NfCoFw9XGfVy']) {
-            await archivalTxStatus(h, 'agentshield-agent-0359da1630bb.testnet', { timeoutMs: 30000 }).then(() => console.log(h.slice(0, 8), 'ON CHAIN'), e => console.log(h.slice(0, 8), 'not on chain:', e.message));
-          }"
       - name: Check the production site's proof, gallery, counterparty and status endpoints
         run: node work/check-live-site.mjs https://agentshield-lab.vercel.app ${{ inputs.live_model && '--with-live-model' || '' }}

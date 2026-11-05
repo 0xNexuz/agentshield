@@ -59,8 +59,9 @@ async function main() {
   check(BigInt(proposal.fundingYocto) > minimum, 'Funding is insufficient for code storage and reserve');
   check(BigInt(owner.balanceYocto) > BigInt(proposal.fundingYocto) + 500000000000000000000000n,
     'Owner lacks 0.5 test NEAR setup/gas headroom');
-  check(BigInt(proposal.gasAllowanceYocto) > 70000000000000n * BigInt(gas.gas_price),
-    'Gas allowance cannot cover one maximum-gas probe');
+  // The network checks a key's allowance against prepaid gas at a pessimistic price, about 10x the current one.
+  check(BigInt(proposal.gasAllowanceYocto) > 13000000000000n * BigInt(gas.gas_price) * 11n,
+    'Gas allowance cannot cover one 10 Tgas probe at the pessimistic gas price');
   const remaining = BigInt(proposal.mandate.expires_at_ns) - BigInt(block.header.timestamp_nanosec);
   check(remaining > 86400000000000n && remaining <= 30n * 86400000000000n,
     'Mandate expiry is stale or too distant');

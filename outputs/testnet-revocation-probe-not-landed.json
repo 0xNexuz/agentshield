@@ -1,15 +1,45 @@
 {
   "network": "testnet",
-  "stage": "probe",
   "status": "NEVER_LANDED",
-  "transactionHash": "EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG",
-  "archivalAnswer": "No archival Testnet RPC returned transaction EhxRt4r4… (archival-rpc.testnet.fastnear.com: RPC HTTP 408; archival-rpc.testnet.near.org: RPC HTTP 408)",
-  "restrictedKey": {
-    "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
-    "nonce": "276321226000000",
-    "allowanceYocto": "20000000000000000000000"
+  "attempts": [
+    {
+      "stage": "probe",
+      "transactionHash": "EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG",
+      "attachedGas": "70000000000000",
+      "error": "not captured on the signing machine"
+    },
+    {
+      "stage": "probe-retry",
+      "transactionHash": "4vQdLeZww68gJxexcuN6GcuigATqKPY2NfCoFw9XGfVy",
+      "attachedGas": "70000000000000",
+      "error": "Access key allowance too low: the network required 0.070920322345544 test NEAR for 70 Tgas at its pessimistic gas price; the key allows 0.02"
+    }
+  ],
+  "cause": "NEAR checks a function-call key allowance against the prepaid gas at a pessimistic gas price (about 10x the current price). 70 Tgas needed about 0.071 test NEAR, so the network refused both before they ran. The first attempt asked for the same 70 Tgas, so it was most likely refused the same way.",
+  "onChainCheck": {
+    "archival": "neither archival node returns either hash",
+    "restrictedKey": {
+      "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+      "nonce": "276321226000000",
+      "allowanceYocto": "20000000000000000000000"
+    },
+    "meaning": "the key nonce is still its value from when the key was added and its allowance is untouched, so the key has never signed a transaction that landed",
+    "checkedBy": [
+      "https://github.com/0xNexuz/agentshield/actions/runs/42009968306",
+      "https://github.com/0xNexuz/agentshield/actions/runs/42017158880"
+    ]
   },
-  "meaning": "The restricted key nonce is still its value from when the key was added and its allowance is untouched, so the key has never signed a transaction that landed. The probe was signed during a network drop on the signing machine and never broadcast.",
+  "measuredRejectionGas": {
+    "totalBurnt": "about 2.15 Tgas",
+    "vaultReceipt": "about 1.61 Tgas",
+    "gasPrice": "100000000",
+    "from": [
+      "8Gdi8iAgzX84jHhUQRtRQTe958m4pSuDCkTyHefz781A",
+      "8VzQjR1RhRCDgjaXUZMhUL3zZtHdhk5k6ZZUHuF4NXrE",
+      "EMe28NDXmbFCPiSuVevKvfpkShaDL8BUdPahaKT62m9d"
+    ]
+  },
+  "next": "--execute-approved-probe-low-gas sends the same probe with 10 Tgas, which the allowance covers",
   "isolatedVaultMandate": {
     "agent": "agentshield-agent-0359da1630bb.testnet",
     "recipients": [
@@ -24,7 +54,5 @@
     "revoked": true
   },
   "confirmedTotalYocto": "0",
-  "pendingTotalYocto": "0",
-  "checkedBy": "https://github.com/0xNexuz/agentshield/actions/runs/42009968306",
-  "checkedAt": "2026-11-05T10:21:25.904Z"
+  "pendingTotalYocto": "0"
 }
