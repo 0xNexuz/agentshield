@@ -43,7 +43,27 @@ export async function verifyRevocationLab() {
     archivalAnswers: answers, checkedAt: new Date().toISOString() };
 }
 
+// Current state of the isolated lab vault, read-only: code, mandate, revocation, accounting, and the agent's
+// restricted key for it. Reports what exists; it does not decide what should.
+export async function revocationLabState() {
+  const lab = read('deployment/testnet-revocation-lab-proposal.json');
+  const state = (method, params) => postRpc('https://rpc.testnet.near.org', 'agentshield-revocation-state', method, params);
+  const view = (method, args = {}) => state('query', { request_type: 'call_function', finality: 'final', account_id: lab.isolatedVault,
+    method_name: method, args_base64: Buffer.from(JSON.stringify(args)).toString('base64') })
+    .then(r => JSON.parse(Buffer.from(r.result).toString('utf8')));
+  const account = await state('query', { request_type: 'view_account', finality: 'final', account_id: lab.isolatedVault }).catch(() => null);
+  if (!account) return { isolatedVault: lab.isolatedVault, exists: false };
+  const [status, keys, agentKeys] = await Promise.all([view('get_vault_status'),
+    state('query', { request_type: 'view_access_key_list', finality: 'final', account_id: lab.isolatedVault }),
+    state('query', { request_type: 'view_access_key_list', finality: 'final', account_id: lab.agent })]);
+  const key = agentKeys.keys.find(k => k.public_key === lab.restrictedPublicKey);
+  return { isolatedVault: lab.isolatedVault, exists: true, codeHash: account.code_hash, codeMatches: account.code_hash === lab.codeHash,
+    vaultAccessKeys: keys.keys.length, owner: status.owner, domain: status.domain, mandate: status.mandate,
+    confirmedTotalYocto: status.confirmed_total_yocto, pendingTotalYocto: status.pending_total_yocto,
+    restrictedKey: key ? { publicKey: key.public_key, permission: key.access_key.permission } : null };
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  verifyRevocationLab().then(proof => console.log(JSON.stringify(proof, null, 2)))
+  verifyRevocationLab().then(async proof => console.log(JSON.stringify({ ...proof, labStateNow: await revocationLabState() }, null, 2)))
     .catch(error => { console.error(`VERIFICATION FAILED: ${error.message}`); process.exitCode = 1; });
 }
