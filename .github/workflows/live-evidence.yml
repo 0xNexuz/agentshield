@@ -36,6 +36,7 @@ jobs:
       - name: Recheck the isolated revocation lab
         run: node work/verify-testnet-revocation-lab.mjs
       - name: Measure the gas a rejected request burns (temporary)
+        if: always()
         run: |
           node --input-type=module -e "
           import { archivalTxStatus, postRpc } from './work/near-testnet-archival.mjs';
