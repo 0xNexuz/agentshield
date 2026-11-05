@@ -47,13 +47,6 @@ http.createServer(async (req,res)=>{
       return res.end(JSON.stringify({error:error.message}));
     }
   }
-  if (name === '/AgentShield-Specification.md') {
-    fs.readFile(path.resolve(root, '../AgentShield-Specification.md'), (err, data) => {
-      if (err) {res.writeHead(404);return res.end('Not found');}
-      res.writeHead(200, {'Content-Type': 'text/markdown; charset=utf-8'});res.end(data);
-    });
-    return;
-  }
   const file = path.resolve(root, '.' + (name === '/' ? '/index.html' : name));
   if (!file.startsWith(root + path.sep) && file !== path.join(root,'index.html')) {res.writeHead(403);return res.end();}
   fs.readFile(file,(err,data)=>{if(err){res.writeHead(404);return res.end('Not found');}res.writeHead(200,{'Content-Type':mime[path.extname(file)] || 'application/octet-stream'});res.end(data);});

@@ -1,92 +1,75 @@
 # AgentShield local development
 
-This workspace is a local Git project. The NEAR Testnet vault, one settled restricted-agent payment, and three genuine contract rejections are recorded in `outputs/` and summarized in `README.md`. The **Instant Demo** remains a deterministic simulation, distinct from the live Evidence view. The **Lab** checks public account state; the frontend has no signing endpoint.
+Setup notes for working on AgentShield. [README.md](README.md) has the evidence, the claims table and the quick checks.
 
-## Start the UI
+## Start the site
 
-From this directory, run:
+The site has no build step and no wallet code. The preview server binds to localhost and serves the same read-only API routes as Vercel.
 
-```powershell
+```sh
 npm ci
-$env:NODE_TLS_REJECT_UNAUTHORIZED='1'
-node --use-system-ca work/preview-server.js
+node --use-system-ca work/preview-server.js   # http://127.0.0.1:4321
 ```
 
-Open `http://127.0.0.1:4321/`. The preview server binds to localhost. The site has no build step and no wallet code.
+On Windows PowerShell, set `$env:NODE_TLS_REJECT_UNAUTHORIZED='1'` first if your shell has turned TLS checks off.
 
-## Verify locally
+## Tests
 
-```powershell
-npm run test:sim
-npm run test:key-scope
-cmd.exe /c work\run-vault-tests.cmd
-$env:CARGO_HOME=(Join-Path (Get-Location) '.cargo-home')
-cargo --config work/cargo-offline.toml build --manifest-path contracts/vault/Cargo.toml --target wasm32-unknown-unknown --release --offline
+```sh
+npm test                                                         # every Node test, offline
+npm run test:sim                                                 # the browser simulator only
+npm run test:key-scope                                           # the agent-key permission checker only
+npm run test:ai                                                  # the NEAR AI preflight, with a mocked model
+cargo test --manifest-path contracts/vault/Cargo.toml --locked   # Rust unit tests and the randomized rule test
 ```
 
-The Rust test script uses the installed Visual Studio C++ toolchain and cached crates. The release artifact is `contracts/vault/target/wasm32-unknown-unknown/release/agentshield_vault.wasm`; the exact deployed artifact is also retained at `deployment/agentshield_vault.wasm`. On 2026-11-02, seven simulator tests, two key-scope tests, and eleven Rust unit tests passed. The deployed artifact is 324,708 bytes, SHA256 `138B17E7F1A227B22352E2E638FD69E60E0AD95F7A4DD003D8CBD244F8FFBE09`, with NEAR base58 code hash `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`.
+On Windows, `cmd.exe /c work\run-vault-tests.cmd` runs the Rust tests with the Visual Studio C++ toolchain and cached crates (`work/cargo-offline.toml`).
 
-Ubuntu runs under WSL2. The `sandbox/` integration suite executed real local contract transactions against **NEAR Sandbox 2.13.4** on 2026-11-02: eight tests passed, zero failed, including a restricted function-call key scoped to the vault payment method. It covers owner funding, owner-only authorization, payment settlement and recipient balance, replay, allowlist, payment cap, wrong agent, failed transfer callback, revocation, two concurrent agent-key requests sharing a budget, pause, stale version, expiry, and an owner withdrawal. The first attempt with Sandbox 2.6.2 could not compile this SDK 5.29 WASM (`PrepareError: Deserialization`); use the newer binary. A true pending-withdrawal overlap in Sandbox remains unverified; both success and failure guards have Rust unit coverage.
+**NEAR Sandbox** tests run the deployed WASM on a disposable local chain. They need Linux or WSL2. The setup scripts install Node and NEAR Sandbox 2.13.4 into the ignored `.tools/` folder, check the download hashes and install no system packages:
 
-To reproduce in Ubuntu WSL2, open a shell in the workspace's `/mnt/c/...` directory and run:
-
-```bash
+```sh
 bash work/setup-linux-node.sh
 bash work/setup-near-sandbox.sh
-export PATH="$PWD/.tools/node-v24.22.2-linux-x64/bin:$PATH"
-cd sandbox && npm ci --ignore-scripts --no-audit --no-fund && cd ..
+npm ci --prefix sandbox --ignore-scripts --no-audit --no-fund
 bash work/run-sandbox-tests.sh
 ```
 
-The setup scripts install no system packages and verify downloaded archive hashes. The 2.13.4 Sandbox binary is local and ignored by Git. Sandbox transaction IDs are confined to this disposable local chain; they are **not** Testnet evidence.
+Sandbox transaction IDs exist only on that local chain. They are not Testnet evidence.
 
-Historical: from 2026-11-01 to 2026-11-04 the site bundled a wallet selector (Meteor, then HOT only). No browser sign-in was ever performed with it, and it was removed on 2026-11-04 because HOT does not support Testnet.
+**The WASM rebuild** (`pwsh work/reproduce-vault-wasm.ps1`) installs Rust 1.96.0 on Windows, recreates the original build folders under `C:\Users\USER\`, builds `contracts/vault` and compares SHA-256 with `deployment/agentshield_vault.wasm`. Use a throwaway machine, or let the CI job do it.
 
-## Testnet setup boundary
+## Check the agent key
 
-- Owner actions (mandate, pause, revoke) are signed on the owner's machine with the `work/execute-*.mjs` scripts and the owner credential outside the repository. The site cannot sign.
-- The agent must use a separate testnet account. The recipient should also be an account under your control for a later small payment test.
-- The vault account was created, funded with 5 test NEAR, deployed, and initialized **atomically** with the owner as transaction predecessor. The finalized transaction is `7K4729h6zNHjuXJcGRT9e6HHGxCrUnzFAZ3AnQpfy2dJ`.
-- The contract has a 64 accepted-request lifetime cap and reserves 0.2 NEAR, plus storage cost, from spendable balance. These are prototype limits.
-- Do not paste seed phrases or private keys into the UI or workspace. The owner credential remains in a private sibling `AgentShield-Secrets/testnet` folder outside the project.
+The agent's key is a function-call key on a separate Testnet account. This read-only checker fails if the key has full access, names another receiver, allows other methods, or has a missing, zero or unlimited gas allowance:
 
-Use `deployment/testnet.example.json` to prepare `deployment/testnet.local.json` with four public testnet account IDs and proposed yoctoNEAR amounts. The local file is ignored by Git if a repository is later created; still never put secret keys in it. Run `node work/prepare-testnet-deployment.mjs deployment/testnet.local.json` to validate the config and print the expected hash. `--check-live` additionally checks testnet RPC health and that the proposed vault account is unused. These commands do not deploy or spend.
-
-As of 2026-11-02, `deployment/testnet.local.json` contains three faucet-created role accounts and the deployed vault subaccount. The owner, agent, and recipient lifecycle keys and the separate restricted agent key are in the private sibling `AgentShield-Secrets/testnet` folder outside this project. The vault received **5 test NEAR**; the active 0.01 per-payment, 0.02 daily, and 0.05 total mandate has settled one 0.005 payment. The deployment `--check-live` command checks for an **unused** account and now rejects this already deployed vault as expected. Use `node --use-system-ca work/verify-testnet-vault-deployment.mjs`, `work/verify-testnet-live-payment.mjs`, and `work/verify-testnet-negative-scenarios.mjs` for read-only verification. Back up keys privately; never copy them into the project or frontend.
-
-The deployed code hash is `2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN`; the vault has zero direct access keys and an active mandate. Two payments (one made through the MCP server) and eight rejection transactions, revocation included, provide ten genuine live scenarios. The official hackathon announcement was 2026-10-19, and the event site counts code written since announcement; the documented project timeline begins 2026-10-23. Git was initialized only after those initial milestones, so earlier Git provenance is unavailable.
-
-## Restricted demonstration-agent key
-
-The demo agent uses a **separate testnet account** and an `ed25519` function-call key on that account. Its observed onchain permission names only the deployed vault as `receiver_id`, only `request_payment` in `method_names`, and an initial 0.1 test NEAR gas allowance. Calls signed with this key attach **zero NEAR**. The vault separately checks that the transaction predecessor is the mandate's configured agent and enforces its recipient, amount, budget, expiry, nonce, and revocation rules. A key restriction cannot replace the vault's policy checks.
-
-Do not put the owner's full-access key or the agent key in the browser bundle, source tree, or a public endpoint. Keep the agent account's lifecycle full-access key under separate user control; the demo signer must receive only the limited key. The user authorized the restricted-key creation, and the finalized AddKey transaction is `3faZ6WmFDgbM8KUCRnbDLztbYSysKwNGdoq83jy95CaP`. Independently check current finalized testnet permissions with:
-
-```powershell
+```sh
 node --use-system-ca work/verify-agent-key.mjs agentshield-agent-0359da1630bb.testnet ed25519:3mVXz3wwMLhRA1Ppdg56p8K342hTDRAHNVPez7jT5Y6V vault.agentshield-mag-1d2f78801994.testnet
 ```
 
-The checker is read-only and fails if the key has full access, names a different receiver, permits extra methods, or has a missing, zero, or unlimited gas allowance. It has been unit-tested against permission fixtures; the real key was also verified through finalized RPC and its historical AddKey transaction. NEAR charges the allowance for gas, and an exhausted finite allowance makes the key unusable; adding balance to the account does not refill it. Rotate by adding a replacement limited key and removing the old one with the agent account's separately held full-access key. Also revoke the vault mandate to stop future requests at the contract layer, after an explicit plan because revocation is permanent for this vault. A function-call key cannot transfer NEAR, add keys, or attach a deposit. This vault currently has **zero access keys**, and the deployed contract interface has no upgrade method. These observations show no direct signing or contract-method upgrade route in the current configuration; they are not a formal immutability proof. The owner controls policy through contract methods.
+NEAR charges gas against the key's allowance, and adding balance to the account does not refill it. To rotate, add a new limited key and delete the old one with the agent account's full-access key.
+
+## Keys and signing
+
+- Private keys never enter this repository, the site or Vercel. The owner and agent keys live in a folder outside the project.
+- The scripts that signed the recorded runs (`work/execute-*.mjs`, `work/deploy-testnet-vault.mjs`, `work/run-mcp-testnet-payment.mjs`) each take an explicit approval flag. They write an intent record with the transaction hash before broadcasting and refuse to send a second transaction for the same stage.
+- `deployment/testnet.example.json` shows the shape of `deployment/testnet.local.json`, which is ignored by Git and holds only public account IDs and amounts. `node work/prepare-testnet-deployment.mjs deployment/testnet.local.json` validates it without deploying or spending.
+- The MCP server stays read-only unless `AGENTSHIELD_AGENT_KEY_FILE` points to the agent's restricted key file outside the repository.
 
 ## Evidence states
 
-- **PREFLIGHT_BLOCK / WARN** is an offchain decision. No transaction reached the vault.
-- **CONTRACT_REJECTED** requires a signed, finalized `request_payment` transaction and a matching vault decision or failure with no payout receipt.
-- **EXECUTED / PENDING** means the request reached the vault but settlement is not independently verified. The vault's initial `AUTHORIZED` result is insufficient.
-- **SETTLED** requires finalized transfer and callback receipts plus matching `get_request` and `get_vault_status` accounting. If any evidence is missing or inconsistent, show **INCONCLUSIVE**.
+The site and the verifiers use these words strictly:
 
-The current interface has the Instant Demo, read-only testnet account checks, and live Evidence view. The Evidence view rechecks two settled payments and eight contract rejections, revocation included, against public Testnet RPC. NEAR AI inference runs are recorded in `outputs/near-ai-*.json`.
+- **ALLOW / WARN / BLOCK** is an offchain guard decision. Nothing reached the vault.
+- **REJECTED** needs a signed, finalized `request_payment` transaction, the vault's rejection log and result, and no payout receipt.
+- **AUTHORIZED** means the vault accepted the request. On its own it is not proof of payment.
+- **SETTLED** needs the finalized transfer receipt, the callback's settlement log and the matching `get_request` record. Anything missing or inconsistent is shown as inconclusive, never as settled.
 
-## Later checkpoint: revocation and NEAR AI
+## NEAR AI
 
-An isolated Testnet revocation vault was proposed to preserve the original live demo. Its first deployment transaction `EvLkrsDS7XuYGpZ9knasYVGRMQEnK4sc2jrPi7hzqNdi` finalized **FAILED** at `initialize`, because a custom domain was passed to a contract that only accepts `agentshield:testnet:v1`. Finalized RPC confirmed the account remained absent and the 4 test NEAR funding was not transferred. The user stopped the revocation lab after this failure, then approved it again on 2026-11-05, when the corrected deployment and all later stages ran (see docs/RELEASE_AND_SUBMISSION.md). The lab key stays outside this repository.
+For local runs, put `NEAR_AI_KEY` in the ignored `.env` and start Node with `--env-file=.env`. `work/prepare-near-ai-payment.mjs` also accepts `NEAR_AI_KEY_FILE`, a path to a key file outside the repository. `work/run-near-ai-evidence.mjs` produced the recorded runs in `outputs/near-ai-*.json`; `tests/near-ai-evidence.test.mjs` rechecks every recorded signature offline.
 
-The local NEAR AI module and CLI prepare unsigned proposals only. `npm run test:ai` passes five tests, including a mocked prompt-injection redirect that the offchain policy blocks. `node --use-system-ca work/prepare-near-ai-payment.mjs --check-policy` checks the actual finalized vault state and produced ALLOW, WARN, and BLOCK. The user added a key to ignored `.env`. The first user-authorized, 180-output-token-capped NEAR AI Cloud request returned HTTP 402 on 2026-11-02; no model completion was received and the second prompt-injection request was not sent. NEAR AI Cloud credits are required before retrying. No attestation verification or AI-signed payment has occurred.
+The live model box on the site calls NEAR AI only from the server function `api/live/injection.js`, and only when `NEAR_AI_KEY` is set as a server-side Vercel environment variable. Without it, the box says it is off. `LIVE_INJECTION_DAILY_CAP` (default 150 per server instance) limits attempts per UTC day, and each visitor gets five tries every ten minutes.
 
-## Vercel deployment
+## Vercel
 
-The production site is [agentshield-lab.vercel.app](https://agentshield-lab.vercel.app/), under Vercel project `xreyys-projects/agentshield`. `vercel.json` has no build step and publishes `outputs/agentshield-ui`; `api/testnet/` contains read-only functions for status, account, payment proof, and negative-proof gallery. The functions include only public proposal and evidence records and recheck finalized public RPC before returning success. Transaction lookups use public archival nodes (`archival-rpc.testnet.fastnear.com`, `archival-rpc.testnet.near.org`) because `rpc.testnet.near.org` keeps only about 2.5 days of history; state reads use `rpc.testnet.near.org`. The NEAR AI key and testnet signing keys are not deployed. Vercel project linking created ignored `.vercel/` and `.env.local` files; do not commit or print their contents.
-
-The final Vercel production deployment `dpl_9uurMdDz7wEx6pQaBzohkDzZfXb9` returned READY. Public checks of the short domain confirmed the corrected Lab copy and footer, `/api/testnet/proof` PASS with SETTLED and the expected code hash, and `/api/testnet/gallery` 3/3 PASS. The first deployment's authenticated `/api/testnet/status` check returned healthy Testnet state; the public production domain returned HTTP 200 without an authentication bypass. Local Vercel route tests passed 2/2; simulator 7/7, key-scope 2/2, and NEAR AI mocked tests 5/5 were rerun. (At that time the site still bundled a wallet selector; no sign-in was attempted, and it was removed on 2026-11-04.)
-
-For local NEAR AI inference later, use the ignored `.env` with `NEAR_AI_KEY` and run Node with `--env-file=.env`. Alternatively, save the key in the private sibling `AgentShield-Secrets` folder outside the repository and set `$env:NEAR_AI_KEY_FILE` to that path. The deployed site calls NEAR AI only from the server function `api/live/injection.js`, and only when `NEAR_AI_KEY` is set as an encrypted, server-side Vercel environment variable (never with a `VITE_`, `NEXT_PUBLIC_` or other browser-exposed prefix). Without it, the live box says it is off. `LIVE_INJECTION_DAILY_CAP` (default 150 per server instance) limits attempts per UTC day.
+`vercel.json` publishes `outputs/agentshield-ui` as static files and deploys `api/` as functions. Each function bundles only the public plan and evidence records it reads (`includeFiles`, at most 256 characters per entry). The proof functions recheck finalized public RPC before they return a pass: current state from `rpc.testnet.near.org`, transactions from the public archival nodes.
