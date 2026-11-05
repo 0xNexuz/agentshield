@@ -1,0 +1,30 @@
+{
+  "network": "testnet",
+  "stage": "probe",
+  "status": "NEVER_LANDED",
+  "transactionHash": "EhxRt4r4eqRS3viB2PkR4rd7BuTgnzH29Koyc22bq3bG",
+  "archivalAnswer": "No archival Testnet RPC returned transaction EhxRt4r4… (archival-rpc.testnet.fastnear.com: RPC HTTP 408; archival-rpc.testnet.near.org: RPC HTTP 408)",
+  "restrictedKey": {
+    "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+    "nonce": "276321226000000",
+    "allowanceYocto": "20000000000000000000000"
+  },
+  "meaning": "The restricted key nonce is still its value from when the key was added and its allowance is untouched, so the key has never signed a transaction that landed. The probe was signed during a network drop on the signing machine and never broadcast.",
+  "isolatedVaultMandate": {
+    "agent": "agentshield-agent-0359da1630bb.testnet",
+    "recipients": [
+      "agentshield-recipient-7bb4a0df1077.testnet"
+    ],
+    "per_payment_yocto": "10000000000000000000000",
+    "daily_yocto": "20000000000000000000000",
+    "total_yocto": "20000000000000000000000",
+    "expires_at_ns": "1794216105339870776",
+    "version": 2,
+    "paused": true,
+    "revoked": true
+  },
+  "confirmedTotalYocto": "0",
+  "pendingTotalYocto": "0",
+  "checkedBy": "https://github.com/0xNexuz/agentshield/actions/runs/42009968306",
+  "checkedAt": "2026-11-05T10:21:25.904Z"
+}

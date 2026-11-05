@@ -99,22 +99,34 @@ export const STAGE_CHECKS = Object.freeze({
   },
 });
 export const LAB_STAGES = Object.freeze(Object.keys(STAGE_CHECKS));
+// The lab's restricted key nonce when it was added, read from the chain in Live evidence run 42009968306.
+export const RESTRICTED_KEY_INITIAL_NONCE = 276321226000000n;
 
 // Rechecks every lab stage that has a committed intent, from the chain, in order.
 export async function verifyRevocationLabStages() {
   const lab = read('deployment/testnet-revocation-lab-proposal.json');
   const results = [];
-  for (const stage of LAB_STAGES) {
-    const file = `outputs/testnet-revocation-${stage}-intent.json`;
+  const retried = fs.existsSync(path.join(root, 'outputs/testnet-revocation-probe-retry-intent.json'));
+  for (const name of [...LAB_STAGES, 'probe-retry']) {
+    const file = `outputs/testnet-revocation-${name}-intent.json`;
     if (!fs.existsSync(path.join(root, file))) break;
     const intent = read(file);
+    if (name === 'probe' && retried) {
+      // The first probe never reached the chain; the retry took its key nonce, so it never can.
+      const found = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 }).then(() => true, () => false);
+      results.push({ stage: name, ok: !found, transactionHash: intent.hash, neverLanded: !found, supersededBy: read('outputs/testnet-revocation-probe-retry-intent.json').hash,
+        ...(found ? { error: 'The superseded probe is on chain after all' } : {}) });
+      continue;
+    }
+    const stage = name === 'probe-retry' ? 'probe' : name;
     try {
       const { result: tx, endpoint } = await archivalTxStatus(intent.hash, intent.signer, { id: 'agentshield-revocation-proof', timeoutMs: 45000 });
       if (!succeeded(tx)) fail(`${stage} ${intent.hash} did not succeed`);
       if (tx.transaction.signer_id !== intent.signer || tx.transaction.receiver_id !== intent.receiver) fail(`${stage}: parties differ from the intent`);
-      results.push({ stage, ok: true, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
+      if (name === 'probe-retry' && BigInt(tx.transaction.nonce) !== RESTRICTED_KEY_INITIAL_NONCE + 1n) fail('The retry is not the restricted key\'s first landed transaction');
+      results.push({ stage: name, ok: true, transactionHash: intent.hash, signer: intent.signer, rpc: endpoint, ...STAGE_CHECKS[stage](tx, lab) });
     } catch (error) {
-      results.push({ stage, ok: false, transactionHash: intent.hash, error: error.message });
+      results.push({ stage: name, ok: false, transactionHash: intent.hash, error: error.message });
     }
   }
   return results;

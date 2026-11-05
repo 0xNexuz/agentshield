@@ -17,7 +17,7 @@ const restrictedFile = path.join(secrets, 'testnet', `${p.agent}.revocation-requ
 const rpcUrl = 'https://rpc.testnet.near.org';
 const flags = { deploy: '--execute-approved-deploy', deployCorrected: '--execute-approved-deploy-corrected', key: '--execute-approved-key',
   mandate: '--execute-approved-mandate', revoke: '--execute-approved-revoke', probe: '--execute-approved-probe',
-  recordRevoke: '--record-approved-revoke' };
+  recordRevoke: '--record-approved-revoke', probeRetry: '--execute-approved-probe-retry' };
 function check(ok, why) { if (!ok) throw new Error(why); }
 async function rpc(method, params) {
   const response = await fetch(rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' },
@@ -221,7 +221,29 @@ async function recordRevoke() {
   check(observed?.version === 2 && observed.revoked && observed.paused, 'Isolated mandate is not revoked at version 2');
   save('revoke', { hash: intent.hash, tx }, { observed, recordedAfterStop: true });
 }
-async function executeProbe() {
+// The restricted key's nonce when it was added (Live evidence run 42009968306 read it from the chain). It moves only
+// when the key signs a transaction that lands, so while it is unchanged no probe has reached the chain.
+const RESTRICTED_KEY_INITIAL_NONCE = 276321226000000n;
+async function executeProbe() { await runProbe('probe'); }
+// The first probe (outputs/testnet-revocation-probe-intent.json) was signed during a network drop and never reached
+// the chain. A retry is allowed only while that is provably still true: the restricted key's nonce and allowance are
+// unchanged since it was added, and no archival node knows the original hash. The retry takes the key nonce the lost
+// transaction held, so the lost one can never land afterwards. The vault is revoked, so neither could ever pay.
+async function executeProbeRetry() {
+  await common(); previous('revoke');
+  const original = JSON.parse(fs.readFileSync(path.join(root, 'outputs/testnet-revocation-probe-intent.json'), 'utf8'));
+  check(original.stage === 'probe' && original.signer === p.agent && original.receiver === p.isolatedVault, 'Original probe intent differs');
+  check(!fs.existsSync(path.join(root, 'outputs/testnet-revocation-probe-evidence.json')), 'Probe evidence already exists');
+  const onchain = (await keyList(p.agent)).find(item => item.public_key === p.restrictedPublicKey);
+  check(onchain && BigInt(onchain.access_key.nonce) === RESTRICTED_KEY_INITIAL_NONCE &&
+    onchain.access_key.permission?.FunctionCall?.allowance === p.gasAllowanceYocto,
+    'The restricted key has signed a transaction that landed since it was added; check the original probe instead of retrying');
+  const found = await archivalTxStatus(original.hash, p.agent, { id: 'agentshield-revocation-lab', timeoutMs: 60000 }).then(() => true, () => false);
+  check(!found, `The original probe ${original.hash} is on chain; record it instead of retrying`);
+  console.log(JSON.stringify({ stage: 'RETRY_ALLOWED', original: original.hash, restrictedKeyNonce: String(onchain.access_key.nonce) }));
+  await runProbe('probe-retry', { supersedes: original.hash, supersededBecause: 'signed during a network drop; never reached the chain' });
+}
+async function runProbe(stage, extra = {}) {
   await common(); previous('revoke'); await restrictedStore();
   const status = await view('get_vault_status');
   check(status.mandate?.version === p.rejectedRequest.expected_version && status.mandate.revoked &&
@@ -232,10 +254,11 @@ async function executeProbe() {
     'Probe expiry too close');
   const args = { recipient: p.rejectedRequest.recipient, amount_yocto: p.rejectedRequest.amount_yocto,
     nonce: p.rejectedRequest.nonce, expires_at_ns: p.rejectedRequest.expires_at_ns, expected_version: p.rejectedRequest.expected_version };
-  const sent = await sendOnce('probe', p.agent, p.isolatedVault,
+  const sent = await sendOnce(stage, p.agent, p.isolatedVault,
     [transactions.functionCall('request_payment', args, 70000000000000n, 0n)], true);
   const tx = sent.tx;
   check(tx.transaction.public_key === p.restrictedPublicKey, 'Probe used another key');
+  if (stage === 'probe-retry') check(BigInt(tx.transaction.nonce) === RESTRICTED_KEY_INITIAL_NONCE + 1n, 'Retry is not the key\'s first landed transaction');
   const rejected = tx.receipts_outcome.find(item => item.outcome?.executor_id === p.isolatedVault &&
     item.outcome?.logs?.includes('AGENTSHIELD_DECISION decision=REJECTED reason=REVOKED'));
   check(rejected?.outcome?.status?.SuccessValue !== undefined, 'No genuine REVOKED contract decision');
@@ -247,7 +270,7 @@ async function executeProbe() {
   check(after.confirmed_total_yocto === '0' && after.pending_total_yocto === '0',
     'Revoked vault accounting changed');
   save('probe', sent, { decision, request: args, vaultTransferReceipts: 0,
-    confirmedTotalYocto: after.confirmed_total_yocto, pendingTotalYocto: after.pending_total_yocto });
+    confirmedTotalYocto: after.confirmed_total_yocto, pendingTotalYocto: after.pending_total_yocto, ...extra });
 }
 async function main() {
   const stage = Object.keys(flags).find(name => process.argv.length === 3 && process.argv[2] === flags[name]);
@@ -258,6 +281,7 @@ async function main() {
   else if (stage === 'mandate') await executeMandate();
   else if (stage === 'revoke') await executeRevoke();
   else if (stage === 'recordRevoke') await recordRevoke();
+  else if (stage === 'probeRetry') await executeProbeRetry();
   else await executeProbe();
 }
 main().catch(error => { console.error(error.message); process.exitCode = 1; });
