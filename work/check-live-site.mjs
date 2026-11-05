@@ -1,7 +1,7 @@
 // Checks the production site's read-only endpoints end to end. Run daily by
 // .github/workflows/live-evidence.yml, alongside the verifiers that recheck Testnet directly.
 //   node work/check-live-site.mjs [https://agentshield-lab.vercel.app] [--with-live-model]
-// --with-live-model also sends one fixed red-team note to the live model box (about $0.0001 of the
+// --with-live-model also sends one fixed red-team note to the live model box (about $0.0003 of the
 // project's NEAR AI credit), so it only runs when someone asks for it.
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

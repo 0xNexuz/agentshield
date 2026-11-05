@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       live_model:
-        description: Also send one note to the live model box (spends about $0.0001 of NEAR AI credit)
+        description: Also send one note to the live model box (spends about $0.0003 of NEAR AI credit)
         type: boolean
         default: false
 
