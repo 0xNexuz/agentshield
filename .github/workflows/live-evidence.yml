@@ -29,7 +29,9 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Recheck the payment and its key and mandate transactions on public Testnet RPC
         run: node work/verify-testnet-live-payment.mjs
-      - name: Recheck the three rejected attacks on public Testnet RPC
+      - name: Recheck every rejected attack on public Testnet RPC
         run: node work/verify-testnet-negative-scenarios.mjs
+      - name: Recheck the payment an agent made through the MCP server
+        run: node work/verify-testnet-mcp-payment.mjs
       - name: Check the production site's proof, gallery, counterparty and status endpoints
         run: node work/check-live-site.mjs https://agentshield-lab.vercel.app ${{ inputs.live_model && '--with-live-model' || '' }}

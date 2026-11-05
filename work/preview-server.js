@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { isTestnetAccountId, testnetStatus, testnetAccount } from './near-testnet-rpc.mjs';
 import { verifyLivePayment } from './verify-testnet-live-payment.mjs';
 import { verifyNegativeScenarios } from './verify-testnet-negative-scenarios.mjs';
+import { verifyMcpPayment } from './verify-testnet-mcp-payment.mjs';
 import counterpartyRoute from '../api/testnet/counterparty.js';
 import liveInjectionRoute from '../api/live/injection.js';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../outputs/agentshield-ui');
@@ -26,7 +27,7 @@ http.createServer(async (req,res)=>{
       json(body) { res.writeHead(this.statusCode, { ...this.headers, 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(body)); return this; } };
     return counterpartyRoute({ method: req.method, query }, reply);
   }
-  if (name === '/api/testnet/status' || name === '/api/testnet/account' || name === '/api/testnet/proof' || name === '/api/testnet/gallery') {
+  if (name === '/api/testnet/status' || name === '/api/testnet/account' || name === '/api/testnet/proof' || name === '/api/testnet/gallery' || name === '/api/testnet/mcp-payment') {
     if (req.method !== 'GET') {res.writeHead(405);return res.end('Method not allowed');}
     const accountId = name.endsWith('/account') ? new URL(req.url, 'http://127.0.0.1').searchParams.get('id') : null;
     if (name.endsWith('/account') && !isTestnetAccountId(accountId)) {
@@ -37,6 +38,7 @@ http.createServer(async (req,res)=>{
       const data = name.endsWith('/status') ? await testnetStatus()
         : name.endsWith('/proof') ? await verifyLivePayment()
         : name.endsWith('/gallery') ? await verifyNegativeScenarios()
+        : name.endsWith('/mcp-payment') ? await verifyMcpPayment()
         : await testnetAccount(accountId);
       res.writeHead(200, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
       return res.end(JSON.stringify(data));

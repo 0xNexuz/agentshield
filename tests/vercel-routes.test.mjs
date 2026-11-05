@@ -4,6 +4,7 @@ import account from '../api/testnet/account.js';
 import status from '../api/testnet/status.js';
 import proof from '../api/testnet/proof.js';
 import gallery from '../api/testnet/gallery.js';
+import mcpPayment from '../api/testnet/mcp-payment.js';
 
 function response() {
   return {
@@ -15,7 +16,7 @@ function response() {
 }
 
 test('Vercel read-only routes reject non-GET requests', async () => {
-  for (const handler of [account, status, proof, gallery]) {
+  for (const handler of [account, status, proof, gallery, mcpPayment]) {
     const res = response();
     await handler({ method: 'POST', query: { id: 'valid.testnet' } }, res);
     assert.equal(res.statusCode, 405);

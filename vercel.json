@@ -18,6 +18,10 @@
     "api/live/injection.js": {
       "maxDuration": 60,
       "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/near-ai-attestation-run2.json,outputs/agentshield-ui/counterparty.mjs,outputs/agentshield-ui/counterparty-policy.mjs}"
+    },
+    "api/testnet/mcp-payment.js": {
+      "maxDuration": 60,
+      "includeFiles": "{deployment/testnet-live-demo-proposal.json,outputs/testnet-mcp-payment-evidence.json}"
     }
   }
 }
