@@ -1,0 +1,25 @@
+{
+  "network": "testnet",
+  "stage": "revoke",
+  "transactionHash": "mLpEnEMYF5j3dpHNqdNshnaGDNJb44UBLCZjy6QhbJF",
+  "finality": "FINAL",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "details": {
+    "observed": {
+      "agent": "agentshield-agent-0359da1630bb.testnet",
+      "recipients": [
+        "agentshield-recipient-7bb4a0df1077.testnet"
+      ],
+      "per_payment_yocto": "10000000000000000000000",
+      "daily_yocto": "20000000000000000000000",
+      "total_yocto": "20000000000000000000000",
+      "expires_at_ns": "1794216105339870776",
+      "version": 2,
+      "paused": true,
+      "revoked": true
+    },
+    "recordedAfterStop": true
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/mLpEnEMYF5j3dpHNqdNshnaGDNJb44UBLCZjy6QhbJF"
+}

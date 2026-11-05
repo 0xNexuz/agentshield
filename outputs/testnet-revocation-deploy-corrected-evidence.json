@@ -1,0 +1,16 @@
+{
+  "network": "testnet",
+  "stage": "deploy-corrected",
+  "transactionHash": "9tA4jGgVEJRznKZUNMVEUC37L6Vjaez9MSf59x7w8rYK",
+  "finality": "FINAL",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "details": {
+    "codeHash": "2KHm9Waz7fQfQ2A1MWmHhVSwx7o7sm8p1KXBTVyggCqN",
+    "owner": "agentshield-mag-1d2f78801994.testnet",
+    "domain": "agentshield:testnet:v1",
+    "fundingYocto": "4000000000000000000000000",
+    "accessKeyCount": 0
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/9tA4jGgVEJRznKZUNMVEUC37L6Vjaez9MSf59x7w8rYK"
+}

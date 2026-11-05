@@ -1,0 +1,8 @@
+{
+  "network": "testnet",
+  "stage": "mandate",
+  "hash": "2kgPwVdrkSUMStnGaPcQNfuJBK9XMfySGdSyB9uULr9s",
+  "signer": "agentshield-mag-1d2f78801994.testnet",
+  "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+  "createdAt": "2026-11-05T09:11:48.544Z"
+}

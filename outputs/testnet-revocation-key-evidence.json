@@ -1,0 +1,17 @@
+{
+  "network": "testnet",
+  "stage": "key",
+  "transactionHash": "AzacRXZCRySBy1FrbF9mQtrzMC7uisqwpMay1PRJ6nxf",
+  "finality": "FINAL",
+  "signer": "agentshield-agent-0359da1630bb.testnet",
+  "receiver": "agentshield-agent-0359da1630bb.testnet",
+  "details": {
+    "publicKey": "ed25519:EbbojXep8igq73fxBZMyt3R7rVeuMNkkJzNDseBjncEj",
+    "receiver": "revocation.agentshield-mag-1d2f78801994.testnet",
+    "methods": [
+      "request_payment"
+    ],
+    "allowanceYocto": "20000000000000000000000"
+  },
+  "explorerUrl": "https://testnet.nearblocks.io/txns/AzacRXZCRySBy1FrbF9mQtrzMC7uisqwpMay1PRJ6nxf"
+}
