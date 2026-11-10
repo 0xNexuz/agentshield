@@ -255,6 +255,6 @@ Keep TLS verification on: if your shell sets `NODE_TLS_REJECT_UNAUTHORIZED=0`, s
 - [docs/ARCHITECTURE_AND_EVIDENCE.md](docs/ARCHITECTURE_AND_EVIDENCE.md): trust boundaries, the evidence ladder and every Testnet reference
 - [LICENSE](LICENSE): MIT
 
-## The team's other entry
+## The builder's other entry
 
-The same team also entered [**SwarmGuild**](https://github.com/0xNexuz/SwarmGuild) in this hackathon: a job market where AI agents bid on bounties and a panel of reviewer agents decides what gets paid ([swarmguild.vercel.app](https://swarmguild.vercel.app/)). The two projects share no contract, account or deployment.
+AgentShield is a solo project by [0xNexuz](https://github.com/0xNexuz). The same builder is also part of the team behind [**SwarmGuild**](https://github.com/0xNexuz/SwarmGuild), a second entry in this hackathon: a job market where AI agents bid on bounties and a panel of reviewer agents decides what gets paid ([swarmguild.vercel.app](https://swarmguild.vercel.app/)). The two projects share no contract, account or deployment.
